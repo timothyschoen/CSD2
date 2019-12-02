@@ -4,17 +4,20 @@
 
 
 class Oscillator {
-  double samplerate = 44100;
+  double samplerate;
   double phase = 0;
   double sample = 0;
   double output = 0;
   public:
-   Oscillator(int samplerate) {
+   Oscillator(double samplerate) {
+     this->samplerate = samplerate;
   }
+  // Calculation for sine
   double sine() {
     sample = sin(phase * 2 * 3.14159265358979323846);
     return sample;
   }
+  // Calculation for saw
   double sawtooth() {
     sample = (1-phase)-0.5;
     return sample;
@@ -25,12 +28,15 @@ class Oscillator {
     return sample;
   }
 
+  // Array with function pointers to sine, saw and square functions
   double (Oscillator::*shapePointers[3])() = {&Oscillator::sine, &Oscillator::sawtooth, &Oscillator::square};
 
+  // Move phase value to the next sample
   void tick(double freq) {
     phase += freq / samplerate;
     if(phase >= 1) phase = phase - 1;
   }
+  // Retrieve sample value
   double getSample(int shape, double amplitude) {
     output = (this->*shapePointers[shape])()*amplitude;
     return output;
