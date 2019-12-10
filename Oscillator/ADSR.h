@@ -1,10 +1,11 @@
 #include <unistd.h>
 #include <iostream>
 #include <cmath>
+#include "SynthClass.h"
 #pragma once
 
 
-class ADSR {
+class ADSR : public Synth {
   int state = 0;
   double level = 0.01;
   bool playing = false;

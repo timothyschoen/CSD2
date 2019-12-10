@@ -20,7 +20,7 @@ calc();
 
 void MoogFilter::calc()
 {
-float f = (cutoff+cutoff) / fs; //[0 - 1]
+float f = (frequency+frequency) / fs; //[0 - 1]
 p=f*(1.8f-0.8f*f);
 k=p+p-1.f;
 
@@ -47,14 +47,6 @@ oldx = x; oldy1 = y1; oldy2 = y2; oldy3 = y3;
 return y4;
 }
 
-float MoogFilter::getCutoff()
-{ return cutoff; }
-
-void MoogFilter::setCutoff(float c)
-{ cutoff=c; calc(); }
-
-float MoogFilter::getRes()
-{ return res; }
 
 void MoogFilter::setRes(float r)
 { res=r; calc(); }

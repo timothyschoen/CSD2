@@ -1,4 +1,6 @@
-class MoogFilter
+#include "SynthClass.h"
+
+class MoogFilter : public Synth
 {
 public:
 MoogFilter();
@@ -6,9 +8,6 @@ void init();
 void calc();
 float process(float x);
 ~MoogFilter();
-float getCutoff();
-void setCutoff(float c);
-float getRes();
 void setRes(float r);
 protected:
 float cutoff;
