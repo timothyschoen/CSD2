@@ -15,7 +15,7 @@ public:
    void tick();
    // Retrieve sample value
    double getSample(int shape, double amplitude);
-
+   void lfoMode(bool low);
    double sine();
    double sawtooth();
    double square();
