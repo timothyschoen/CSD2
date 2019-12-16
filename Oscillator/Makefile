@@ -5,8 +5,8 @@ CAFLAGS= -D__MACOSX_CORE__ -framework CoreMIDI -framework CoreAudio -framework C
 
 all: MidiSynth
 
-MidiSynth : SynthClass.o Oscillator.o jack_module.o ADSR.o MoogFilter.o RtMidi.o
-	$(CC) -o $@ $(CFLAGS) SynthClass.o Oscillator.o jack_module.o ADSR.o MoogFilter.o RtMidi.o synth.cpp $(LDFLAGS) $(CAFLAGS)
+MidiSynth : SynthClass.o Oscillator.o jack_module.o ADSR.o MoogFilter.o RtMidi.o Player.o
+	$(CC) -o $@ $(CFLAGS) SynthClass.o Oscillator.o jack_module.o ADSR.o MoogFilter.o RtMidi.o Player.o synth.cpp $(LDFLAGS) $(CAFLAGS)
 
 SynthClass.o:
 	$(CC) -c $< $(CFLAGS) SynthClass.cpp
@@ -25,6 +25,9 @@ Oscillator.o:
 
 RtMidi.o:
 	$(CC) -c $< -D__MACOSX_CORE__ $(CFLAGS) ./rtmidi-master/RtMidi.cpp -framework CoreMIDI -framework CoreAudio -framework CoreFoundation
+
+Player.o:
+	$(CC) -c $< -D__MACOSX_CORE__ $(CFLAGS) Player.cpp
 
 clean:
 	rm -f *.o

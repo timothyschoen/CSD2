@@ -11,6 +11,8 @@ class ADSR : public Synth {
   bool playing = false;
   float target[3] = {1, 0.3, 0};
   float increments[3] = {0.01, -0.2, -0.01};
+  bool released;
+
 
 public:
   ADSR(float attack, float decay, float sustain, float release);
@@ -32,4 +34,5 @@ public:
 
   void setRelease(float value);
 
+  bool getReleased();
 };
