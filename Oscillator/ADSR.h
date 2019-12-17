@@ -34,5 +34,6 @@ public:
 
   void setRelease(float value);
 
+  //Checks if voice is free
   bool getReleased();
 };

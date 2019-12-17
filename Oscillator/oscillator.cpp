@@ -28,19 +28,18 @@
     return sample;
   }
   double Oscillator::square() {
-    if(phase >= 0.5) sample = 0.6; // 1 and -1 makes it significantly louder than the sine and saw
-    else sample = -0.6;
+    if(phase >= 0.5) sample = 0.7; // 1 and -1 makes it significantly louder than the sine and saw
+    else sample = -0.7;
     return sample;
   }
   double Oscillator::triangle() {
-    sample = -1.0 + (2.0 * phase / 2 * 3.14159265358979323846);
+    sample = -1.0 + (2.0 * phase);
+    sample = 0.9 * (fabs(sample) - 0.5);
     return sample;
   }
-  
   // Poor attempt at PolyBLEP anti-aliasing
-  // Disabled it for now
   double Oscillator::poly_blep(double t) {
-    double dt = freq / samplerate / 2 * 3.14159265358979323846;
+    double dt = frequency / samplerate;
     // 0 <= t < 1
     if (t < dt) {
         t /= dt;
@@ -59,19 +58,11 @@
 
   // Move phase value to the next sample
   void Oscillator::tick() {
-    t = phase / twoPI;
     phase += frequency / samplerate;
+    t = phase / twoPI;
     if(phase >= 1) phase = phase - 1;
   }
 
-void Oscillator::lfoMode(bool low) {
-    if (low) {
-      samplerate = 1000;
-    }
-    else {
-      samplerate = 44100;
-    }
-}
   // Retrieve sample value
   double Oscillator::getSample(int shape, double amplitude) {
     output = (this->*shapePointers[shape])()*amplitude;

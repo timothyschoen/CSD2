@@ -1,13 +1,11 @@
 #include <unistd.h>
 #include <iostream>
-#include <cmath>
 #include <thread>
 #include "oscillator.h"
-#include <math.h>
-#include "./jack/jack_module.h"
 #include "MoogFilter.h"
 #include "ADSR.h"
 #include "Player.h"
+#include "./jack/jack_module.h"
 #include "./rtmidi-master/RtMidi.h"
 
 // Select waveshape
@@ -71,8 +69,8 @@ int main(int argc,char **argv) {
   std::thread inthread (keyinput);
   // fix use of 4... but how...!!!!!!!!!!!!!!!
   Oscillator oscs[4] {{jack.getSamplerate()}, {jack.getSamplerate()}, {jack.getSamplerate()}, {jack.getSamplerate()}};
-  Oscillator lfo(jack.getSamplerate());
-  lfo.lfoMode(true);
+  Oscillator lfo(1000); //Sets samplerate to controlrate
+
   // Moog ladder filter I found online
   MoogFilter filt1;
   // Init settings

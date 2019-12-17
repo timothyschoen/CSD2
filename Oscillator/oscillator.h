@@ -15,11 +15,11 @@ public:
    void tick();
    // Retrieve sample value
    double getSample(int shape, double amplitude);
-   void lfoMode(bool low);
    double sine();
    double sawtooth();
    double square();
    double triangle();
+   //Pointers to the waveshape generators
    double (Oscillator::*shapePointers[4])() = {&Oscillator::sine, &Oscillator::sawtooth, &Oscillator::square, &Oscillator::triangle};
 
 private:
@@ -28,13 +28,9 @@ private:
   double sample;
   double output;
   double t;
-  double freq;
   double twoPI = 2 * 3.14159265358979323846;
   // Calculation for sine
 
   double poly_blep(double t);
 
-  // Array with pointers to sine, saw and square functions
-
-  //double (Oscillator::*shapePointers[4])();
 };
