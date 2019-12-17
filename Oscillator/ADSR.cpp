@@ -3,18 +3,18 @@
 #include <cmath>
 #include "ADSR.h"
 
-//Constructor class
-ADSR::ADSR(float attack, float decay, float sustain, float release) {
-  increments[0] = 1/(attack+0.001); // 1/attack leads to the increment we need when we poll every 1ms
-  increments[1] = (1/(decay+0.001))*-1; // Add a small number to make sure we never divide by 0!!!
-  increments[2] = (1/(release+0.001))*-1;
-  target[1] = sustain;
-  released = true;
-}
+  //Constructor class
+  ADSR::ADSR(float attack, float decay, float sustain, float release) {
+    increments[0] = 1/(attack+0.001); // 1/attack leads to the increment we need when we poll every 1ms
+    increments[1] = (1/(decay+0.001))*-1; // Add a small number to make sure we never divide by 0!!!
+    increments[2] = (1/(release+0.001))*-1;
+    target[1] = sustain;
+    released = true;
+  }
 
-ADSR::~ADSR()
-{
-}
+  ADSR::~ADSR()
+  {
+  }
 
   // Move the envelope to the next value
   void ADSR::tick() {

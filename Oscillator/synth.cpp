@@ -257,9 +257,9 @@ int main(int argc,char **argv) {
 }
     // Tick the envelopes and lfos once every millisecond (our control rate, audio rate is not necessary)
     for(int i = 0; i < voices; i++){
-    envelopes[i].tick();
-    modenvelope.tick();
-    lfo.tick();
+      envelopes[i].tick();
+      modenvelope.tick();
+      lfo.tick();
     }
     int cutoff = filterpitch+(modenvelope.getValue()*envelopeAmp)+(lfo.getSample(lfoshape, 1)*lfoAmp);
     // Above 105 causes crash
