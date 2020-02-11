@@ -1,4 +1,3 @@
-
 #include <vector>
 #include <string>
 #include <cstdio>
@@ -10,6 +9,8 @@
 
 namespace
 {
+
+int startOffset;
 // gMin for diodes etc..
 constexpr double gMin = 1e-12;
 
@@ -29,19 +30,6 @@ constexpr const char* unitValueSuffixes[] = {
     "p", "n", "u", "m", "", "k", "M", "G"
 };
 
-void formatUnitValue(char * buf, double v, const char * unit)
-{
-    int suff = unitValueOffset + std::lround(std::floor(std::log(v) / std::log(10.))) / 3;
-
-    if(v < 1) suff -= 1;
-
-    if(suff < 0) suff = 0;
-    if(suff > unitValueMax) suff = unitValueMax;
-
-    double vr = v / std::pow(10., 3*double(suff - unitValueOffset));
-
-    sprintf(buf, "%.0f%s%s", vr, unitValueSuffixes[suff], unit);
-}
 
 }
 
@@ -74,13 +62,10 @@ struct MNACell
 
     double  lu, prelu;  // lu-solver values and matrix pre-LU cache
 
-    std::string txt;    // text version of MNA for pretty-printing
-
     void clear()
     {
         g = 0;
         gtimed = 0;
-        txt = "";
     }
 
     void initLU(double stepScale)
@@ -129,8 +114,8 @@ struct MNASystem
     // node names - for output
     std::vector<MNANodeInfo>    nodes;
 
-    MNAMatrix   A;
-    MNAVector   b;
+    MNAMatrix   A; // Standard A matrix
+    MNAVector   b; // Since this is a vector, this could be the X or Z matrix, or a combination??
 
     double      time;
     long      ticks;
@@ -147,9 +132,6 @@ struct MNASystem
             b[i].clear();
             A[i].resize(n);
 
-            char buf[16];
-            sprintf(buf, "v%d", i);
-            nodes[i].name = buf;
             nodes[i].type = MNANodeInfo::tVoltage;
             nodes[i].scale = 1;
 
@@ -160,19 +142,27 @@ struct MNASystem
         }
 
         time = 0;
-        ticks = 0;
+        ticks = startOffset; // 3 sec system init time, we don't want any DC clicks in our output!
     }
 
-    void stampTimed(double g, int r, int c, const std::string & txt)
+    void stampTimed(double g, int r, int c)
     {
         A[r][c].gtimed += g;
-        A[r][c].txt += txt;
     }
 
-    void stampStatic(double g, int r, int c, const std::string & txt)
+
+    void stampStatic(double g, int r, int c)
     {
         A[r][c].g += g;
-        A[r][c].txt += txt;
+    }
+
+    void stampConductor(double g, int r, int c)
+    {
+      A[r][r].g += g;
+      A[r][c].g -= g;
+      A[c][r].g -= g;
+      A[c][c].g += g;
+
     }
 };
 
@@ -209,6 +199,9 @@ struct IComponent
     // return true if we're done - will keep iterating
     // until all the components are happy
     virtual bool newton(MNASystem & m) { return true; }
+
+    // NEW: output function for probe object;
+    virtual double getOutput(MNASystem & m) { return 0; }
 
     // time-step change, for caps to fix their state-variables
     virtual void scaleTime(double told_per_new) {}
@@ -254,14 +247,99 @@ struct Resistor : Component<2>
 
     void stamp(MNASystem & m) final
     {
-        char txt[16];
-        txt[0] = 'R';
-        formatUnitValue(txt+1, r, "");
+
         double g = 1. / r;
-        m.stampStatic(+g, nets[0], nets[0], std::string("+") + txt);
-        m.stampStatic(-g, nets[0], nets[1], std::string("-") + txt);
-        m.stampStatic(-g, nets[1], nets[0], std::string("-") + txt);
-        m.stampStatic(+g, nets[1], nets[1], std::string("+") + txt);
+        m.stampStatic(+g, nets[0], nets[0]);
+        m.stampStatic(-g, nets[0], nets[1]);
+        m.stampStatic(-g, nets[1], nets[0]);
+        m.stampStatic(+g, nets[1], nets[1]);
+    }
+};
+
+struct VariableResistor : Component<3>
+{
+    double  r;
+    double  resvalue;
+    double  negresvalue;
+
+    VariableResistor(double r, int l0, int l1, int l2) : r(r)
+    {
+        pinLoc[0] = l0;
+        pinLoc[1] = l1;
+        pinLoc[2] = l2;
+
+        resvalue = 1. / r;
+        negresvalue = -resvalue;
+    }
+
+    void stamp(MNASystem & m) final
+    {
+        for (size_t r = 0; r < 2; r++) {
+          for (size_t c = 0; c < 2; c++) {
+            if(r==c) m.A[nets[r]][nets[c]].gdyn.push_back(&resvalue);
+            else m.A[nets[r]][nets[c]].gdyn.push_back(&negresvalue);
+          }
+        }
+    }
+    void update(MNASystem & m) final
+    {
+      //std::cout << m.b[nets[2]].lu << '\n';
+      resvalue = 1. / (r * m.b[nets[2]].lu);
+      negresvalue = -resvalue;
+
+    }
+
+};
+
+struct Potentiometer : Component<4>
+{
+    double  r;
+
+    double resvalue;
+    double invresvalue;
+    double negresvalue;
+    double neginvresvalue;
+
+
+
+    Potentiometer(double r, int l0, int l1, int l2, int l3) : r(r)
+    {
+        pinLoc[0] = l0; // in
+        pinLoc[1] = l1; // out
+        pinLoc[2] = l2; // inv out
+        pinLoc[3] = l3; // set value
+
+        resvalue = 1. / r;
+        negresvalue = -resvalue;
+        invresvalue = 1. / r;
+        neginvresvalue = -invresvalue;
+    }
+
+    void stamp(MNASystem & m) final
+    {
+
+        for (size_t r = 0; r < 2; r++) {
+          for (size_t c = 0; c < 2; c++) {
+            if (r==c) {
+              m.A[nets[r]][nets[c]].gdyn.push_back(&resvalue);
+              m.A[nets[r * 2]][nets[c * 2]].gdyn.push_back(&invresvalue);
+            }
+            else  {
+              m.A[nets[r]][nets[c]].gdyn.push_back(&negresvalue);
+              m.A[nets[r * 2]][nets[c * 2]].gdyn.push_back(&neginvresvalue);
+            }
+          }
+        }
+
+    }
+
+    void update(MNASystem & m) final
+    {
+      resvalue = 1. / (r * m.b[nets[3]].lu);
+      negresvalue = -resvalue;
+      invresvalue = 1. / (r - (r * m.b[nets[3]].lu));
+      neginvresvalue = -invresvalue;
+
     }
 };
 
@@ -282,8 +360,6 @@ struct Capacitor : Component<2, 1>
 
     void stamp(MNASystem & m) final
     {
-        char buf[16];
-        formatUnitValue(buf, c, "F");
 
         // we can use a trick here, to get the capacitor to
         // work on it's own line with direct trapezoidal:
@@ -312,28 +388,24 @@ struct Capacitor : Component<2, 1>
         // since c*(v1 - v0) = (i1 + i0)/(2*t), where t = 1/T
         double g = 2*c;
 
-        m.stampTimed(+1, nets[0], nets[2], "+t");
-        m.stampTimed(-1, nets[1], nets[2], "-t");
+        m.stampTimed(+1, nets[0], nets[2]);
+        m.stampTimed(-1, nets[1], nets[2]);
 
-        m.stampTimed(-g, nets[0], nets[0], std::string("-t*") + buf);
-        m.stampTimed(+g, nets[0], nets[1], std::string("+t*") + buf);
-        m.stampTimed(+g, nets[1], nets[0], std::string("+t*") + buf);
-        m.stampTimed(-g, nets[1], nets[1], std::string("-t*") + buf);
+        m.stampTimed(-g, nets[0], nets[0]);
+        m.stampTimed(+g, nets[0], nets[1]);
+        m.stampTimed(+g, nets[1], nets[0]);
+        m.stampTimed(-g, nets[1], nets[1]);
 
-        m.stampStatic(+2*g, nets[2], nets[0], std::string("+2*") + buf);
-        m.stampStatic(-2*g, nets[2], nets[1], std::string("-2*") + buf);
+        m.stampStatic(+2*g, nets[2], nets[0]);
+        m.stampStatic(-2*g, nets[2], nets[1]);
 
-        m.stampStatic(-1, nets[2], nets[2], "-1");
+        m.stampStatic(-1, nets[2], nets[2]);
 
         // see the comment about v:C[%d] below
-        sprintf(buf, "q:C:%d,%d", pinLoc[0], pinLoc[1]);
         m.b[nets[2]].gdyn.push_back(&stateVar);
-        m.b[nets[2]].txt = buf;
 
         // this isn't quite right as state stores 2*c*v - i/t
         // however, we'll fix this in updateFull() for display
-        sprintf(buf, "v:C:%d,%d", pinLoc[0], pinLoc[1]);
-        m.nodes[nets[2]].name = buf;
         m.nodes[nets[2]].scale = 1 / c;
     }
 
@@ -375,19 +447,14 @@ struct Voltage : Component<2, 1>
 
     void stamp(MNASystem & m) final
     {
-        m.stampStatic(-1, nets[0], nets[2], "-1");
-        m.stampStatic(+1, nets[1], nets[2], "+1");
+        m.stampStatic(-1, nets[0], nets[2]);
+        m.stampStatic(+1, nets[1], nets[2]);
 
-        m.stampStatic(+1, nets[2], nets[0], "+1");
-        m.stampStatic(-1, nets[2], nets[1], "-1");
+        m.stampStatic(+1, nets[2], nets[0]);
+        m.stampStatic(-1, nets[2], nets[1]);
 
-        char buf[16];
-        sprintf(buf, "%+.2gV", v);
         m.b[nets[2]].g = v;
-        m.b[nets[2]].txt = buf;
 
-        sprintf(buf, "i:V(%+.2g):%d,%d", v, pinLoc[0], pinLoc[1]);
-        m.nodes[nets[2]].name = buf;
         m.nodes[nets[2]].type = MNANodeInfo::tCurrent;
     }
 };
@@ -396,6 +463,7 @@ struct Voltage : Component<2, 1>
 // also forces this voltage to actually get solved :)
 struct Probe : Component<2, 1>
 {
+    float impedance = 1;
     Probe(int l0, int l1)
     {
         pinLoc[0] = l0;
@@ -405,17 +473,50 @@ struct Probe : Component<2, 1>
     void stamp(MNASystem & m) final
     {
         // vp + vn - vd = 0
-        m.stampStatic(+1, nets[2], nets[0], "+1");
-        m.stampStatic(-1, nets[2], nets[1], "-1");
-        m.stampStatic(-1, nets[2], nets[2], "-1");
+        m.stampStatic(+impedance, nets[2], nets[0]);
+        m.stampStatic(-impedance, nets[2], nets[1]);
+        m.stampStatic(-impedance, nets[2], nets[2]);
 
-        m.nodes[nets[2]].name = "v:probe";
+    }
+    //current = voltage/impedance
+    double getOutput(MNASystem & m) {
+      //std::cout << m.A[0][2].lu;   // -> is altijd 0!!!! zoek uit wat dit is!!
+      //return m.A[0][1].lu;
+      return m.b[nets[2]].lu; // * m.nodes[2].scale? Betrek current hierin!!!
+      // m.A[2].lu = conductance in Siemens
+      // m.A[2].lu (siemens) * m.b[2].lu (voltage) = Current
+      //
+    }
+};
+
+
+// probe a differential voltage
+// also forces this voltage to actually get solved :)
+struct Printer : Component<2>
+{
+    float g = 1;
+    Printer(int l0, int l1)
+    {
+        pinLoc[0] = l0;
+        pinLoc[1] = l1;
     }
 
-    //void update(MNASystem & m)
-    //{
-        // we could do output here :)
-    //}
+    void stamp(MNASystem & m) final
+    {
+
+        m.stampStatic(+g, nets[0], nets[0]);
+        m.stampStatic(-g, nets[0], nets[1]);
+        m.stampStatic(-g, nets[1], nets[0]);
+        m.stampStatic(+g, nets[1], nets[1]);
+
+    }
+    //current = voltage/impedance
+    void update(MNASystem & m) {
+      if(m.ticks % 441 == 0) {
+        std::cout << "Voltage: " << m.b[nets[0]].lu << "V" << std::endl;
+        std::cout << "Ampere: " << m.A[nets[1]][nets[0]].lu << "A" << std::endl;
+      }
+    }
 };
 
 // function voltage generator
@@ -438,19 +539,14 @@ struct Function : Component<2,1>
     {
         // this is identical to voltage source
         // except voltage is dynanic
-        m.stampStatic(-1, nets[0], nets[2], "-1");
-        m.stampStatic(+1, nets[1], nets[2], "+1");
+        m.stampStatic(-1, nets[0], nets[2]);
+        m.stampStatic(+1, nets[1], nets[2]);
 
-        m.stampStatic(+1, nets[2], nets[0], "+1");
-        m.stampStatic(-1, nets[2], nets[1], "-1");
+        m.stampStatic(+1, nets[2], nets[0]);
+        m.stampStatic(-1, nets[2], nets[1]);
 
-        char buf[16];
         m.b[nets[2]].gdyn.push_back(&v);
-        sprintf(buf, "Vfn:%d,%d", pinLoc[0], pinLoc[1]);
-        m.b[nets[2]].txt = buf;
 
-        sprintf(buf, "i:Vfn:%d,%d", pinLoc[0], pinLoc[1]);
-        m.nodes[nets[2]].name = buf;
         m.nodes[nets[2]].type = MNANodeInfo::tCurrent;
     }
 
@@ -466,6 +562,7 @@ struct InputSignal : Component<2,1>
 
     double  v;
     float freq;
+    double phase;
 
     InputSignal(float Hz, int l0, int l1)
     {
@@ -480,25 +577,22 @@ struct InputSignal : Component<2,1>
     {
         // this is identical to voltage source
         // except voltage is dynanic
-        m.stampStatic(-1, nets[0], nets[2], "-1");
-        m.stampStatic(+1, nets[1], nets[2], "+1");
+        m.stampStatic(-1, nets[0], nets[2]);
+        m.stampStatic(+1, nets[1], nets[2]);
 
-        m.stampStatic(+1, nets[2], nets[0], "+1");
-        m.stampStatic(-1, nets[2], nets[1], "-1");
+        m.stampStatic(+1, nets[2], nets[0]);
+        m.stampStatic(-1, nets[2], nets[1]);
 
-        char buf[16];
         m.b[nets[2]].gdyn.push_back(&v);
-        sprintf(buf, "Vfn:%d,%d", pinLoc[0], pinLoc[1]);
-        m.b[nets[2]].txt = buf;
 
-        sprintf(buf, "i:Vfn:%d,%d", pinLoc[0], pinLoc[1]);
-        m.nodes[nets[2]].name = buf;
         m.nodes[nets[2]].type = MNANodeInfo::tCurrent;
     }
 
     void update(MNASystem & m) final
     {
-        v = sin(freq*fmod(m.time, 6.283185307));
+        phase += freq / 44100.;
+        if(phase >= 1) phase = phase - 1;
+        v = (sin(phase * 2. * 3.14159265358979323846)+1.)/2.;
 
 
 
@@ -510,6 +604,7 @@ struct InputSample : Component<2,1>
 {
 
     double v;
+    double amplitude;
     int numSamples;
     AudioFile<double> audioFile;
 
@@ -517,44 +612,37 @@ struct InputSample : Component<2,1>
     {
         pinLoc[0] = l0;
         pinLoc[1] = l1;
+        amplitude = inamp;
         audioFile.load(path);
         numSamples = audioFile.getNumSamplesPerChannel();
-        v = audioFile.samples[0][0]*inamp;
+        v = 0;
     }
 
     void stamp(MNASystem & m) final
     {
         // this is identical to voltage source
         // except voltage is dynanic
-        m.stampStatic(-1, nets[0], nets[2], "-1");
-        m.stampStatic(+1, nets[1], nets[2], "+1");
+        m.stampStatic(-0.1, nets[0], nets[2]);
+        m.stampStatic(+0.1, nets[1], nets[2]);
 
-        m.stampStatic(+1, nets[2], nets[0], "+1");
-        m.stampStatic(-1, nets[2], nets[1], "-1");
+        m.stampStatic(+0.1, nets[2], nets[0]);
+        m.stampStatic(-0.1, nets[2], nets[1]);
 
-        char buf[16];
         m.b[nets[2]].gdyn.push_back(&v);
-        sprintf(buf, "Vfn:%d,%d", pinLoc[0], pinLoc[1]);
-        m.b[nets[2]].txt = buf;
 
-        sprintf(buf, "i:Vfn:%d,%d", pinLoc[0], pinLoc[1]);
-        m.nodes[nets[2]].name = buf;
         m.nodes[nets[2]].type = MNANodeInfo::tCurrent;
     }
 
     void update(MNASystem & m) final
     {
-        //v = sin(200*fmod(m.time, 6.283185307));
-        //std::cout << m.ticks << std::endl;
-        v = audioFile.samples[0][fmod(m.ticks, numSamples)]*0.08;
-        //use m.ticks voor samples lezen!
+        if(m.ticks > 0)
+          v = audioFile.samples[0][fmod(m.ticks, numSamples)]*amplitude;
 
 
 
     }
 
 };
-
 // POD-struct for PN-junction data, for diodes and BJTs
 //
 struct JunctionPN
@@ -676,29 +764,19 @@ struct Diode : Component<2, 2>
         // In practice we keep the current row since it's
         // nice to have it as an output anyway.
         //
-        m.stampStatic(-1, nets[3], nets[0], "-1");
-        m.stampStatic(+1, nets[3], nets[1], "+1");
-        m.stampStatic(+1, nets[3], nets[2], "+1");
+        m.stampStatic(-1, nets[3], nets[0]);
+        m.stampStatic(+1, nets[3], nets[1]);
+        m.stampStatic(+1, nets[3], nets[2]);
 
-        m.stampStatic(+1, nets[0], nets[3], "+1");
-        m.stampStatic(-1, nets[1], nets[3], "-1");
-        m.stampStatic(-1, nets[2], nets[3], "-1");
+        m.stampStatic(+1, nets[0], nets[3]);
+        m.stampStatic(-1, nets[1], nets[3]);
+        m.stampStatic(-1, nets[2], nets[3]);
 
-        m.stampStatic(rs, nets[3], nets[3], "rs:pn");
+        m.stampStatic(rs, nets[3], nets[3]);
 
         m.A[nets[2]][nets[2]].gdyn.push_back(&pn.geq);
-        m.A[nets[2]][nets[2]].txt = "gm:D";
         m.b[nets[2]].gdyn.push_back(&pn.ieq);
 
-        char buf[16];
-        sprintf(buf, "i0:D:%d,%d", pinLoc[0], pinLoc[1]);
-        m.b[nets[2]].txt = buf;
-
-        sprintf(buf, "v:D:%d,%d", pinLoc[0], pinLoc[1]);
-        m.nodes[nets[2]].name = buf;
-
-        sprintf(buf, "i:D:%d,%d", pinLoc[0], pinLoc[1]);
-        m.nodes[nets[3]].name = buf;
         m.nodes[nets[3]].type = MNANodeInfo::tCurrent;
 
     }
@@ -790,84 +868,212 @@ struct BJT : Component<3, 4>
         //
 
         // diode currents to external base
-        m.stampStatic(1-ar, nets[0], nets[5], "1-ar");
-        m.stampStatic(1-af, nets[0], nets[6], "1-af");
+        m.stampStatic(1-ar, nets[0], nets[5]);
+        m.stampStatic(1-af, nets[0], nets[6]);
 
         // diode currents to external collector and emitter
-        m.stampStatic(-1, nets[1], nets[5], "-1");
-        m.stampStatic(-1, nets[2], nets[6], "-1");
+        m.stampStatic(-1, nets[1], nets[5]);
+        m.stampStatic(-1, nets[2], nets[6]);
 
         // series resistances
-        m.stampStatic(rsbc, nets[5], nets[5], "rsbc");
-        m.stampStatic(rsbe, nets[6], nets[6], "rsbe");
+        m.stampStatic(rsbc, nets[5], nets[5]);
+        m.stampStatic(rsbe, nets[6], nets[6]);
 
         // current - junction connections
         // for the PNP case we flip the signs of these
         // to flip the diode junctions wrt. the above
         if(pnp)
         {
-            m.stampStatic(-1, nets[5], nets[3], "-1");
-            m.stampStatic(+1, nets[3], nets[5], "+1");
+            m.stampStatic(-1, nets[5], nets[3]);
+            m.stampStatic(+1, nets[3], nets[5]);
 
-            m.stampStatic(-1, nets[6], nets[4], "-1");
-            m.stampStatic(+1, nets[4], nets[6], "+1");
+            m.stampStatic(-1, nets[6], nets[4]);
+            m.stampStatic(+1, nets[4], nets[6]);
 
         }
         else
         {
-            m.stampStatic(+1, nets[5], nets[3], "+1");
-            m.stampStatic(-1, nets[3], nets[5], "-1");
+            m.stampStatic(+1, nets[5], nets[3]);
+            m.stampStatic(-1, nets[3], nets[5]);
 
-            m.stampStatic(+1, nets[6], nets[4], "+1");
-            m.stampStatic(-1, nets[4], nets[6], "-1");
+            m.stampStatic(+1, nets[6], nets[4]);
+            m.stampStatic(-1, nets[4], nets[6]);
         }
 
         // external voltages to collector current
-        m.stampStatic(-1, nets[5], nets[0], "-1");
-        m.stampStatic(+1, nets[5], nets[1], "+1");
+        m.stampStatic(-1, nets[5], nets[0]);
+        m.stampStatic(+1, nets[5], nets[1]);
 
         // external voltages to emitter current
-        m.stampStatic(-1, nets[6], nets[0], "-1");
-        m.stampStatic(+1, nets[6], nets[2], "+1");
+        m.stampStatic(-1, nets[6], nets[0]);
+        m.stampStatic(+1, nets[6], nets[2]);
 
         // source transfer currents to external pins
-        m.stampStatic(+ar, nets[2], nets[5], "+ar");
-        m.stampStatic(+af, nets[1], nets[6], "+af");
+        m.stampStatic(+ar, nets[2], nets[5]);
+        m.stampStatic(+af, nets[1], nets[6]);
 
-        char buf[16];
+
 
         // dynamic variables
         m.A[nets[3]][nets[3]].gdyn.push_back(&pnC.geq);
-        m.A[nets[3]][nets[3]].txt = "gm:Qbc";
         m.b[nets[3]].gdyn.push_back(&pnC.ieq);
-        sprintf(buf, "i0:Q:%d,%d,%d:cb", pinLoc[0], pinLoc[1], pinLoc[2]);
-        m.b[nets[3]].txt = buf;
 
         m.A[nets[4]][nets[4]].gdyn.push_back(&pnE.geq);
-        m.A[nets[4]][nets[4]].txt = "gm:Qbe";
         m.b[nets[4]].gdyn.push_back(&pnE.ieq);
-        sprintf(buf, "i0:Q:%d,%d,%d:eb", pinLoc[0], pinLoc[1], pinLoc[2]);
-        m.b[nets[4]].txt = buf;
 
-        sprintf(buf, "v:Q:%d,%d,%d:%s",
-            pinLoc[0], pinLoc[1], pinLoc[2], pnp ? "cb" : "bc");
-        m.nodes[nets[3]].name = buf;
 
-        sprintf(buf, "v:Q:%d,%d,%d:%s",
-            pinLoc[0], pinLoc[1], pinLoc[2], pnp ? "eb" : "be");
-        m.nodes[nets[4]].name = buf;
 
-        sprintf(buf, "i:Q:%d,%d,%d:bc", pinLoc[0], pinLoc[1], pinLoc[2]);
-        m.nodes[nets[5]].name = buf;
         m.nodes[nets[5]].type = MNANodeInfo::tCurrent;
         m.nodes[nets[5]].scale = 1 - ar;
 
-        sprintf(buf, "i:Q:%d,%d,%d:be", pinLoc[0], pinLoc[1], pinLoc[2]);
-        m.nodes[nets[6]].name = buf;
+
         m.nodes[nets[6]].type = MNANodeInfo::tCurrent;
         m.nodes[nets[6]].scale = 1 - af;
     }
 };
+
+struct OPA : Component<5, 6>
+{
+    // diode clamps
+    JunctionPN  pnPP, pnNN;
+
+    double g;
+
+    // pins: out, in+, in-, supply+, supply-
+    OPA(int vOut, int vInP, int vInN, int vPP, int vNN)
+    {
+        pinLoc[0] = vOut;
+        pinLoc[1] = vInP;
+        pinLoc[2] = vInN;
+        pinLoc[3] = vPP;
+        pinLoc[4] = vNN;
+
+        // the DC voltage gain
+        g = 10e3;
+
+        // any sort of reasonable diode will do
+        double is = 6.734e-15;
+        double n = 1.24;
+        initJunctionPN(pnPP, is, n);
+        initJunctionPN(pnNN, is, n);
+
+        linearizeJunctionPN(pnPP, 0);
+        linearizeJunctionPN(pnNN, 0);
+    }
+
+    bool newton(MNASystem & m)
+    {
+        return newtonJunctionPN(pnPP, m.b[nets[5]].lu)
+            & newtonJunctionPN(pnNN, m.b[nets[6]].lu);
+    }
+
+    void stamp(MNASystem & m)
+    {
+        // What we want here is a high-gain VCVS where
+        // we then bypass to rails if we get too close.
+        //
+        // Here it's important not to have series resistance
+        // for thee diodes, otherwise we can still exceed rails.
+        //
+        // NOTE: the following ignores supply currents
+        //
+        //      0   1   2   3  4   5   6   7   8    9
+        //    vout in+ in- V+ V- vd+ vd- id+ id- iout
+        // 0 |  .   .   .   .  .   .   .  +1  -1   +1 | vout
+        // 1 |  .   .   .   .  .   .   .   .   .    . | in+
+        // 2 |  .   .   .   .  .   .   .   .   .    . | in-
+        // 3 |  .   .   .   .  .   .   .   .   .    . | v+
+        // 4 |  .   .   .   .  .   .   .   .   .    . | v-
+        // 5 |  .   .   .   .  . gpp   .  -1   .    . | vd+  = i0pp
+        // 6 |  .   .   .   .  .   . gnn   .  -1    . | vd-  = i0nn
+        // 7 | -1   .   .  +1  .  +1   .  ~0   .    . | id+  = +1.5
+        // 8 | +1   .   .   . -1   .  +1   .  ~0    . | id-  = +1.5
+        // 9 | -1  +g  -g   .  .   .   .   .   .   ro | iout
+        //
+        // We then add one useless extra row just to add
+        // the currents together, so one can plot the real
+        // current that actually get pushed into vOut
+
+        // output currents
+        m.stampStatic(+1, nets[0], nets[7]);
+        m.stampStatic(-1, nets[0], nets[8]);
+        m.stampStatic(+1, nets[0], nets[9]);
+
+        // output feedback
+        m.stampStatic(-1, nets[7], nets[0]);
+        m.stampStatic(+1, nets[8], nets[0]);
+        m.stampStatic(-1, nets[9], nets[0]);
+
+        // voltage input
+        m.stampStatic(+g, nets[9], nets[1]);
+        m.stampStatic(-g, nets[9], nets[2]);
+
+        // supply voltages
+        m.stampStatic(+1, nets[7], nets[3]);
+        m.stampStatic(-1, nets[8], nets[4]);
+
+        // voltage drops from the supply, should be slightly
+        // more than the drop voltage drop across the diodes
+        m.b[nets[7]].g += 1.5;
+        m.b[nets[8]].g += 1.5;
+
+        // diode voltages to currents
+        m.stampStatic(+1, nets[7], nets[5]);
+        m.stampStatic(-1, nets[5], nets[7]);
+
+        m.stampStatic(+1, nets[8], nets[6]);
+        m.stampStatic(-1, nets[6], nets[8]);
+
+        double ro = 10;
+
+        // the series resistance for the diode clamps
+        // needs to be small to handle the high gain,
+        // but still use something just slightly non-zero
+        double rs = gMin;
+
+        // series resistances for diodes
+        // allow "gmin" just for pivoting?
+        m.stampStatic(rs, nets[7], nets[7]);
+        m.stampStatic(rs, nets[8], nets[8]);
+
+        // series output resistance
+        m.stampStatic(ro, nets[9], nets[9]);
+
+        // Finally (not show above) put a resistor between
+        // the input pins.. this could be more as well.
+        double ri = 50e6;
+
+        // TODO: RECONSTRUEER DEZE CODE
+        m.stampConductor(1. / ri, nets[1], nets[2]);
+
+        // junctions
+        m.A[nets[5]][nets[5]].gdyn.push_back(&pnPP.geq);
+        m.A[nets[6]][nets[6]].gdyn.push_back(&pnNN.geq);
+
+        m.b[nets[5]].gdyn.push_back(&pnPP.ieq);
+        m.b[nets[6]].gdyn.push_back(&pnNN.ieq);
+
+
+        m.nodes[nets[7]].type = MNANodeInfo::tCurrent;
+
+
+        m.nodes[nets[8]].type = MNANodeInfo::tCurrent;
+
+
+        m.nodes[nets[9]].type = MNANodeInfo::tCurrent;
+
+        // this is useless as far as simulation goes
+        // it's just for getting a nice current value
+        m.stampStatic(+1, nets[10], nets[7]);
+        m.stampStatic(-1, nets[10], nets[8]);
+        m.stampStatic(+1, nets[10], nets[9]);
+        m.stampStatic(+1, nets[10], nets[10]);
+
+
+        m.nodes[nets[10]].type = MNANodeInfo::tCurrent;
+    }
+};
+
 
 
 struct NetList
@@ -894,48 +1100,10 @@ struct NetList
             components[i]->stamp(system);
         }
         printf("Prepare for DC analysis..\n");
-        setStepScale(0);
-        tStep = 0;
+        setStepScale((double)1/44100);
+        tStep = (double)1/44100;
     }
 
-    void dumpMatrix()
-    {
-        std::vector<int> maxWidth(nets);
-
-        for(int i = 0; i < nets; ++i) maxWidth[i] = 1;
-        int nnMax = 1;
-
-        for(int i = 0; i < nets; ++i)
-        {
-            nnMax = std::max(nnMax, (int)system.nodes[i].name.size());
-            for(int j = 0; j < nets; ++j)
-            {
-                maxWidth[j] = std::max(maxWidth[j],
-                    (int)system.A[i][j].txt.size());
-            }
-        }
-
-
-        char buf[1024];
-        for(unsigned i = 0; i < nets; ++i)
-        {
-            int off = sprintf(buf, "%2d: | ", i);
-            for(int j = 0; j < nets; ++j)
-            {
-                off += sprintf(buf+off,
-                    " %*s ", maxWidth[j],
-                    system.A[i][j].txt.size()
-                    ? system.A[i][j].txt.c_str()
-                    : ((system.A[i][j].lu==0) ? "." : "#"));
-            }
-            sprintf(buf+off, " | %-*s = %s",
-                nnMax, system.nodes[i].name.c_str(),
-                system.b[i].txt.size()
-                ? system.b[i].txt.c_str() : (!i ? "ground" : "0"));
-
-            puts(buf);
-        }
-    }
 
     void setTimeStep(double tStepSize)
     {
@@ -946,8 +1114,21 @@ struct NetList
 
         tStep = tStepSize;
         double stepScale = 1. / tStep;
+        startOffset = -3 * stepScale;
+        std::cout << startOffset << std::endl;
+        system.ticks = startOffset;
         printf("timeStep changed to %.2g (%.2g Hz)\n", tStep, stepScale);
         setStepScale(stepScale);
+    }
+
+    double getOutput() {
+      double incremental = 0;
+      for(int i = 0; i < components.size(); ++i)
+      {
+            incremental += components[i]->getOutput(system);
+      }
+      return incremental;
+
     }
 
     void simulateTick()
@@ -983,21 +1164,11 @@ struct NetList
         //    iter, 100 * fillPost / ((nets-1.f)*(nets-1.f)));
     }
 
-    void printHeaders()
-    {
-        printf("\n  time: |  ");
-        for(int i = 1; i < nets; ++i)
-        {
-            printf("%16s", system.nodes[i].name.c_str());
-        }
-        printf("\n\n");
-    }
-
     // plotting and such would want to use this
     const MNASystem & getMNA() { return system; }
 
 protected:
-    double  tStep;
+    double  tStep = (double)1/44100;
 
     int nets, states;
     ComponentList   components;
@@ -1095,6 +1266,8 @@ protected:
             if(0 == system.A[p][p].lu)
             {
                 printf("Failed to find a pivot!!");
+                printf("ERROR: Invalid circuit");
+                throw;
                 return;
             }
 
@@ -1156,10 +1329,3 @@ protected:
         return 1;
     }
 };
-
-
-double fnGen(double t)
-{
-    if(t < 0.0001) return 0;
-    return (fmod(2000*t, 1) > (.5+.4*sin(2*acos(-1)*100*t))) ? .25 : -.25;
-}
