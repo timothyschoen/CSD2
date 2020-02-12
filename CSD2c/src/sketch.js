@@ -133,7 +133,6 @@ function setup() {
   // Limit framerate for improved performance (maybe set is lower though?)
   frameRate(50);
 
-  // Default patch (we always need a ground, input and output anyways)
   createCanvas(windowWidth, windowHeight);
 
   // Initialize the sidebar (from sidebar.js)
@@ -338,7 +337,7 @@ function startHalite(realtime) {
 
   if(realtime && !realtime_playing && sbar.getJackStatus()) {
     haliteappendix = ['-r'];
-    realtimeplay.style("color:red;");
+    buttons[1].style("color:red;");
   }
   else if (!realtime) {
       // If we are not running in realtime, get a path to save the wav/aif file
@@ -364,7 +363,7 @@ function startHalite(realtime) {
     });
 
     halite.on('close', function (code) {
-        realtimeplay.style("color:white;");
+        buttons[1].style("color:white;");
         console.log('Halite closed with code ' + code);
         realtime_playing = false;
     });
@@ -373,7 +372,7 @@ function startHalite(realtime) {
 
   }
   else if (realtime_playing) {
-    realtimeplay.style("color:white;");
+    buttons[1].style("color:white;");
     // hacky... but it works for now
     halite.kill('SIGINT')
     realtime_playing = false;

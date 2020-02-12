@@ -115,7 +115,8 @@ struct MNASystem
     std::vector<MNANodeInfo>    nodes;
 
     MNAMatrix   A; // Standard A matrix
-    MNAVector   b; // Since this is a vector, this could be the X or Z matrix, or a combination??
+    MNAVector   b; // This is likely the Z matrix since that contains our known values
+                  //  Wikipedia: "When solving systems of equations, b is usually treated as a vector with a length equal to the height of matrix A"
 
     double      time;
     long      ticks;
@@ -482,7 +483,7 @@ struct Probe : Component<2, 1>
     double getOutput(MNASystem & m) {
       //std::cout << m.A[0][2].lu;   // -> is altijd 0!!!! zoek uit wat dit is!!
       //return m.A[0][1].lu;
-      return m.b[nets[2]].lu; // * m.nodes[2].scale? Betrek current hierin!!!
+      return m.b[nets[2]].lu * m.nodes[nets[2]].scale; //? Betrek current hierin!!!
       // m.A[2].lu = conductance in Siemens
       // m.A[2].lu (siemens) * m.b[2].lu (voltage) = Current
       //
@@ -512,9 +513,12 @@ struct Printer : Component<2>
     }
     //current = voltage/impedance
     void update(MNASystem & m) {
-      if(m.ticks % 441 == 0) {
+      if(m.ticks % 4410 == 0) {
         std::cout << "Voltage: " << m.b[nets[0]].lu << "V" << std::endl;
-        std::cout << "Ampere: " << m.A[nets[1]][nets[0]].lu << "A" << std::endl;
+        std::cout << "Ampere: " << m.A[nets[0]][nets[1]].prelu << "A" << std::endl;
+        //prelu waardes zijn altijd 1... m.A.lu is altijd 0 of 1
+        // Overweeg dat de LU solution een vector zou moeten zijn (met voltage en current)
+        // Waarom is lu hier een int en geen vector? Systems zijn wel matrices en vectors, maar zijn onopgelost...
       }
     }
 };
@@ -1311,9 +1315,6 @@ protected:
     }
 
     // solves nodes backwards from limit-1
-    // if solveAll is true, solves all the nodes
-    // otherwise if solveNoIter is true, solves until !wantUpdate
-    // if both flags are false, solves until !wantIter
     int luSolve()
     {
         for(int r = nets; --r;)
