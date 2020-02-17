@@ -9,6 +9,8 @@ let boxesprox = []; // Where we store our components
 let connectionsprox = []; // Where we store our connections
 let connecting = -1; // Is any inlet currently in the connecting state?
 
+
+
 var arrayChangeHandler = {
   get: function(target, property) {
   // property is index in this case
@@ -16,9 +18,10 @@ var arrayChangeHandler = {
 },
   set: function(target, property, value, receiver) {
     target[property] = value;
-    console.log(value, property)
     if (property == 'length' && !initializing) {
-     changed();
+      // disabeled for now because it's too glitchy
+     //changed();
+
    }
     // you have to return true to accept the changes
     return true;
@@ -59,20 +62,56 @@ let initializing = true;
 let types = {
   // Halite standard components
   'resistor': {'inlets': 1, 'outlets': 1, 'colors': ['#229FD7', '#229FD7'], 'args': 1, 'code': " resistor, a0, i0, i1"},
-  'varres': {'inlets': 2, 'outlets': 1, 'colors': ['#229FD7', '#229FD7'], 'args': 1, 'code': " varres, a0, i0, i2, i1"},
   'ground': {'inlets': 1, 'outlets': 0, 'args': 0, 'colors': ['#000000'], 'code': ""},
   'voltage': {'inlets': 0, 'outlets': 2, 'args': 1, 'colors': ['#ff0000', '#000000'], 'code': " voltage, a0, i0, i1"},
   'capacitor': {'inlets': 1, 'outlets': 1, 'args': 1, 'colors': ['#229FD7', '#229FD7'], 'code': " capacitor, a0, i0, i1"},
   'diode': {'inlets': 1, 'outlets': 1, 'args': 0, 'colors': ['#ff0000', '#229FD7'], 'code': " diode, i0, i1"},
-  'comment': {'inlets': 0, 'outlets': 0, 'args': 1, 'colors': [], 'code': ""},
   'bjt': {'inlets': 1, 'outlets': 2, 'args': 1, 'colors': ['#ff0000', '#000000', '#229FD7'], 'code': " bjt, i0, i1, i2, a0"},
   'op-amp': {'inlets': 4, 'outlets': 1, 'args': 0, 'colors': ['#229FD7', '#000000', '#ff0000', '#000000', '#229FD7'], 'code': " opa, i4, i0, i1, i2, i3"},
-  // Our Components
+
+  // Our analog Components
+  'varres': {'inlets': 2, 'outlets': 1, 'datatypes': ['analog', 'digital', 'analog'], 'colors': ['#229FD7', '#229FD7'], 'args': 1, 'code': " varres, a0, i0, i1, d1"},
+  'pot': {'inlets': 2, 'outlets': 2, 'args': 1, 'colors': ['#ff0000', '#229FD7', '#000000', '#000000'], 'code': " potentiometer, a0, i0, i2, i3, i1"},
   'cycle': {'inlets': 0, 'outlets': 2, 'args': 1, 'colors': ['#ff0000', '#000000'], 'code': " cycle, a0, i0, i1"},
   'input': {'inlets': 0, 'outlets': 2, 'args': 2, 'colors': ['#ff0000', '#000000'], 'code': " input, a0, a1, i0, i1"},
   'output': {'inlets': 2, 'outlets': 0, 'args': 1, 'colors': ['#229FD7'], 'code': " probe, i0, i1, a0"},
-  'pot': {'inlets': 2, 'outlets': 2, 'args': 1, 'colors': ['#ff0000', '#229FD7', '#000000', '#000000'], 'code': " potentiometer, a0, i0, i2, i3, i1"},
-  'print': {'inlets': 1, 'outlets': 1, 'colors': ['#229FD7', '#229FD7'], 'args': 0, 'code': " print, i0, i1"}
+  'print': {'inlets': 1, 'outlets': 1, 'colors': ['#229FD7', '#229FD7'], 'args': 0, 'code': " print, i0, i1"},
+  'delay': {'inlets': 2, 'outlets': 1, 'datatypes': ['analog', 'digital', 'analog'], 'colors': ['#229FD7', '#229FD7'], 'args': 2, 'code': " delay, a0, a1, i0, d1, i2"},
+
+  // conversion objects
+  'dac': {'inlets': 1, 'outlets': 2, 'datatypes': ['digital', 'analog', 'analog'], 'colors': ['#229FD7', '#229FD7'], 'args': 0, 'code': " dac, d0, i1, i2"},
+  'adc': {'inlets': 2, 'outlets': 1, 'datatypes': ['analog', 'analog', 'digital'], 'colors': ['#229FD7', '#229FD7'], 'args': 0, 'code': " adc, i0, i1, d2"},
+
+  // digital objects
+  // I/O
+  'input-': {'inlets': 0, 'outlets': 1, 'datatypes': ['digital', 'digital'], 'args': 2, 'colors': ['#ff0000', '#000000'], 'code': " input-, a0, a1, d0"},
+  'stinput-': {'inlets': 0, 'outlets': 2, 'datatypes': ['digital', 'digital'], 'args': 2, 'colors': ['#ff0000', '#000000'], 'code': " stinput-, a0, a1, d0, d1"},
+  'output-': {'inlets': 2, 'outlets': 0, 'datatypes': ['digital', 'digital'], 'args': 1, 'colors': ['#229FD7'], 'code': " output-, a0 , d0, d1"},
+  // Signal generation
+  'cycle-': {'inlets': 1, 'outlets': 1, 'datatypes': ['digital', 'digital'], 'colors': ['#229FD7', '#229FD7'], 'args': 1, 'code': " cycle-, a0, d0, d1"},
+  'sig-': {'inlets': 0, 'outlets': 1, 'datatypes': ['digital', 'digital'], 'colors': ['#229FD7', '#229FD7'], 'args': 1, 'code': " sig-, a0, d0"},
+
+  // Delay
+  'delay-': {'inlets': 2, 'outlets': 1, 'datatypes': ['digital', 'digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 0, 'code': " digidelay, d0, d1, d2"},
+
+  // arithmetics
+  '+-': {'inlets': 2, 'outlets': 1, 'datatypes': ['digital', 'digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 0, 'code': " +-, d0, d1, d2"},
+  '--': {'inlets': 2, 'outlets': 1, 'datatypes': ['digital', 'digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 0, 'code': " --, d0, d1, d2"},
+  '!--': {'inlets': 2, 'outlets': 1, 'datatypes': ['digital', 'digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 0, 'code': " !--, d0, d1, d2"},
+  '*-': {'inlets': 2, 'outlets': 1, 'datatypes': ['digital', 'digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 0, 'code': " *-, d0, d1, d2"},
+  '/-': {'inlets': 2, 'outlets': 1, 'datatypes': ['digital', 'digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 0, 'code': " /-, d0, d1, d2"},
+  '!/-': {'inlets': 2, 'outlets': 1, 'datatypes': ['digital', 'digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 0, 'code': " !/-, d0, d1, d2"},
+  '>-': {'inlets': 2, 'outlets': 1, 'datatypes': ['digital', 'digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 0, 'code': " >-, d0, d1, d2"},
+  '<-': {'inlets': 2, 'outlets': 1, 'datatypes': ['digital', 'digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 0, 'code': " <-, d0, d1, d2"},
+  '>=-': {'inlets': 2, 'outlets': 1, 'datatypes': ['digital', 'digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 0, 'code': " >=-, d0, d1, d2"},
+  '<=-': {'inlets': 2, 'outlets': 1, 'datatypes': ['digital', 'digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 0, 'code': " <=-, d0, d1, d2"},
+  '==-': {'inlets': 2, 'outlets': 1, 'datatypes': ['digital', 'digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 0, 'code': " ==-, d0, d1, d2"},
+  '!=-': {'inlets': 2, 'outlets': 1, 'datatypes': ['digital', 'digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 0, 'code': " !=-, d0, d1, d2"},
+  '%-': {'inlets': 2, 'outlets': 1, 'datatypes': ['digital', 'digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 0, 'code': " %, d0, d1, d2"},
+  '!%-': {'inlets': 2, 'outlets': 1, 'datatypes': ['digital', 'digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 0, 'code': " !%, d0, d1, d2"},
+
+  // Components from Gen
+  'phasor-': {'inlets': 2, 'outlets': 1, 'datatypes': ['digital', 'digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 0, 'code': " phasor, d0, d1, d2"},
 
 }
 
@@ -252,11 +291,18 @@ if(connecting != -1) {
 // I wrote this at 4:00 at night, no idea why it works, afraid to touch it tbh
 function precompile(save = 1) {
     let iterconnections = [];
+    let digitalconns = [];
     let iterboxes = [];
     let nodes = [];
     for(let i = 0; i < connections.length; i++) {
-      let lets = connections[i].getinlets();
-      iterconnections.push([[lets[0][0], lets[1][0]], [lets[0][1], lets[1][1]]]);
+      if(connections[i].gettype() != 'digital') {
+        let lets = connections[i].getinlets();
+        iterconnections.push([[lets[0][0], lets[1][0]], [lets[0][1], lets[1][1]]]);
+      }
+      else {
+        let lets = connections[i].getinlets();
+        digitalconns.push([[lets[0][0], lets[1][0]], [lets[0][1], lets[1][1]]]);
+      }
     }
 
 
@@ -298,7 +344,8 @@ function precompile(save = 1) {
         nodes.splice(x, 1);
       }
   }
-
+  let digitalconnections = 0;
+  let digiExists = [[0, 0]];
   for(let i = 0; i < boxes.length; i++) {
     let boxtype = boxes[i].gettype();
     let boxargs = boxes[i].getargs();
@@ -309,10 +356,38 @@ function precompile(save = 1) {
       for(var y=0; y<nodes.length; y++) {
              if( JSON.stringify(nodes[y]).includes(target)) break;
           }
-          if(y >= nodes.length) {
-              y = 0;
-          }
-      itercode = itercode.replace("i"+x, y)
+
+
+        if(y >= nodes.length) {
+          if(types[boxtype]["datatypes"] != undefined &&  types[boxtype]["datatypes"][x] == 'digital') {
+            // this is where shit gets messy
+            // seems to work tho -- wait nope
+            for (var d = 0; d < digitalconns.length; d++) {
+              if(JSON.stringify(digitalconns[d]).includes(target)) {
+                for (var ex = 0; ex < digiExists.length; ex++) {
+                  //console.log('length: ', digiExists.length, 'index: ', ex, 'array: ', digiExists[ex] == undefined);
+                  if(digiExists[ex] != undefined && (JSON.stringify(digiExists[ex]).includes(JSON.stringify(digitalconns[d][0])) || JSON.stringify(digiExists[ex]).includes(JSON.stringify(digitalconns[d][1])))) {
+                    digiExists[ex].push(digitalconns[d][0])
+                    digiExists[ex].push(digitalconns[d][1])
+                    itercode = itercode.replace("d"+x, ex+nodes.length);
+                  }
+                  else {
+                    itercode = itercode.replace("d"+x, d+nodes.length);
+                    digiExists[d] = digitalconns[d];
+                  }
+                }
+
+
+            }
+
+        }
+      }
+
+          y = 0;
+        }
+            itercode = itercode.replace("i"+x, y)
+
+
     }
     for(let x = 0; x < boxargs.length; x++) {
     itercode = itercode.replace("a"+x, boxargs[x])
@@ -400,7 +475,8 @@ function generatesave(save, path) {
   }
   let conns = [];
   for (let i = 0; i < connections.length; i++) {
-    conns.push(connections[i].getinlets())
+    let formattedconn = connections[i].getinlets().concat(connections[i].gettype());
+    conns.push(formattedconn);
   }
   let savefile = [boxnames, conns];
   if(save) {
@@ -420,10 +496,10 @@ function openSavedFile(path) {
       boxes[input[0][i][0]] = new Component(input[0][i][1],input[0][i][2][0], input[0][i][2][1]);
     }
     for (let i = 0; i < input[1].length; i++) {
-      connections.push(new Connection([boxes[input[1][i][0][0]], input[1][i][1][0]], [boxes[input[1][i][0][1]], input[1][i][1][1]]));
+      connections.push(new Connection([boxes[input[1][i][0][0]], input[1][i][1][0]], [boxes[input[1][i][0][1]], input[1][i][1][1]], input[1][i][2]));
     }
 } catch(err) {
-  console.log(err);
+  console.warn(err);
     for(let i = 0; i<3; i++) {
       boxes[i] = new Component(preset[i], (windowWidth/2)+((i-1)*100), windowHeight/2-250+((3-i)*100));
     }
@@ -512,12 +588,12 @@ function windowResized() {
 function changed() {
   if (!initializing) {
 
-  console.log(history.length)
+  //console.log(history.length)
   //history.splice(histpos, history.length-histpos)
   history[histpos] = generatesave(0);
   histpos++;
-  console.log(history.length)
-  console.log('histpos', histpos)
+  //console.log(history.length)
+  //console.log('histpos', histpos)
   //precompile(0);
 }
 }
@@ -525,7 +601,7 @@ function changed() {
 
 
 function unredo(step) {
-  console.log('histpos', histpos)
+  //console.log('histpos', histpos)
   histpos = histpos-2;
   histpos = histpos*(histpos>=0);
   let input = history[histpos];
@@ -534,7 +610,7 @@ function unredo(step) {
   for (var i = boxes.length-1; i >= 0; i--) {
     boxes[i].delete();
   }
-  console.log(history);
+  //console.log(history);
   //connections = new Proxy( connectionsprox, arrayChangeHandler );
   //boxes = new Proxy( boxesprox, arrayChangeHandler );
   for (let i = 0; i < input[0].length; i++) {
@@ -544,7 +620,6 @@ function unredo(step) {
     connections.push(new Connection([boxes[input[1][i][0][0]], input[1][i][1][0]], [boxes[input[1][i][0][1]], input[1][i][1][1]]));
   }
   initializing = false;
-    console.log('check2')
 }
 
 

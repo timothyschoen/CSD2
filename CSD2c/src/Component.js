@@ -219,10 +219,14 @@ function Component(name, xin = mouseX,  yin = mouseY-100) {
     inlets = [];
 
     for(let i = 0; i < int(types[type]['inlets']); i++) {
-      inlets.push(new Inlet(x+15+(10*i), y+17, [this, i], 'inlet', types[type]['colors'][i]));
+      let datatype = 'analog';
+      if(types[type]['datatypes'] !== undefined) { datatype = types[type]['datatypes'][i]}
+      inlets.push(new Inlet(x+15+(10*i), y+17, [this, i], 'inlet', datatype, types[type]['colors'][i]));
     }
     for(let i = 0; i < int(types[type]['outlets']); i++) {
-      inlets.push(new Inlet(x+15+(10*i), y+36, [this, types[type]['inlets']+i], 'outlet', types[type]['colors'][i+types[type]['inlets']]));
+      let datatype = 'analog';
+      if(types[type]['datatypes'] !== undefined) { datatype = types[type]['datatypes'][i+types[type]['inlets']]}
+      inlets.push(new Inlet(x+15+(10*i), y+36, [this, types[type]['inlets']+i], 'outlet', datatype, types[type]['colors'][i+types[type]['inlets']]));
     }
   }
 

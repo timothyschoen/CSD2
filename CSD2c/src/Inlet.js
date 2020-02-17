@@ -1,9 +1,10 @@
 // Object for individual inlets
 // Also manages the creation of connections
-function Inlet(x, y, instance, type, color = '#229FD7') {
+function Inlet(x, y, instance, type, datatype, color = '#229FD7') {
   //make this public
   this.x = x;
   this.y = y
+
 
   // This is the actual inlet
   let inletbutton = createButton("");
@@ -22,6 +23,10 @@ function Inlet(x, y, instance, type, color = '#229FD7') {
       return type;
   }
 
+  this.getdatatype = function() {
+      return datatype;
+  }
+
   this.getposition = function() {
     return [this.x-4, this.y-16];
   }
@@ -35,7 +40,6 @@ function Inlet(x, y, instance, type, color = '#229FD7') {
     inletbutton.hide();
   }
 }
-
   // Delete inlet
   this.remove = function() {
     inletbutton.remove();
@@ -46,8 +50,12 @@ function Inlet(x, y, instance, type, color = '#229FD7') {
       connecting = instance;
     }
     else {
-      if(connecting[0] != instance[0]) {
-        connections.push(new Connection([instance[0] ,instance[1]], [connecting[0] ,connecting[1]]))
+      let sametype = instance[0].getinlets()[instance[1]].getdatatype() == connecting[0].getinlets()[connecting[1]].getdatatype();
+      if(connecting[0] != instance[0] && sametype) {
+        connections.push(new Connection([instance[0] ,instance[1]], [connecting[0] ,connecting[1]], datatype))
+      }
+      else if(!sametype) {
+        console.warn("Cannot connect a digital inlet to an analog inlet!!");
       }
       connecting = -1;
     }
@@ -55,7 +63,8 @@ function Inlet(x, y, instance, type, color = '#229FD7') {
 }
 
 // Object for connections
-function Connection(start, end) {
+function Connection(start, end, datatype = 'analog') { // Optional argument 'datatype' provides legacy support for all the patches we made before adding digital signals
+
 
   // Getters and setters
   this.getconnection = function () {
@@ -67,6 +76,10 @@ function Connection(start, end) {
 
   this.remove = function() {
     connections.splice(connections.indexOf(this), 1);
+  }
+
+  this.gettype = function() {
+    return datatype;
   }
 
   // Draw the line
@@ -81,6 +94,8 @@ function Connection(start, end) {
     let line2x = inlet2[0];
     let line2y = inlet2[1];
 
+
+
     // Distance of mouse to line, so we can highlight it when our mouse is close
     if (pDistance(mouseX, mouseY, line1x, line1y, line2x, line2y) < 10) {
       stroke("#229FD7"); // set selected color
@@ -92,7 +107,12 @@ function Connection(start, end) {
     }
   }
     else {
-      stroke(65);
+      if(datatype == 'analog') {
+        stroke(0);
+      }
+      else {
+        stroke(100);
+      }
     }
     // Draw it!
     line(line1x, line1y , line2x,line2y);

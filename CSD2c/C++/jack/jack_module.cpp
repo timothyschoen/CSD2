@@ -14,7 +14,7 @@
 
 // prototypes & globals
 static void jack_shutdown(void *);
-static jack_port_t *input_port,*output_port;
+static jack_port_t *input_port,*output_port_r, *output_port_l;
 
 
 JackModule::JackModule()
@@ -53,8 +53,10 @@ int JackModule::init(std::string clientName)
   jack_set_process_callback(client,_wrap_jack_process_cb,this);
 
   //Create an output and input port for the client.
-  output_port =
-    jack_port_register(client,"output",JACK_DEFAULT_AUDIO_TYPE,JackPortIsOutput,0);
+  output_port_r =
+    jack_port_register(client,"output_r",JACK_DEFAULT_AUDIO_TYPE,JackPortIsOutput,0);
+  output_port_l =
+    jack_port_register(client,"output_l",JACK_DEFAULT_AUDIO_TYPE,JackPortIsOutput,0);
   input_port =
     jack_port_register(client,"input",JACK_DEFAULT_AUDIO_TYPE,JackPortIsInput,0);
 
@@ -97,12 +99,12 @@ void JackModule::autoConnect()
     exit(1);
   }
 
-  if(jack_connect(client,jack_port_name(output_port),ports[0]))
+  if(jack_connect(client,jack_port_name(output_port_r),ports[0]))
   {
     std::cout << "Cannot connect output ports" << std::endl;
   }
 
-  if(jack_connect(client,jack_port_name(output_port),ports[1]))
+  if(jack_connect(client,jack_port_name(output_port_l),ports[1]))
   {
     std::cout << "Cannot connect output ports" << std::endl;
   }
@@ -131,7 +133,8 @@ void JackModule::end()
 {
   jack_deactivate(client);
   jack_port_disconnect(client,input_port);
-  jack_port_disconnect(client,output_port);
+  jack_port_disconnect(client,output_port_r);
+  jack_port_disconnect(client,output_port_l);
 } // end()
 
 
@@ -140,9 +143,10 @@ int JackModule::_wrap_jack_process_cb(jack_nframes_t nframes,void *arg)
 {
   // retrieve in and out buffers
   jack_default_audio_sample_t *inBuf = (jack_default_audio_sample_t *)jack_port_get_buffer(input_port,nframes);
-  jack_default_audio_sample_t *outBuf = (jack_default_audio_sample_t *)jack_port_get_buffer(output_port,nframes);
+  jack_default_audio_sample_t *outBufR = (jack_default_audio_sample_t *)jack_port_get_buffer(output_port_r,nframes);
+  jack_default_audio_sample_t *outBufL = (jack_default_audio_sample_t *)jack_port_get_buffer(output_port_l,nframes);
   //call the onProcess function, that is assigned to the object
-  return ((JackModule *)arg)->onProcess(inBuf, outBuf, nframes);
+  return ((JackModule *)arg)->onProcess(inBuf, outBufR, outBufL, nframes);
 } // _wrap_jack_process_cb()
 
 
