@@ -399,15 +399,45 @@ struct flor : Component<0, 0, 2>
     }
 };
 
-struct ceil : Component<0, 0, 2>
+struct ceiling : Component<0, 0, 2>
 {
     double input;
 
-    ceil(int d0, int d1)
+    ceiling(int d0, int d1)
     {
 
         digiPins[0] = d0;
         digiPins[1] = d1;
+        input = 0;
+    }
+
+    void stamp(MNASystem & m) final
+    {
+
+    }
+
+    void updateInput(MNASystem & m) final
+    {
+      input = m.digiValues[digiNets[0]];
+
+    }
+    void update(MNASystem & m) final
+    {
+      m.digiValues[digiNets[1]] += int(input+1);
+    }
+
+};
+
+struct gate : Component<0, 0, 2>
+{
+    double input;
+
+    gate(int d0, int d1, int d2)
+    {
+
+        digiPins[0] = d0;
+        digiPins[1] = d1;
+        digiPins[2] = d2;
         input = 0;
     }
 

@@ -324,7 +324,6 @@ struct NetList
       {
             output[c] += components[i]->getAudioOutput(system, c);
       }
-      /* code */
     }
       return output;
 
@@ -342,6 +341,35 @@ struct NetList
      components[i]->setMidiInput(system, message);
      }
   }
+
+  void timeJump(double amt)
+  {
+
+    int iter;
+    system.time += amt;
+
+    for(iter = 0; iter < maxIter; ++iter)
+    {
+        // restore matrix state and add dynamic values
+
+        updatePre();
+
+
+        if(nets > 1) {
+          luFactor();
+
+          luForward();
+
+          luSolve();
+
+        if(newton()) break;
+      }
+    }
+
+    update();
+
+  }
+
 
 
     void simulateTick()

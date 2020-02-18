@@ -169,6 +169,11 @@ str.assign((std::istreambuf_iterator<char>(t)),
     else if(!seglist[0].compare("abs-"))
     net->addComponent(new absol(std::stoi(seglist[1]), std::stoi(seglist[2])));
 
+    else if(!seglist[0].compare("ceil-"))
+    net->addComponent(new ceiling(std::stoi(seglist[1]), std::stoi(seglist[2])));
+
+    else if(!seglist[0].compare("floor-"))
+    net->addComponent(new flor(std::stoi(seglist[1]), std::stoi(seglist[2])));
  // Analog components
 
       else if(!seglist[0].compare("resistor"))
@@ -246,13 +251,12 @@ std::cout << enginesamplerate << std::endl;
 std::cout << (double)1/enginesamplerate << std::endl;
 
 
-net->setTimeStep(10); // 5 second skip
-net->simulateTick();
-
-
 net->setTimeStep((double)1/enginesamplerate);
+net->timeJump(10);
 net->simulateTick();
-net->resetTicks();
+
+
+
 
 
 double* output;
@@ -268,7 +272,6 @@ if (realtime == false) {
       std::cout << int(i * (100./float(length))) << "%" << std::endl;
     }
     net->simulateTick();
-    // *
     output = net->getAudioOutput();
     //std::cout << *output << '\n';
 

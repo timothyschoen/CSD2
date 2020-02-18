@@ -37,7 +37,15 @@ let types = {
   'accum-': {'inlets': 1, 'outlets': 1, 'datatypes': ['digital', 'digital'], 'args': 0, 'colors': ['#229FD7'], 'code': " accum-, d0, d1"},
   'change-': {'inlets': 1, 'outlets': 1, 'datatypes': ['digital', 'digital'], 'args': 0, 'colors': ['#229FD7'], 'code': " change-, d0, d1"},
   'delta-': {'inlets': 1, 'outlets': 1, 'datatypes': ['digital', 'digital'], 'args': 0, 'colors': ['#229FD7'], 'code': " delta-, d0, d1"},
-  'history-': {'inlets': 1, 'outlets': 1, 'datatypes': ['digital', 'digital'], 'args': 0, 'colors': ['#229FD7'], 'code': " history-, d0, d1"},
+  'and-': {'inlets': 1, 'outlets': 1, 'datatypes': ['digital', 'digital'], 'args': 0, 'colors': ['#229FD7'], 'code': " and-, d0, d1"},
+  '&&-': {'inlets': 1, 'outlets': 1, 'datatypes': ['digital', 'digital'], 'args': 0, 'colors': ['#229FD7'], 'code': " &&-, d0, d1"},
+  'or-': {'inlets': 1, 'outlets': 1, 'datatypes': ['digital', 'digital'], 'args': 0, 'colors': ['#229FD7'], 'code': " or-, d0, d1"},
+  '||-': {'inlets': 1, 'outlets': 1, 'datatypes': ['digital', 'digital'], 'args': 0, 'colors': ['#229FD7'], 'code': " ||-, d0, d1"},
+  'abs-': {'inlets': 1, 'outlets': 1, 'datatypes': ['digital', 'digital'], 'args': 0, 'colors': ['#229FD7'], 'code': " abs-, d0, d1"},
+  'ceil-': {'inlets': 1, 'outlets': 1, 'datatypes': ['digital', 'digital'], 'args': 0, 'colors': ['#229FD7'], 'code': " ceil-, d0, d1"},
+  'floor-': {'inlets': 1, 'outlets': 1, 'datatypes': ['digital', 'digital'], 'args': 0, 'colors': ['#229FD7'], 'code': " floor-, d0, d1"},
+
+
   'elapsed-': {'inlets': 0, 'outlets': 1, 'datatypes': ['digital'], 'args': 0, 'colors': ['#229FD7'], 'code': " elapsed-, d0"},
 
 
@@ -302,7 +310,6 @@ if(connecting != -1) {
 
 
 // Convert our line-based network into an electrical nodes network that Halite can interpret
-// I wrote this at 4:00 at night, no idea why it works, afraid to touch it tbh
 function precompile(save = 1) {
     let iterconnections = [];
     let digitalconns = [];
@@ -374,12 +381,16 @@ function precompile(save = 1) {
           }
         if(y >= nodes.length) {
           if(types[boxtype]["datatypes"] != undefined &&  types[boxtype]["datatypes"][x] == 'digital') {
-            // this is where shit gets messy
-            // seems to work tho -- wait nope
+
             for (var d = 0; d < digitalconns.length; d++) {
               if(JSON.stringify(digitalconns[d]).includes(target)) {
+                // hier ingrijpen!!!
+                console.log(JSON.stringify(digitalconns[d]), d , '\n');
+
                 for (var ex = 0; ex < digiExists.length; ex++) {
                   //console.log('length: ', digiExists.length, 'index: ', ex, 'array: ', digiExists[ex] == undefined);
+
+                  console.log();
                   if(digiExists[ex] != undefined && (JSON.stringify(digiExists[ex]).includes(JSON.stringify(digitalconns[d][0])) || JSON.stringify(digiExists[ex]).includes(JSON.stringify(digitalconns[d][1])))) {
                     digiExists[ex].push(digitalconns[d][0])
                     digiExists[ex].push(digitalconns[d][1])
