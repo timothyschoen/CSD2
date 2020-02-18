@@ -162,6 +162,13 @@ str.assign((std::istreambuf_iterator<char>(t)),
 
     else if(!seglist[0].compare("elapsed-"))
     net->addComponent(new Elapsed(std::stoi(seglist[1]), std::stoi(seglist[2])));
+
+    else if(!seglist[0].compare("accum-"))
+    net->addComponent(new accumulate(std::stoi(seglist[1]), std::stoi(seglist[2])));
+
+    else if(!seglist[0].compare("abs-"))
+    net->addComponent(new absol(std::stoi(seglist[1]), std::stoi(seglist[2])));
+
  // Analog components
 
       else if(!seglist[0].compare("resistor"))

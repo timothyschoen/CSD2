@@ -300,7 +300,7 @@ struct getDelta : Component<0, 0, 2>
     }
 
     void updateInput(MNASystem & m) final
-
+    {
       in = m.digiValues[digiNets[0]];
 
     }
@@ -308,6 +308,122 @@ struct getDelta : Component<0, 0, 2>
     {
       m.digiValues[digiNets[1]] += in-old;
       in = old;
+    }
+
+};
+
+
+struct accumulate : Component<0, 0, 2>
+{
+    long double accum;
+
+    accumulate(int d0, int d1)
+    {
+
+        digiPins[0] = d0;
+        digiPins[1] = d1;
+        accum = 0;
+    }
+
+    void stamp(MNASystem & m) final
+    {
+
+    }
+
+    void updateInput(MNASystem & m) final
+    {
+      accum += m.digiValues[digiNets[0]];
+
+    }
+    void update(MNASystem & m) final
+    {
+      m.digiValues[digiNets[1]] += accum;
+    }
+
+};
+
+
+struct absol : Component<0, 0, 2>
+{
+    double input;
+
+    absol(int d0, int d1)
+    {
+
+        digiPins[0] = d0;
+        digiPins[1] = d1;
+        input = 0;
+    }
+
+    void stamp(MNASystem & m) final
+    {
+
+    }
+
+    void updateInput(MNASystem & m) final
+    {
+      input = abs(m.digiValues[digiNets[0]]);
+
+    }
+    void update(MNASystem & m) final
+    {
+      m.digiValues[digiNets[1]] += input;
+    }
+
+};
+struct flor : Component<0, 0, 2>
+{
+    double input;
+
+    flor(int d0, int d1)
+    {
+
+        digiPins[0] = d0;
+        digiPins[1] = d1;
+        input = 0;
+    }
+
+    void stamp(MNASystem & m) final
+    {
+
+    }
+
+    void updateInput(MNASystem & m) final
+    {
+      input = m.digiValues[digiNets[0]];
+
+    }
+    void update(MNASystem & m) final
+    {
+      m.digiValues[digiNets[1]] += int(input);
+    }
+};
+
+struct ceil : Component<0, 0, 2>
+{
+    double input;
+
+    ceil(int d0, int d1)
+    {
+
+        digiPins[0] = d0;
+        digiPins[1] = d1;
+        input = 0;
+    }
+
+    void stamp(MNASystem & m) final
+    {
+
+    }
+
+    void updateInput(MNASystem & m) final
+    {
+      input = m.digiValues[digiNets[0]];
+
+    }
+    void update(MNASystem & m) final
+    {
+      m.digiValues[digiNets[1]] += int(input+1);
     }
 
 };

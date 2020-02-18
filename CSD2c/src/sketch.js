@@ -34,6 +34,7 @@ let types = {
   'output-': {'inlets': 2, 'outlets': 0, 'datatypes': ['digital', 'digital'], 'args': 1, 'colors': ['#229FD7'], 'code': " output-, a0 , d0, d1"},
   'dcblock-': {'inlets': 1, 'outlets': 1, 'datatypes': ['digital', 'digital'], 'args': 0, 'colors': ['#229FD7'], 'code': " dcblock-, d0, d1"},
 
+  'accum-': {'inlets': 1, 'outlets': 1, 'datatypes': ['digital', 'digital'], 'args': 0, 'colors': ['#229FD7'], 'code': " accum-, d0, d1"},
   'change-': {'inlets': 1, 'outlets': 1, 'datatypes': ['digital', 'digital'], 'args': 0, 'colors': ['#229FD7'], 'code': " change-, d0, d1"},
   'delta-': {'inlets': 1, 'outlets': 1, 'datatypes': ['digital', 'digital'], 'args': 0, 'colors': ['#229FD7'], 'code': " delta-, d0, d1"},
   'history-': {'inlets': 1, 'outlets': 1, 'datatypes': ['digital', 'digital'], 'args': 0, 'colors': ['#229FD7'], 'code': " history-, d0, d1"},
@@ -66,24 +67,6 @@ let types = {
   '!=-': {'inlets': 2, 'outlets': 1, 'datatypes': ['digital', 'digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 0, 'code': " !=-, d0, d1, d2"},
   '%-': {'inlets': 2, 'outlets': 1, 'datatypes': ['digital', 'digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 0, 'code': " %, d0, d1, d2"},
   '!%-': {'inlets': 2, 'outlets': 1, 'datatypes': ['digital', 'digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 0, 'code': " !%, d0, d1, d2"},
-
-  /*
-  // arithmetics with arg
-  '+-': {'inlets': 1, 'outlets': 1, 'datatypes': ['digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 1, 'code': " +-, a0, d0, d1"},
-  '--': {'inlets': 1, 'outlets': 1, 'datatypes': ['digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 1, 'code': " --, a0, d0, d1"},
-  '!--': {'inlets': 1, 'outlets': 1, 'datatypes': ['digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args':1, 'code': " !--, a0, d0, d1"},
-  '*-': {'inlets': 1, 'outlets': 1, 'datatypes': ['digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 1, 'code': " *-, a0, d0, d1"},
-  '/-': {'inlets': 1, 'outlets': 1, 'datatypes': ['digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 1, 'code': " /-, a0, d0, d1"},
-  '!/-': {'inlets': 1, 'outlets': 1, 'datatypes': ['digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 1, 'code': " !/-, a0, d0, d1"},
-  '>-': {'inlets': 1, 'outlets': 1, 'datatypes': ['digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 1, 'code': " >-, a0, d0, d1"},
-  '<-': {'inlets': 1, 'outlets': 1, 'datatypes': ['digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 1, 'code': " <-, a0, d0, d1"},
-  '>=-': {'inlets': 1, 'outlets': 1, 'datatypes': ['digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 1, 'code': " >=-, a0, d0, d1"},
-  '<=-': {'inlets': 1, 'outlets': 1, 'datatypes': ['digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 1, 'code': " <=-, a0, d0, d1"},
-  '==-': {'inlets': 1, 'outlets': 1, 'datatypes': ['digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 1, 'code': " ==-, a0, d0, d1"},
-  '!=-': {'inlets': 1, 'outlets': 1, 'datatypes': ['digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 1, 'code': " !=-, a0, d0, d1"},
-  '%-': {'inlets': 1, 'outlets': 1, 'datatypes': ['digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 1, 'code': " %, a0, d0, d1"},
-  '!%-': {'inlets': 1, 'outlets': 1, 'datatypes': ['digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 1, 'code': " !%, a0, d0, d1"},
-  */ // this doesn't work because we overwrite the dictionary indexes
 
   // Components from Gen
   'phasor-': {'inlets': 2, 'outlets': 1, 'datatypes': ['digital', 'digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 0, 'code': " phasor, d0, d1, d2"},
