@@ -10,6 +10,7 @@ function Component(name, xin = mouseX,  yin = mouseY-100) {
       let inlets = [];        // Array to store inlets
       let valid = true;       // Check if we entered a valid component name/arguments
       let args = [];          // Arguments of our component ('200' in 'resistor 200')
+      let optargs = [];       // Optional arguments
       let type = name;        // Name of our component ('resistor' in 'resistor 200')
       let selected = false;   // Is our component selected?
 
@@ -54,6 +55,11 @@ function Component(name, xin = mouseX,  yin = mouseY-100) {
     this.getargs = function(){
       return args;
     }
+
+    this.getoptargs = function(){
+      return optargs;
+    }
+
     this.getname = function(){
       return name;
     }
@@ -243,9 +249,12 @@ function Component(name, xin = mouseX,  yin = mouseY-100) {
     // type of object
     type = args.shift();
     // Check if type is existing
-      if (type in types && types[type]['args'] == args.length) {
+      if (type in types && types[type]['args'] <= args.length) {
         // Make sure ground is at 0
-        if(type == 'ground' && boxes.indexOf(this) != 0) {
+        if(types[type]['args'] != args.length) {
+          optargs = args.splice(types[type]['args'], args.length)
+        }
+        if(type == 'ground' &&  boxes.indexOf(this) != 0) {
           boxes.move(boxes.indexOf(this), 0);
         }
         valid = true;

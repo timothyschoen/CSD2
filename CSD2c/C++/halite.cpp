@@ -6,12 +6,13 @@
 #include <cmath>
 #include <unistd.h>
 #include "AudioFile.h"
+ // temporary for calculating which functions are slow
+#include <chrono>
 
 
 namespace
 {
 
-int startOffset;
 // gMin for diodes etc..
 constexpr double gMin = 1e-12;
 
@@ -148,7 +149,7 @@ struct MNASystem
         }
 
         time = 0;
-        ticks = startOffset; // 3 sec system init time, we don't want any DC clicks in our output!
+        ticks = 0;
     }
 
     void stampTimed(double g, int r, int c)
@@ -213,7 +214,12 @@ struct IComponent
     virtual bool newton(MNASystem & m) { return true; }
 
     // NEW: output function for probe object;
-    virtual double getOutput(MNASystem & m, int c) { return 0; }
+    virtual double getAudioOutput(MNASystem & m, int c) { return 0; }
+
+    // realtime input function;
+    virtual void setAudioInput(MNASystem & m, double input) {}
+
+    virtual void setMidiInput(MNASystem & m, std::vector<unsigned char> message) {}
 
     // time-step change, for caps to fix their state-variables
     virtual void scaleTime(double told_per_new) {}
@@ -302,19 +308,21 @@ struct NetList
 
         tStep = tStepSize;
         double stepScale = 1. / tStep;
-        startOffset = -3 * stepScale;
-        std::cout << startOffset << std::endl;
-        system.ticks = startOffset;
         printf("timeStep changed to %.2g (%.2g Hz)\n", tStep, stepScale);
         setStepScale(stepScale);
     }
 
-     double* getOutput() {
+    void resetTicks()
+    {
+        system.ticks = 0;
+    }
+
+     double* getAudioOutput() {
        double* output = new double[2];
       for (size_t c = 0; c < 2; c++) {
       for(int i = 0; i < components.size(); ++i)
       {
-            output[c] += components[i]->getOutput(system, c);
+            output[c] += components[i]->getAudioOutput(system, c);
       }
       /* code */
     }
@@ -322,17 +330,38 @@ struct NetList
 
     }
 
+    void setAudioInput(double input) {
+      for(int i = 0; i < components.size(); ++i)
+      {
+      components[i]->setAudioInput(system, input);
+      }
+   }
+   void setMidiInput(std::vector<unsigned char> message) {
+     for(int i = 0; i < components.size(); ++i)
+     {
+     components[i]->setMidiInput(system, message);
+     }
+  }
+
+
     void simulateTick()
     {
+        //auto t1 = std::chrono::high_resolution_clock::now();
         int iter;
+
         for(iter = 0; iter < maxIter; ++iter)
         {
             // restore matrix state and add dynamic values
+
             updatePre();
+
+
             if(nets > 1) {
-            luFactor();
-            luForward();
-            luSolve();
+              luFactor();
+
+              luForward();
+
+              luSolve();
 
             if(newton()) break;
           }
@@ -342,19 +371,9 @@ struct NetList
         system.ticks++;
 
         update();
-
-        //printf(" %02.4f |", system.time);
-        int fillPost = 0;
-        for(int i = 1; i < nets; ++i)
-        {
-            //printf("\t%+.4e", system.b[i].lu * system.nodes[i].scale);
-            for(int j = 1; j < nets; ++j)
-            {
-                if(system.A[i][j].lu != 0) ++fillPost;
-            }
-        }
-        //printf("\t %d iters, LU density: %.1f%%\n",
-        //    iter, 100 * fillPost / ((nets-1.f)*(nets-1.f)));
+        //auto t2 = std::chrono::high_resolution_clock::now();
+        //auto duration = std::chrono::duration_cast<std::chrono::microseconds>( t2 - t1 ).count();
+        //std::cout << "Per sample: " << duration << '\n';
     }
 
     // plotting and such would want to use this
@@ -380,6 +399,7 @@ protected:
       {
           components[i]->update(system);
       }
+      system.digiValues[0] = 0; // node for unconnected digital inlets, clear this to make sure unconnected inlets won't receive eachothers values by accident
       for(int i = 0; i < components.size(); ++i)
       {
           components[i]->updateInput(system);
@@ -461,11 +481,6 @@ protected:
                 {
                     std::swap(system.A[p], system.A[pr]);
                     std::swap(system.b[p], system.b[pr]);
-                }
-                if(VERBOSE_LU)
-                {
-                  printf("pivot %d (from %d): %+.2e\n",
-                         p, pr, system.A[p][p].lu);
                 }
             }
             if(0 == system.A[p][p].lu)

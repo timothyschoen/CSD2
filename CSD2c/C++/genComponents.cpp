@@ -16,6 +16,10 @@ struct genLoader : Component<0, 0, 3>
     int nOutChannels;
     int nDigipins;
     const int* nPins = &nDigipins;
+    t_sample* ip[24]; // TODO: set dynamically, altough 24 seems like a reasonable limit
+    t_sample* op[24];
+    std::vector<double> inputbuff;
+
 
 
     genLoader(std::string nom, std::initializer_list<int> a_args)
@@ -27,6 +31,8 @@ struct genLoader : Component<0, 0, 3>
         nInChannels = Patcher::num_inputs();
         nOutChannels = Patcher::num_outputs();
         nDigipins = nInChannels + nOutChannels;
+
+        inputbuff.resize(nInChannels);
 
         // Input buffers
         gInputs = new t_sample[nInChannels];
@@ -60,22 +66,30 @@ struct genLoader : Component<0, 0, 3>
     {
     }
 
+    void updateInput(MNASystem & m) final
+    {
+      // Setting in
+    	for (int i = 0; i < nInChannels; i++) {
+
+    			*(gInputs + i) = m.digiValues[digiNets[i]];
+
+        inputbuff[i] = *(gInputs + i);
+
+    	}
+
+
+    }
+
     void update(MNASystem & m) final
     {
-    t_sample* ip[nInChannels];
-    t_sample* op[nOutChannels];
+      for (int i = 0; i < nInChannels; i++) {
+        ip[i] = &inputbuff[i];
+      }
 
-    // Setting in
-  	for (int i = 0; i < nInChannels; i++) {
+      op[0] = gOutputs + 1;
 
-  			*(gInputs + i) = m.digiValues[digiNets[i]];
-  		ip[i] = gInputs + i;
-  	}
-    op[0] = gOutputs + 1;
-
-    // Run the patch!!
-    Patcher::perform(gState, ip, 2, op, 1, 1);
-
+      // Run the patch!!
+      Patcher::perform(gState, ip, 2, op, 1, 1);
     // Getting output
     for (int i = 0; i < nOutChannels; i++) {
     m.digiValues[digiNets[nInChannels+i]] = *op[0];

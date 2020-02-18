@@ -4,6 +4,8 @@
 #include "./analogComponents.cpp"
 #include "./genComponents.cpp"
 
+#include "./rtmidi-master/RtMidi.h"
+
 #include <sstream>
 #include <fstream>
 #include <streambuf>
@@ -77,6 +79,7 @@ str.assign((std::istreambuf_iterator<char>(t)),
 
     while(std::getline(ss,obj,'\n')){
       std::vector<std::string> seglist;
+      std::vector<std::string> optargs;
       std::string segment;
       std::stringstream inputcode(obj);
 
@@ -88,6 +91,21 @@ str.assign((std::istreambuf_iterator<char>(t)),
       }
 
 
+
+      std::string args = seglist[seglist.size()-1];
+      std::string parsedargs;
+
+      args.erase(0, 1);
+      args.erase(args.size()-1, 1);
+      std::stringstream argstream(args);
+
+      while(std::getline(argstream, parsedargs, ','))
+      {
+        parsedargs.erase(0, 1);
+        parsedargs.erase(parsedargs.size()-1, 1);
+         optargs.push_back(parsedargs);
+      }
+
       if(!seglist[0].compare("ground")) {
       net = new NetList(stoi(seglist[1]));
     }
@@ -95,7 +113,7 @@ str.assign((std::istreambuf_iterator<char>(t)),
 // Digital components
 
     else if(!seglist[0].compare("cycle-"))
-    net->addComponent(new digitalCycle(std::stof(seglist[1]), std::stoi(seglist[2]), std::stoi(seglist[3])));
+    net->addComponent(new digitalCycle(optargs, std::stoi(seglist[1]), std::stoi(seglist[2])));
 
     else if(!seglist[0].compare("sig-"))
     net->addComponent(new digitalSignal(std::stof(seglist[1]), std::stoi(seglist[2])));
@@ -115,6 +133,35 @@ str.assign((std::istreambuf_iterator<char>(t)),
     else if(!seglist[0].compare("stinput-"))
     net->addComponent(new stereoDigitalInput(seglist[1], std::stof(seglist[2]), std::stoi(seglist[3]), std::stoi(seglist[4])));
 
+    else if(!seglist[0].compare("rtinput-"))
+    net->addComponent(new rtDigitalInput(std::stof(seglist[1]), std::stoi(seglist[2])));
+
+    else if(!seglist[0].compare("midiin-"))
+    net->addComponent(new MidiInput(std::stoi(seglist[1]), std::stoi(seglist[2])));
+
+    else if(!seglist[0].compare("notein-"))
+    net->addComponent(new midiNoteIn(std::stoi(seglist[1]), std::stoi(seglist[2])));
+
+    else if(!seglist[0].compare("mtof-"))
+    net->addComponent(new mToF(std::stoi(seglist[1]), std::stoi(seglist[2])));
+
+    else if(!seglist[0].compare("digidelay"))
+    net->addComponent(new digitalDelay(optargs, std::stoi(seglist[1]), std::stoi(seglist[2]), std::stoi(seglist[3])));
+
+    else if(!seglist[0].compare("dcblock-"))
+    net->addComponent(new dcBlock(std::stoi(seglist[1]), std::stoi(seglist[2])));
+
+    else if(!seglist[0].compare("change-"))
+    net->addComponent(new Changed(std::stoi(seglist[1]), std::stoi(seglist[2])));
+
+    else if(!seglist[0].compare("delta-"))
+    net->addComponent(new getDelta(std::stoi(seglist[1]), std::stoi(seglist[2])));
+
+    else if(!seglist[0].compare("history-"))
+    net->addComponent(new History(std::stoi(seglist[1]), std::stoi(seglist[2])));
+
+    else if(!seglist[0].compare("elapsed-"))
+    net->addComponent(new Elapsed(std::stoi(seglist[1]), std::stoi(seglist[2])));
  // Analog components
 
       else if(!seglist[0].compare("resistor"))
@@ -153,8 +200,6 @@ str.assign((std::istreambuf_iterator<char>(t)),
       else if(!seglist[0].compare("delay"))
       net->addComponent(new AnalogDelay(std::stoi(seglist[1]), std::stof(seglist[2]), std::stoi(seglist[3]), std::stoi(seglist[4]), std::stoi(seglist[5])));
 
-      else if(!seglist[0].compare("digidelay"))
-      net->addComponent(new digitalDelay(std::stoi(seglist[1]), std::stoi(seglist[2]), std::stoi(seglist[3])));
 
 
       else if(!seglist[0].compare("phasor"))
@@ -175,7 +220,7 @@ str.assign((std::istreambuf_iterator<char>(t)),
               !seglist[0].compare("!=-") ||
               !seglist[0].compare("%-")  ||
               !seglist[0].compare("!%-"))
-        net->addComponent(new digitalArithmetic(seglist[0], 0, std::stoi(seglist[1]), std::stoi(seglist[2]), std::stoi(seglist[3]))); // Add optional arguments in JS!!!!
+        net->addComponent(new digitalArithmetic(seglist[0], optargs, std::stoi(seglist[1]), std::stoi(seglist[2]), std::stoi(seglist[3]))); // Add optional arguments in JS!!!!
 
 
       else if(!seglist[0].compare("probe")) {
@@ -192,12 +237,15 @@ net->buildSystem();
 // sets amount of time that is simulated between ticks (1/samplerate)
 std::cout << enginesamplerate << std::endl;
 std::cout << (double)1/enginesamplerate << std::endl;
-net->setTimeStep((double)1/enginesamplerate);
-int startOffset = -3 * enginesamplerate;
 
+
+net->setTimeStep(10); // 5 second skip
 net->simulateTick();
+
+
+net->setTimeStep((double)1/enginesamplerate);
 net->simulateTick();
-net->simulateTick();
+net->resetTicks();
 
 
 double* output;
@@ -208,16 +256,15 @@ if (realtime == false) {
   AudioFile<double> audioFile;
   audioFile.setAudioBufferSize (2, length);
 
-  for (int i = startOffset; i<length; i++) {
+  for (int i = 0; i<length; i++) {
     if(i%20000 == 0) {
-      std::cout << (i-startOffset) *100/(length-startOffset) << "%" << std::endl;
+      std::cout << int(i * (100./float(length))) << "%" << std::endl;
     }
     net->simulateTick();
     // *
-    output = net->getOutput();
+    output = net->getAudioOutput();
     //std::cout << *output << '\n';
 
-    if (i > 0)
       audioFile.samples[0][i] = *(output)*outamp;
       audioFile.samples[1][i] = *(output+1)*outamp;
       }
@@ -235,21 +282,22 @@ if (realtime == false) {
 }
 
 else {
-  for (size_t i = startOffset; i > 0 ; i++) {
-    net->simulateTick(); // filters out DC pops at the start
-  }
+
 
   JackModule jack;
   jack.init("halite");
+
+
 
   jack.onProcess = [&net, &output, &outamp](jack_default_audio_sample_t *inBuf,
      jack_default_audio_sample_t *outBufR, jack_default_audio_sample_t *outBufL, jack_nframes_t nframes)
   {
     //loop through frames, retrieve sample of sine per frame
     for(int i = 0; i < nframes; i++) {
-      net->simulateTick();
-      output = net->getOutput();
 
+      net->setAudioInput(inBuf[i]);
+      net->simulateTick();
+      output = net->getAudioOutput();
       /*
       // clipping
       if (output > 1) output = 1;
@@ -259,15 +307,28 @@ else {
       outBufL[i] = *(output)*outamp;
       outBufR[i] = *(output+1)*outamp;
     }
+
+
     return 0;
   };
   jack.autoConnect();
 
 
-  //printf("\t%+.4e", output);
+  RtMidiIn *midiin = new RtMidiIn();
+  midiin->openVirtualPort("Halite Input Port 1");
+  midiin->ignoreTypes( false, false, false );
+
+  std::vector<unsigned char> message;
+  int nBytes;
+  double stamp;
 
   while(true){
-    usleep(20000);
+    midiin->getMessage( &message );
+    nBytes = message.size();
+    if ( nBytes > 0) {
+      net->setMidiInput(message);
+    }
+    usleep(1);
   }
 }
 

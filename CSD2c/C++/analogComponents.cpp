@@ -57,9 +57,11 @@ struct AnalogDelay : Component<2, 1, 1>
 
     void update(MNASystem & m) final
     {
+        currentSample = m.ticks;
         // Don't delay while loading
-        if(m.ticks < 0) currentSample = 0;
-        else currentSample = m.ticks%88200;
+        if (currentSample >= 88200) currentSample = currentSample-88200;
+
+
 
         //digiNets[0] += currentSample;
 
@@ -99,38 +101,36 @@ struct VariableResistor : Component<3>
     }
     void updateInput(MNASystem & m) final
     {
-      resvalue = 1. / m.digiValues[digiNets[0]];
+      resvalue = 1. / (r * m.digiValues[digiNets[0]]);
       negresvalue = -resvalue;
     }
 
 };
 
-struct Potentiometer : Component<4>
+struct Potentiometer : Component<3, 0, 1>
 {
     double  r;
 
     double resvalue;
     double invresvalue;
-    double negresvalue;
-    double neginvresvalue;
 
 
 
-    Potentiometer(double r, int l0, int l1, int l2, int l3) : r(r)
+    Potentiometer(double r, int l0, int l1, int l2, int d0) : r(r)
     {
         pinLoc[0] = l0; // in
         pinLoc[1] = l1; // out
         pinLoc[2] = l2; // inv out
-        pinLoc[3] = l3; // set value
+        digiPins[0] = d0; // set value
 
         resvalue = 1. / r;
-        negresvalue = -resvalue;
         invresvalue = 1. / r;
-        neginvresvalue = -invresvalue;
     }
 
     void stamp(MNASystem & m) final
     {
+
+      /*
 
         for (size_t r = 0; r < 2; r++) {
           for (size_t c = 0; c < 2; c++) {
@@ -143,16 +143,30 @@ struct Potentiometer : Component<4>
               m.A[nets[r * 2]][nets[c * 2]].gdyn.push_back(&neginvresvalue);
             }
           }
-        }
+        } */
 
+        m.stampStatic(+resvalue, nets[0], nets[0]);
+        m.stampStatic(-resvalue, nets[0], nets[1]);
+        m.stampStatic(-resvalue, nets[1], nets[0]);
+        m.stampStatic(+resvalue, nets[1], nets[1]);
+
+        m.stampStatic(+invresvalue, nets[0], nets[0]);
+        m.stampStatic(-invresvalue, nets[0], nets[2]);
+        m.stampStatic(-invresvalue, nets[2], nets[0]);
+        m.stampStatic(+invresvalue, nets[2], nets[2]);
+
+    }
+    void updateInput(MNASystem & m) final
+    {
+      resvalue = 1. / (r * m.digiValues[digiNets[0]]);
+      invresvalue = 1. / (r - (r * m.digiValues[digiNets[0]]));
     }
 
     void update(MNASystem & m) final
     {
-      resvalue = 1. / (r * m.b[nets[3]].lu);
-      negresvalue = -resvalue;
-      invresvalue = 1. / (r - (r * m.b[nets[3]].lu));
-      neginvresvalue = -invresvalue;
+
+
+
 
     }
 };
@@ -278,6 +292,11 @@ struct Voltage : Component<2, 1>
 struct Probe : Component<2, 1>
 {
     float impedance = 1;
+    double average;
+    double x = 0;
+    double y = 0;
+    double xm1 = 0;
+    double ym1 = 0;
     Probe(int l0, int l1)
     {
         pinLoc[0] = l0;
@@ -293,7 +312,13 @@ struct Probe : Component<2, 1>
 
     }
     //current = voltage/impedance
-    double getOutput(MNASystem & m, int channel) {
+    double getAudioOutput(MNASystem & m, int channel) {
+
+      // dc offset removal!!!
+        x = m.b[nets[2]].lu * m.nodes[nets[2]].scale;
+        y = x - xm1 + 0.995 * ym1;
+        xm1 = x;
+        ym1 = y;
       //std::cout << m.A[0][2].lu;   // -> is altijd 0!!!! zoek uit wat dit is!!
       //return m.A[0][1].lu;
       return m.b[nets[2]].lu * m.nodes[nets[2]].scale; //? Betrek current hierin!!!

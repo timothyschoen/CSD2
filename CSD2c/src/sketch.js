@@ -2,6 +2,94 @@ let dialog = require('electron').remote.dialog;
 let fs = require("fs");
 const { spawn } = require('child_process');
 
+// All our objects, plus the data that we need to convert it to halite
+let types = {
+  // Halite standard components
+  'resistor': {'inlets': 1, 'outlets': 1, 'colors': ['#229FD7', '#229FD7'], 'args': 1, 'code': " resistor, a0, i0, i1"},
+  'ground': {'inlets': 1, 'outlets': 0, 'args': 0, 'colors': ['#000000'], 'code': ""},
+  'voltage': {'inlets': 0, 'outlets': 2, 'args': 1, 'colors': ['#ff0000', '#000000'], 'code': " voltage, a0, i0, i1"},
+  'capacitor': {'inlets': 1, 'outlets': 1, 'args': 1, 'colors': ['#229FD7', '#229FD7'], 'code': " capacitor, a0, i0, i1"},
+  'diode': {'inlets': 1, 'outlets': 1, 'args': 0, 'colors': ['#ff0000', '#229FD7'], 'code': " diode, i0, i1"},
+  'bjt': {'inlets': 1, 'outlets': 2, 'args': 1, 'colors': ['#ff0000', '#000000', '#229FD7'], 'code': " bjt, i0, i1, i2, a0"}, // color coding!!!
+  'op-amp': {'inlets': 4, 'outlets': 1, 'args': 0, 'colors': ['#229FD7', '#000000', '#ff0000', '#000000', '#229FD7'], 'code': " opa, i4, i0, i1, i2, i3"},
+
+  // Our analog Components
+  'varres': {'inlets': 2, 'outlets': 1, 'datatypes': ['analog', 'digital', 'analog'], 'colors': ['#229FD7', '#229FD7'], 'args': 1, 'code': " varres, a0, i0, i1, d1"},
+  'pot': {'inlets': 2, 'outlets': 2, 'datatypes': ['analog', 'digital', 'analog', 'analog'], 'args': 1, 'colors': ['#ff0000', '#229FD7', '#000000', '#229FD7'], 'code': " potentiometer, a0, i0, i2, i3, d1"},
+  'cycle': {'inlets': 0, 'outlets': 2, 'args': 1, 'colors': ['#ff0000', '#000000'], 'code': " cycle, a0, i0, i1"},
+  'input': {'inlets': 0, 'outlets': 2, 'args': 2, 'colors': ['#ff0000', '#000000'], 'code': " input, a0, a1, i0, i1"},
+  'output': {'inlets': 2, 'outlets': 0, 'args': 1, 'colors': ['#229FD7'], 'code': " probe, i0, i1, a0"},
+  'print': {'inlets': 1, 'outlets': 1, 'colors': ['#229FD7', '#229FD7'], 'args': 0, 'code': " print, i0, i1"},
+  'delay': {'inlets': 2, 'outlets': 1, 'datatypes': ['analog', 'digital', 'analog'], 'colors': ['#229FD7', '#229FD7'], 'args': 2, 'code': " delay, a0, a1, i0, d1, i2"},
+
+  // conversion objects
+  'dac': {'inlets': 1, 'outlets': 2, 'datatypes': ['digital', 'analog', 'analog'], 'colors': ['#229FD7', '#229FD7'], 'args': 0, 'code': " dac, d0, i1, i2"},
+  'adc': {'inlets': 2, 'outlets': 1, 'datatypes': ['analog', 'analog', 'digital'], 'colors': ['#229FD7', '#229FD7'], 'args': 0, 'code': " adc, i0, i1, d2"},
+
+  // digital objects
+  // I/O
+  'input-': {'inlets': 0, 'outlets': 1, 'datatypes': ['digital', 'digital'], 'args': 2, 'colors': ['#ff0000', '#000000'], 'code': " input-, a0, a1, d0"},
+  'stinput-': {'inlets': 0, 'outlets': 2, 'datatypes': ['digital', 'digital'], 'args': 2, 'colors': ['#ff0000', '#000000'], 'code': " stinput-, a0, a1, d0, d1"},
+  'rtinput-': {'inlets': 0, 'outlets': 1, 'datatypes': ['digital', 'digital'], 'args': 1, 'colors': ['#ff0000', '#000000'], 'code': " rtinput-, a0, d0"},
+  'output-': {'inlets': 2, 'outlets': 0, 'datatypes': ['digital', 'digital'], 'args': 1, 'colors': ['#229FD7'], 'code': " output-, a0 , d0, d1"},
+  'dcblock-': {'inlets': 1, 'outlets': 1, 'datatypes': ['digital', 'digital'], 'args': 0, 'colors': ['#229FD7'], 'code': " dcblock-, d0, d1"},
+
+  'change-': {'inlets': 1, 'outlets': 1, 'datatypes': ['digital', 'digital'], 'args': 0, 'colors': ['#229FD7'], 'code': " change-, d0, d1"},
+  'delta-': {'inlets': 1, 'outlets': 1, 'datatypes': ['digital', 'digital'], 'args': 0, 'colors': ['#229FD7'], 'code': " delta-, d0, d1"},
+  'history-': {'inlets': 1, 'outlets': 1, 'datatypes': ['digital', 'digital'], 'args': 0, 'colors': ['#229FD7'], 'code': " history-, d0, d1"},
+  'elapsed-': {'inlets': 0, 'outlets': 1, 'datatypes': ['digital'], 'args': 0, 'colors': ['#229FD7'], 'code': " elapsed-, d0"},
+
+
+  'midiin-': {'inlets': 0, 'outlets': 2, 'datatypes': ['digital', 'digital'], 'args': 0, 'colors': ['#229FD7', '#229FD7'], 'code': " midiin-, d0, d1"},
+  'notein-': {'inlets': 0, 'outlets': 2, 'datatypes': ['digital', 'digital'], 'args': 0, 'colors': ['#229FD7', '#229FD7'], 'code': " notein-, d0, d1"},
+  'mtof-': {'inlets': 1, 'outlets': 1, 'datatypes': ['digital', 'digital'], 'args': 0, 'colors': ['#229FD7', '#229FD7'], 'code': " mtof-, d0, d1"},
+
+  // Signal generation
+  'cycle-': {'inlets': 1, 'outlets': 1, 'datatypes': ['digital', 'digital'], 'colors': ['#229FD7', '#229FD7'], 'args': 0, 'code': " cycle-, d0, d1"},
+  'sig-': {'inlets': 0, 'outlets': 1, 'datatypes': ['digital', 'digital'], 'colors': ['#229FD7', '#229FD7'], 'args': 1, 'code': " sig-, a0, d0"},
+
+  // Delay
+  'delay-': {'inlets': 2, 'outlets': 1, 'datatypes': ['digital', 'digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 0, 'code': " digidelay, d0, d1, d2"},
+
+  // arithmetics without arg
+  '+-': {'inlets': 2, 'outlets': 1, 'datatypes': ['digital', 'digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 0, 'code': " +-, d0, d1, d2"},
+  '--': {'inlets': 2, 'outlets': 1, 'datatypes': ['digital', 'digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 0, 'code': " --, d0, d1, d2"},
+  '!--': {'inlets': 2, 'outlets': 1, 'datatypes': ['digital', 'digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 0, 'code': " !--, d0, d1, d2"},
+  '*-': {'inlets': 2, 'outlets': 1, 'datatypes': ['digital', 'digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 0, 'code': " *-, d0, d1, d2"},
+  '/-': {'inlets': 2, 'outlets': 1, 'datatypes': ['digital', 'digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 0, 'code': " /-, d0, d1, d2"},
+  '!/-': {'inlets': 2, 'outlets': 1, 'datatypes': ['digital', 'digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 0, 'code': " !/-, d0, d1, d2"},
+  '>-': {'inlets': 2, 'outlets': 1, 'datatypes': ['digital', 'digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 0, 'code': " >-, d0, d1, d2"},
+  '<-': {'inlets': 2, 'outlets': 1, 'datatypes': ['digital', 'digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 0, 'code': " <-, d0, d1, d2"},
+  '>=-': {'inlets': 2, 'outlets': 1, 'datatypes': ['digital', 'digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 0, 'code': " >=-, d0, d1, d2"},
+  '<=-': {'inlets': 2, 'outlets': 1, 'datatypes': ['digital', 'digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 0, 'code': " <=-, d0, d1, d2"},
+  '==-': {'inlets': 2, 'outlets': 1, 'datatypes': ['digital', 'digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 0, 'code': " ==-, d0, d1, d2"},
+  '!=-': {'inlets': 2, 'outlets': 1, 'datatypes': ['digital', 'digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 0, 'code': " !=-, d0, d1, d2"},
+  '%-': {'inlets': 2, 'outlets': 1, 'datatypes': ['digital', 'digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 0, 'code': " %, d0, d1, d2"},
+  '!%-': {'inlets': 2, 'outlets': 1, 'datatypes': ['digital', 'digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 0, 'code': " !%, d0, d1, d2"},
+
+  /*
+  // arithmetics with arg
+  '+-': {'inlets': 1, 'outlets': 1, 'datatypes': ['digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 1, 'code': " +-, a0, d0, d1"},
+  '--': {'inlets': 1, 'outlets': 1, 'datatypes': ['digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 1, 'code': " --, a0, d0, d1"},
+  '!--': {'inlets': 1, 'outlets': 1, 'datatypes': ['digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args':1, 'code': " !--, a0, d0, d1"},
+  '*-': {'inlets': 1, 'outlets': 1, 'datatypes': ['digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 1, 'code': " *-, a0, d0, d1"},
+  '/-': {'inlets': 1, 'outlets': 1, 'datatypes': ['digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 1, 'code': " /-, a0, d0, d1"},
+  '!/-': {'inlets': 1, 'outlets': 1, 'datatypes': ['digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 1, 'code': " !/-, a0, d0, d1"},
+  '>-': {'inlets': 1, 'outlets': 1, 'datatypes': ['digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 1, 'code': " >-, a0, d0, d1"},
+  '<-': {'inlets': 1, 'outlets': 1, 'datatypes': ['digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 1, 'code': " <-, a0, d0, d1"},
+  '>=-': {'inlets': 1, 'outlets': 1, 'datatypes': ['digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 1, 'code': " >=-, a0, d0, d1"},
+  '<=-': {'inlets': 1, 'outlets': 1, 'datatypes': ['digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 1, 'code': " <=-, a0, d0, d1"},
+  '==-': {'inlets': 1, 'outlets': 1, 'datatypes': ['digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 1, 'code': " ==-, a0, d0, d1"},
+  '!=-': {'inlets': 1, 'outlets': 1, 'datatypes': ['digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 1, 'code': " !=-, a0, d0, d1"},
+  '%-': {'inlets': 1, 'outlets': 1, 'datatypes': ['digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 1, 'code': " %, a0, d0, d1"},
+  '!%-': {'inlets': 1, 'outlets': 1, 'datatypes': ['digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 1, 'code': " !%, a0, d0, d1"},
+  */ // this doesn't work because we overwrite the dictionary indexes
+
+  // Components from Gen
+  'phasor-': {'inlets': 2, 'outlets': 1, 'datatypes': ['digital', 'digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 0, 'code': " phasor, d0, d1, d2"},
+
+}
+
 let preset = ["ground", "output 0.3", 'input "./samples/sample-44k.wav" 0.2'];
 
 
@@ -57,63 +145,6 @@ let jack; // letiable for jack process
 let typing = false; // Check if we're typing, if so, disable keyboard shortcuts
 
 let initializing = true;
-
-// All our objects, plus the data that we need to convert it to halite
-let types = {
-  // Halite standard components
-  'resistor': {'inlets': 1, 'outlets': 1, 'colors': ['#229FD7', '#229FD7'], 'args': 1, 'code': " resistor, a0, i0, i1"},
-  'ground': {'inlets': 1, 'outlets': 0, 'args': 0, 'colors': ['#000000'], 'code': ""},
-  'voltage': {'inlets': 0, 'outlets': 2, 'args': 1, 'colors': ['#ff0000', '#000000'], 'code': " voltage, a0, i0, i1"},
-  'capacitor': {'inlets': 1, 'outlets': 1, 'args': 1, 'colors': ['#229FD7', '#229FD7'], 'code': " capacitor, a0, i0, i1"},
-  'diode': {'inlets': 1, 'outlets': 1, 'args': 0, 'colors': ['#ff0000', '#229FD7'], 'code': " diode, i0, i1"},
-  'bjt': {'inlets': 1, 'outlets': 2, 'args': 1, 'colors': ['#ff0000', '#000000', '#229FD7'], 'code': " bjt, i0, i1, i2, a0"},
-  'op-amp': {'inlets': 4, 'outlets': 1, 'args': 0, 'colors': ['#229FD7', '#000000', '#ff0000', '#000000', '#229FD7'], 'code': " opa, i4, i0, i1, i2, i3"},
-
-  // Our analog Components
-  'varres': {'inlets': 2, 'outlets': 1, 'datatypes': ['analog', 'digital', 'analog'], 'colors': ['#229FD7', '#229FD7'], 'args': 1, 'code': " varres, a0, i0, i1, d1"},
-  'pot': {'inlets': 2, 'outlets': 2, 'args': 1, 'colors': ['#ff0000', '#229FD7', '#000000', '#000000'], 'code': " potentiometer, a0, i0, i2, i3, i1"},
-  'cycle': {'inlets': 0, 'outlets': 2, 'args': 1, 'colors': ['#ff0000', '#000000'], 'code': " cycle, a0, i0, i1"},
-  'input': {'inlets': 0, 'outlets': 2, 'args': 2, 'colors': ['#ff0000', '#000000'], 'code': " input, a0, a1, i0, i1"},
-  'output': {'inlets': 2, 'outlets': 0, 'args': 1, 'colors': ['#229FD7'], 'code': " probe, i0, i1, a0"},
-  'print': {'inlets': 1, 'outlets': 1, 'colors': ['#229FD7', '#229FD7'], 'args': 0, 'code': " print, i0, i1"},
-  'delay': {'inlets': 2, 'outlets': 1, 'datatypes': ['analog', 'digital', 'analog'], 'colors': ['#229FD7', '#229FD7'], 'args': 2, 'code': " delay, a0, a1, i0, d1, i2"},
-
-  // conversion objects
-  'dac': {'inlets': 1, 'outlets': 2, 'datatypes': ['digital', 'analog', 'analog'], 'colors': ['#229FD7', '#229FD7'], 'args': 0, 'code': " dac, d0, i1, i2"},
-  'adc': {'inlets': 2, 'outlets': 1, 'datatypes': ['analog', 'analog', 'digital'], 'colors': ['#229FD7', '#229FD7'], 'args': 0, 'code': " adc, i0, i1, d2"},
-
-  // digital objects
-  // I/O
-  'input-': {'inlets': 0, 'outlets': 1, 'datatypes': ['digital', 'digital'], 'args': 2, 'colors': ['#ff0000', '#000000'], 'code': " input-, a0, a1, d0"},
-  'stinput-': {'inlets': 0, 'outlets': 2, 'datatypes': ['digital', 'digital'], 'args': 2, 'colors': ['#ff0000', '#000000'], 'code': " stinput-, a0, a1, d0, d1"},
-  'output-': {'inlets': 2, 'outlets': 0, 'datatypes': ['digital', 'digital'], 'args': 1, 'colors': ['#229FD7'], 'code': " output-, a0 , d0, d1"},
-  // Signal generation
-  'cycle-': {'inlets': 1, 'outlets': 1, 'datatypes': ['digital', 'digital'], 'colors': ['#229FD7', '#229FD7'], 'args': 1, 'code': " cycle-, a0, d0, d1"},
-  'sig-': {'inlets': 0, 'outlets': 1, 'datatypes': ['digital', 'digital'], 'colors': ['#229FD7', '#229FD7'], 'args': 1, 'code': " sig-, a0, d0"},
-
-  // Delay
-  'delay-': {'inlets': 2, 'outlets': 1, 'datatypes': ['digital', 'digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 0, 'code': " digidelay, d0, d1, d2"},
-
-  // arithmetics
-  '+-': {'inlets': 2, 'outlets': 1, 'datatypes': ['digital', 'digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 0, 'code': " +-, d0, d1, d2"},
-  '--': {'inlets': 2, 'outlets': 1, 'datatypes': ['digital', 'digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 0, 'code': " --, d0, d1, d2"},
-  '!--': {'inlets': 2, 'outlets': 1, 'datatypes': ['digital', 'digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 0, 'code': " !--, d0, d1, d2"},
-  '*-': {'inlets': 2, 'outlets': 1, 'datatypes': ['digital', 'digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 0, 'code': " *-, d0, d1, d2"},
-  '/-': {'inlets': 2, 'outlets': 1, 'datatypes': ['digital', 'digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 0, 'code': " /-, d0, d1, d2"},
-  '!/-': {'inlets': 2, 'outlets': 1, 'datatypes': ['digital', 'digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 0, 'code': " !/-, d0, d1, d2"},
-  '>-': {'inlets': 2, 'outlets': 1, 'datatypes': ['digital', 'digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 0, 'code': " >-, d0, d1, d2"},
-  '<-': {'inlets': 2, 'outlets': 1, 'datatypes': ['digital', 'digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 0, 'code': " <-, d0, d1, d2"},
-  '>=-': {'inlets': 2, 'outlets': 1, 'datatypes': ['digital', 'digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 0, 'code': " >=-, d0, d1, d2"},
-  '<=-': {'inlets': 2, 'outlets': 1, 'datatypes': ['digital', 'digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 0, 'code': " <=-, d0, d1, d2"},
-  '==-': {'inlets': 2, 'outlets': 1, 'datatypes': ['digital', 'digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 0, 'code': " ==-, d0, d1, d2"},
-  '!=-': {'inlets': 2, 'outlets': 1, 'datatypes': ['digital', 'digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 0, 'code': " !=-, d0, d1, d2"},
-  '%-': {'inlets': 2, 'outlets': 1, 'datatypes': ['digital', 'digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 0, 'code': " %, d0, d1, d2"},
-  '!%-': {'inlets': 2, 'outlets': 1, 'datatypes': ['digital', 'digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 0, 'code': " !%, d0, d1, d2"},
-
-  // Components from Gen
-  'phasor-': {'inlets': 2, 'outlets': 1, 'datatypes': ['digital', 'digital', 'digital'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 0, 'code': " phasor, d0, d1, d2"},
-
-}
 
 let history = [];
 let histpos = 0;
@@ -349,15 +380,15 @@ function precompile(save = 1) {
   for(let i = 0; i < boxes.length; i++) {
     let boxtype = boxes[i].gettype();
     let boxargs = boxes[i].getargs();
+    let optargs = boxes[i].getoptargs();
     let itercode = types[boxtype]['code'];
     let amtinlets = int(types[boxtype]['inlets']) + int(types[boxtype]['outlets']);
+
     for(let x = 0; x < amtinlets; x++) {
       let target = JSON.stringify([i, x]);
       for(var y=0; y<nodes.length; y++) {
              if( JSON.stringify(nodes[y]).includes(target)) break;
           }
-
-
         if(y >= nodes.length) {
           if(types[boxtype]["datatypes"] != undefined &&  types[boxtype]["datatypes"][x] == 'digital') {
             // this is where shit gets messy
@@ -376,12 +407,11 @@ function precompile(save = 1) {
                     digiExists[d] = digitalconns[d];
                   }
                 }
-
-
             }
 
         }
       }
+        itercode = itercode.replace("d"+x, 0);
 
           y = 0;
         }
@@ -392,7 +422,7 @@ function precompile(save = 1) {
     for(let x = 0; x < boxargs.length; x++) {
     itercode = itercode.replace("a"+x, boxargs[x])
   }
-    iterboxes[i] = itercode;
+    iterboxes[i] = itercode + ', ' + JSON.stringify(optargs);
   }
   let setupnodes = " ground, nodes".replace('nodes', nodes.length);
   code = setupnodes + iterboxes.join("\n");

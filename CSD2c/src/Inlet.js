@@ -9,7 +9,14 @@ function Inlet(x, y, instance, type, datatype, color = '#229FD7') {
   // This is the actual inlet
   let inletbutton = createButton("");
   inletbutton.size(8, 8);
+  if(datatype == 'digital') {
+    color = '#fcba03';
+  }
+
+
+
   inletbutton.style("border-radius:100%; border:none; outline:none; font-size:15; color:white; background-color:colorcode ; border: 0 none transparent; padding:0; margin:0;".replace('colorcode', color));
+
   inletbutton.position(x, y);
 
 
@@ -111,7 +118,7 @@ function Connection(start, end, datatype = 'analog') { // Optional argument 'dat
         stroke(0);
       }
       else {
-        stroke(100);
+        stroke(130);
       }
     }
     // Draw it!
