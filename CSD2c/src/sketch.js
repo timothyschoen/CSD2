@@ -356,11 +356,11 @@ function precompile(save = 1) {
         // check of type == digital!!
       for (let d = 0; d < digitalconns.length; d++) {
         if(JSON.stringify(digitalconns[d]).includes(target)) {
-            inletconns[x] = inletconns[x].concat(d);
+            inletconns[x] = inletconns[x].concat(d+1);
 
         }
       }
-      itercode = itercode.replace("d"+x, JSON.stringify(inletconns[x]));
+      itercode = itercode.replace("d"+x, JSON.stringify(inletconns[x]).replace(',', ':'));
 
       }
       for(let x = 0; x < boxargs.length; x++) {

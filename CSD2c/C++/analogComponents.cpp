@@ -30,9 +30,9 @@ struct AnalogDelay : Component<2, 1, 1>
     int currentSample;
     double buf[88200];
 
-    AnalogDelay(int time, float balance, int l0, int d0, int l1)
+    AnalogDelay(int time, float balance, int l0, std::string d0, int l1)
     {
-        digiPins[0] = d0;
+        //digiPins[0] = d0;
         pinLoc[0] = l0;
         pinLoc[1] = l1;
         t = time;
@@ -80,7 +80,7 @@ struct VariableResistor : Component<3>
     double  resvalue;
     double  negresvalue;
 
-    VariableResistor(double r, int l0, int l1, int d0) : r(r)
+    VariableResistor(double r, int l0, int l1, std::string d0) : r(r)
     {
         pinLoc[0] = l0;
         pinLoc[1] = l1;
@@ -101,7 +101,8 @@ struct VariableResistor : Component<3>
     }
     void updateInput(MNASystem & m) final
     {
-      resvalue = 1. / (r * m.digiValues[digiNets[0]]);
+
+      resvalue = 1. / (r * m.getDigital(digiNets[0]));
       negresvalue = -resvalue;
     }
 
@@ -116,7 +117,7 @@ struct Potentiometer : Component<3, 0, 1>
 
 
 
-    Potentiometer(double r, int l0, int l1, int l2, int d0) : r(r)
+    Potentiometer(double r, int l0, int l1, int l2, std::string d0) : r(r)
     {
         pinLoc[0] = l0; // in
         pinLoc[1] = l1; // out
@@ -158,8 +159,9 @@ struct Potentiometer : Component<3, 0, 1>
     }
     void updateInput(MNASystem & m) final
     {
-      resvalue = 1. / (r * m.digiValues[digiNets[0]]);
-      invresvalue = 1. / (r - (r * m.digiValues[digiNets[0]]));
+
+      resvalue = 1. / (r * m.getDigital(digiNets[0]));
+      invresvalue = 1. / (r - (r * m.getDigital(digiNets[1])));
     }
 
     void update(MNASystem & m) final

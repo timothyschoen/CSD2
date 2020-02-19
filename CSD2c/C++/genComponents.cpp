@@ -69,19 +69,21 @@ struct genLoader : Component<0, 0, 3>
     void updateInput(MNASystem & m) final
     {
       // Setting in
+      /*
     	for (int i = 0; i < nInChannels; i++) {
 
     			*(gInputs + i) = m.digiValues[digiNets[i]];
 
         inputbuff[i] = *(gInputs + i);
 
-    	}
+    	} */
 
 
     }
 
     void update(MNASystem & m) final
     {
+      /*
       for (int i = 0; i < nInChannels; i++) {
         ip[i] = &inputbuff[i];
       }
@@ -93,7 +95,7 @@ struct genLoader : Component<0, 0, 3>
     // Getting output
     for (int i = 0; i < nOutChannels; i++) {
     m.digiValues[digiNets[nInChannels+i]] = *op[0];
-  }
+  } */
 
     }
 

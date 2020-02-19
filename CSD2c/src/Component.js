@@ -254,6 +254,9 @@ function Component(name, xin = mouseX,  yin = mouseY-100) {
         if(types[type]['args'] != args.length) {
           optargs = args.splice(types[type]['args'], args.length)
         }
+        for (let i = 0; i < optargs.length; i++) {
+          optargs[i] = parseFloat(optargs[i])
+        }
         if(type == 'ground' &&  boxes.indexOf(this) != 0) {
           boxes.move(boxes.indexOf(this), 0);
         }

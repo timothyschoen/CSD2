@@ -8,13 +8,16 @@ struct digitalArithmetic : Component<0, 0, 3>
     std::string name;
     double input;
 
-    digitalArithmetic(std::string type, std::vector<std::string> init, int d0, int d1, int d2)
+    digitalArithmetic(std::string type, std::vector<std::string> init, std::string d0, std::string d1, std::string d2)
     {
         digiPins[0] = d0;
         digiPins[1] = d1;
         digiPins[2] = d2;
         if (init.size() > 0) {
          value = std::stof(init[0]);
+       }
+       else {
+         value = 0;
        }
         input = 0;
         name = type;
@@ -25,53 +28,54 @@ struct digitalArithmetic : Component<0, 0, 3>
 
     void updateInput(MNASystem & m) final
     {
-      input = m.digiValues[digiNets[0]];
-      if(digiNets[1])
-        value = m.digiValues[digiNets[1]];
+      input = m.getDigital(digiNets[0]);
+      value = m.getDigital(digiNets[1], value);
     }
 
     void update(MNASystem & m) final
     {
+      m.setDigital(digiNets[2], input+value);
+
       if(!name.compare("+-"))
-      m.digiValues[digiNets[2]] += input + value;
+      m.setDigital(digiNets[2], input+value);
       else if(!name.compare("--"))
-      m.digiValues[digiNets[2]] += input - value;
+      m.setDigital(digiNets[2], input-value);
       else if(!name.compare("!--"))
-      m.digiValues[digiNets[2]] += value - input;
+      m.setDigital(digiNets[2], value-input);
       else if(!name.compare("*-"))
-      m.digiValues[digiNets[2]] += input * value;
+      m.setDigital(digiNets[2], input*value);
       else if(!name.compare("/-"))
-      m.digiValues[digiNets[2]] += input / value;
+      m.setDigital(digiNets[2], input/value);
       else if(!name.compare("!/-"))
-      m.digiValues[digiNets[2]] += value / input;
+      m.setDigital(digiNets[2], value/input);
       else if(!name.compare(">-"))
-      m.digiValues[digiNets[2]] += input > value;
+      m.setDigital(digiNets[2], input>value);
       else if(!name.compare("<-"))
-      m.digiValues[digiNets[2]] += input < value;
+      m.setDigital(digiNets[2], input<value);
       else if(!name.compare(">=-"))
-      m.digiValues[digiNets[2]] += input >= value;
+      m.setDigital(digiNets[2], input>=value);
       else if(!name.compare("<=-"))
-      m.digiValues[digiNets[2]] += input <= value;
+      m.setDigital(digiNets[2], input<=value);
       else if(!name.compare("==-"))
-      m.digiValues[digiNets[2]] += input += value;
+      m.setDigital(digiNets[2], input==value);
       else if(!name.compare("!=-"))
-      m.digiValues[digiNets[2]] += input != value;
+      m.setDigital(digiNets[2], input!=value);
       else if(!name.compare("%-"))
-      m.digiValues[digiNets[2]] += fmod(input, value);
+      m.setDigital(digiNets[2], fmod(input, value));
       else if(!name.compare("!%-"))
-      m.digiValues[digiNets[2]] +=fmod(value, input);
+      m.setDigital(digiNets[2], fmod(value, input));
       else if(!name.compare("&&-") || !name.compare("and-"))
-      m.digiValues[digiNets[2]] += value && input;
+      m.setDigital(digiNets[2], input || value);
       else if(!name.compare("||") || !name.compare("or-"))
-      m.digiValues[digiNets[2]] += value || input;
+      m.setDigital(digiNets[2], input && value);
     }
 };
 
-struct digitalSignal : Component<0, 0, 2>
+struct digitalSignal : Component<0, 0, 1>
 {
     double  value;
 
-    digitalSignal(double init, int d0)
+    digitalSignal(double init, std::string d0)
     {
         digiPins[0] = d0;
         value = init;
@@ -83,7 +87,7 @@ struct digitalSignal : Component<0, 0, 2>
 
     void update(MNASystem & m) final
     {
-      m.digiValues[digiNets[0]] += value;
+      m.setDigital(digiNets[0], value);
     }
 };
 
@@ -92,7 +96,7 @@ struct digitalOutput : Component<0, 0, 2>
     double value[2];
     float amplitude;
 
-    digitalOutput(float amp, int d0, int d1)
+    digitalOutput(float amp, std::string d0, std::string d1)
     {
         digiPins[0] = d0;
         digiPins[1] = d1;
@@ -107,8 +111,9 @@ struct digitalOutput : Component<0, 0, 2>
 
     void updateInput(MNASystem & m) final
     {
-      value[0] = m.digiValues[digiNets[0]]*amplitude;
-      value[1] = m.digiValues[digiNets[1]]*amplitude;
+
+      value[0] = m.getDigital(digiNets[0]);
+      value[1] = m.getDigital(digiNets[1]);
     }
 
     double getAudioOutput(MNASystem & m, int channel)
@@ -123,7 +128,7 @@ struct digitalAnalogConverter : Component<2,1,1>
 
     double  v;
 
-    digitalAnalogConverter(int d0, int l0, int l1)
+    digitalAnalogConverter(std::string d0, int l0, int l1)
     {
         digiPins[0] = d0;
         pinLoc[0] = l0;
@@ -148,7 +153,7 @@ struct digitalAnalogConverter : Component<2,1,1>
 
     void updateInput(MNASystem & m) final
     {
-        v = m.digiValues[digiNets[0]];
+        v = m.getDigital(digiNets[0]);
     }
 
 };
@@ -160,7 +165,7 @@ struct analogDigitalConverter : Component<2, 1, 1>
     double y = 0;
     double xm1 = 0;
     double ym1 = 0;
-    analogDigitalConverter(int l0, int l1, int d0)
+    analogDigitalConverter(int l0, int l1, std::string d0)
     {
         pinLoc[0] = l0;
         pinLoc[1] = l1;
@@ -181,8 +186,8 @@ struct analogDigitalConverter : Component<2, 1, 1>
       y = x - xm1 + 0.995 * ym1;
       xm1 = x;
       ym1 = y;
+      m.setDigital(digiNets[0], x);
 
-      m.digiValues[digiNets[0]] += y;
     }
 
 };
@@ -193,7 +198,7 @@ struct dcBlock : Component<0, 0, 2>
     double y = 0;
     double xm1 = 0;
     double ym1 = 0;
-    dcBlock(int d0, int d1)
+    dcBlock(std::string d0, std::string d1)
     {
 
         digiPins[0] = d0;
@@ -207,14 +212,14 @@ struct dcBlock : Component<0, 0, 2>
 
     void updateInput(MNASystem & m) final
     {
-      x = m.digiValues[digiNets[0]];
+      x = m.getDigital(digiNets[0]);
       y = x - xm1 + 0.995 * ym1;
       xm1 = x;
       ym1 = y;
     }
     void update(MNASystem & m) final
     {
-      m.digiValues[digiNets[1]] += y;
+      m.setDigital(digiNets[1], y);
     }
 
 };
@@ -224,7 +229,7 @@ struct Changed : Component<0, 0, 2>
     double old;
     double in;
 
-    Changed(int d0, int d1)
+    Changed(std::string d0, std::string d1)
     {
 
         digiPins[0] = d0;
@@ -239,12 +244,12 @@ struct Changed : Component<0, 0, 2>
 
     void updateInput(MNASystem & m) final
     {
-      in = m.digiValues[digiNets[0]];
+      in = m.getDigital(digiNets[0]);
 
     }
     void update(MNASystem & m) final
     {
-      m.digiValues[digiNets[1]] += (in != old);
+      m.setDigital(digiNets[1], (in != old));
       in = old;
     }
 
@@ -255,7 +260,7 @@ struct History : Component<0, 0, 2>
     double old;
     double in;
 
-    History(int d0, int d1)
+    History(std::string d0, std::string d1)
     {
 
         digiPins[0] = d0;
@@ -270,12 +275,12 @@ struct History : Component<0, 0, 2>
 
     void updateInput(MNASystem & m) final
     {
-      in = m.digiValues[digiNets[0]];
+      in = m.getDigital(digiNets[0]);
 
     }
     void update(MNASystem & m) final
     {
-      m.digiValues[digiNets[1]] += old;
+      m.setDigital(digiNets[1], old);
       in = old;
     }
 
@@ -286,7 +291,7 @@ struct getDelta : Component<0, 0, 2>
     double old;
     double in;
 
-    getDelta(int d0, int d1)
+    getDelta(std::string d0, std::string d1)
     {
 
         digiPins[0] = d0;
@@ -301,12 +306,12 @@ struct getDelta : Component<0, 0, 2>
 
     void updateInput(MNASystem & m) final
     {
-      in = m.digiValues[digiNets[0]];
+      in = m.getDigital(digiNets[0]);
 
     }
     void update(MNASystem & m) final
     {
-      m.digiValues[digiNets[1]] += in-old;
+      m.setDigital(digiNets[1], in-old);
       in = old;
     }
 
@@ -317,7 +322,7 @@ struct accumulate : Component<0, 0, 2>
 {
     long double accum;
 
-    accumulate(int d0, int d1)
+    accumulate(std::string d0, std::string d1)
     {
 
         digiPins[0] = d0;
@@ -332,12 +337,12 @@ struct accumulate : Component<0, 0, 2>
 
     void updateInput(MNASystem & m) final
     {
-      accum += m.digiValues[digiNets[0]];
+      accum += m.getDigital(digiNets[0]);
 
     }
     void update(MNASystem & m) final
     {
-      m.digiValues[digiNets[1]] += accum;
+      m.setDigital(digiNets[1], accum);
     }
 
 };
@@ -347,7 +352,7 @@ struct absol : Component<0, 0, 2>
 {
     double input;
 
-    absol(int d0, int d1)
+    absol(std::string d0, std::string d1)
     {
 
         digiPins[0] = d0;
@@ -362,12 +367,13 @@ struct absol : Component<0, 0, 2>
 
     void updateInput(MNASystem & m) final
     {
-      input = abs(m.digiValues[digiNets[0]]);
+
+      input = abs(m.getDigital(digiNets[0]));
 
     }
     void update(MNASystem & m) final
     {
-      m.digiValues[digiNets[1]] += input;
+      m.setDigital(digiNets[1], input);
     }
 
 };
@@ -375,7 +381,7 @@ struct flor : Component<0, 0, 2>
 {
     double input;
 
-    flor(int d0, int d1)
+    flor(std::string d0, std::string d1)
     {
 
         digiPins[0] = d0;
@@ -390,12 +396,12 @@ struct flor : Component<0, 0, 2>
 
     void updateInput(MNASystem & m) final
     {
-      input = m.digiValues[digiNets[0]];
+      input = m.getDigital(digiNets[0]);
 
     }
     void update(MNASystem & m) final
     {
-      m.digiValues[digiNets[1]] += int(input);
+      m.setDigital(digiNets[1], int(input));
     }
 };
 
@@ -403,7 +409,7 @@ struct ceiling : Component<0, 0, 2>
 {
     double input;
 
-    ceiling(int d0, int d1)
+    ceiling(std::string d0, std::string d1)
     {
 
         digiPins[0] = d0;
@@ -418,12 +424,13 @@ struct ceiling : Component<0, 0, 2>
 
     void updateInput(MNASystem & m) final
     {
-      input = m.digiValues[digiNets[0]];
+      input = m.getDigital(digiNets[0]);
 
     }
     void update(MNASystem & m) final
     {
-      m.digiValues[digiNets[1]] += int(input+1);
+      m.setDigital(digiNets[1], int(input+1));
+
     }
 
 };
@@ -432,7 +439,7 @@ struct gate : Component<0, 0, 2>
 {
     double input;
 
-    gate(int d0, int d1, int d2)
+    gate(std::string d0, std::string d1, std::string d2)
     {
 
         digiPins[0] = d0;
@@ -448,12 +455,13 @@ struct gate : Component<0, 0, 2>
 
     void updateInput(MNASystem & m) final
     {
-      input = m.digiValues[digiNets[0]];
+      input = m.getDigital(digiNets[0]);
 
     }
     void update(MNASystem & m) final
     {
-      m.digiValues[digiNets[1]] += int(input+1);
+      m.setDigital(digiNets[1], int(input+1));
+
     }
 
 };
@@ -462,7 +470,7 @@ struct Elapsed : Component<0, 0, 1>
 {
 
 
-    Elapsed(int d0, int d1)
+    Elapsed(std::string d0, std::string d1)
     {
 
         digiPins[0] = d0;
@@ -475,7 +483,8 @@ struct Elapsed : Component<0, 0, 1>
 
     void update(MNASystem & m) final
     {
-      m.digiValues[digiNets[1]] += m.ticks;
+      m.setDigital(digiNets[1], m.ticks);
+
     }
 
 };
@@ -490,7 +499,7 @@ struct digitalInput : Component<0, 0, 1>
     int numSamples;
     AudioFile<double> audioFile;
 
-    digitalInput(std::string path, double inamp, int d0)
+    digitalInput(std::string path, double inamp, std::string d0)
     {
         digiPins[0] = d0;
         amplitude = inamp;
@@ -503,8 +512,8 @@ struct digitalInput : Component<0, 0, 1>
 
     void update(MNASystem & m) final
     {
-        if(m.ticks > 0)
-          m.digiValues[digiNets[0]] = audioFile.samples[0][fmod(m.ticks, numSamples)]*amplitude;
+        m.setDigital(digiNets[0], audioFile.samples[0][fmod(m.ticks, numSamples)]*amplitude);
+
 
 
 
@@ -518,7 +527,7 @@ struct rtDigitalInput : Component<0, 0, 1>
     double amplitude;
     double inputvalue;
 
-    rtDigitalInput(double inamp, int d0)
+    rtDigitalInput(double inamp, std::string d0)
     {
         digiPins[0] = d0;
         amplitude = inamp;
@@ -530,7 +539,8 @@ struct rtDigitalInput : Component<0, 0, 1>
     { }
     void update(MNASystem & m) final
     {
-      m.digiValues[digiNets[0]] = inputvalue*amplitude;
+      m.setDigital(digiNets[0], inputvalue*amplitude);
+
     }
 
     void setAudioInput(MNASystem & m, double input) final
@@ -548,7 +558,7 @@ struct MidiInput : Component<0, 0, 3>
 
     int input;
 
-    MidiInput(int d0, int d1)
+    MidiInput(std::string d0, std::string d1)
     {
         digiPins[0] = d0;
         digiPins[1] = d1;
@@ -560,7 +570,6 @@ struct MidiInput : Component<0, 0, 3>
     { }
     void update(MNASystem & m) final
     {
-      //m.digiValues[digiNets[0]] = input;
     }
 
     void setMidiInput(MNASystem & m, std::vector<unsigned char> message) final
@@ -578,7 +587,7 @@ struct mToF : Component<0, 0, 2>
 
     double input;
 
-    mToF(int d0, int d1)
+    mToF(std::string d0, std::string d1)
     {
         digiPins[0] = d0;
         digiPins[1] = d1;
@@ -590,12 +599,12 @@ struct mToF : Component<0, 0, 2>
     { }
     void update(MNASystem & m) final
     {
-      m.digiValues[digiNets[1]] = double(440. * pow(2, ((float)input - 49) / 12));
+      m.setDigital(digiNets[1], double(440. * pow(2, ((float)input - 49) / 12)));
     }
 
     void updateInput(MNASystem & m) final
     {
-        input = m.digiValues[digiNets[0]];
+        input = m.getDigital(digiNets[0]);
 
     }
 
@@ -608,7 +617,7 @@ struct midiNoteIn : Component<0, 0, 2>
     int note;
     int velocity;
 
-    midiNoteIn(int d0, int d1)
+    midiNoteIn(std::string d0, std::string d1)
     {
         digiPins[0] = d0;
         digiPins[1] = d1;
@@ -621,8 +630,11 @@ struct midiNoteIn : Component<0, 0, 2>
     { }
     void update(MNASystem & m) final
     {
-      m.digiValues[digiNets[0]] = note;
-      m.digiValues[digiNets[1]] = velocity;
+      m.setDigital(digiNets[0], note);
+      m.setDigital(digiNets[1], velocity);
+
+      m.setDigital(digiNets[0], note);
+      m.setDigital(digiNets[1], velocity);
     }
 
     void setMidiInput(MNASystem & m, std::vector<unsigned char> message) final
@@ -644,12 +656,14 @@ struct stereoDigitalInput : Component<0,0,2>
 
     double amplitude;
     int numSamples;
+    std::string inStrings[2];
     AudioFile<double> audioFile;
 
-    stereoDigitalInput(std::string path, double inamp, int d0, int d1)
+    stereoDigitalInput(std::string path, double inamp, std::string d0, std::string d1)
     {
         digiPins[0] = d0;
         digiPins[1] = d1;
+
         amplitude = inamp;
         audioFile.load(path);
         numSamples = audioFile.getNumSamplesPerChannel();
@@ -660,9 +674,10 @@ struct stereoDigitalInput : Component<0,0,2>
 
     void update(MNASystem & m) final
     {
-        if(m.ticks > 0)
-          m.digiValues[digiNets[0]] = audioFile.samples[0][fmod(m.ticks, numSamples)]*amplitude;
-          m.digiValues[digiNets[1]] = audioFile.samples[1][fmod(m.ticks, numSamples)]*amplitude;
+
+      m.setDigital(digiNets[0], audioFile.samples[0][fmod(m.ticks, numSamples)]*amplitude);
+      m.setDigital(digiNets[1], audioFile.samples[1][fmod(m.ticks, numSamples)]*amplitude);
+
     }
 
 };
@@ -674,7 +689,7 @@ struct digitalCycle : Component<0, 0, 2>
     double  freq;
     double phase;
 
-    digitalCycle(std::vector<std::string> a_args, int d0, int d1)
+    digitalCycle(std::vector<std::string> a_args, std::string d0, std::string d1)
     {
         digiPins[0] = d0;
         digiPins[1] = d1;
@@ -691,14 +706,14 @@ struct digitalCycle : Component<0, 0, 2>
 
     void updateInput(MNASystem & m) final
     {
-      if(digiNets[0]) freq = m.digiValues[digiNets[0]];
+      freq = m.getDigital(digiNets[0], freq);
       phase += freq / 44100.;
       if(phase >= 1) phase = phase - 1;
     }
 
     void update(MNASystem & m) final
     {
-      m.digiValues[digiNets[1]] += (sin(phase * 2. * 3.14159265358979323846)+1.)/2.;
+      m.setDigital(digiNets[1], (sin(phase * 2. * 3.14159265358979323846)+1.)/2.);
     }
 };
 
@@ -711,11 +726,12 @@ struct digitalDelay : Component<0, 0, 3>
     std::vector<double> buf;
     float a = 0.05;
 
-    digitalDelay(std::vector<std::string> init, int d0, int d1, int d2)
+    digitalDelay(std::vector<std::string> init, std::string d0, std::string d1, std::string d2)
     {
         digiPins[0] = d0;
         digiPins[1] = d1;
         digiPins[2] = d2;
+
         if(init.size() > 0) buf.resize(stoi(init[0]));
         else buf.resize(88200);
         if(init.size() > 1) t = stof(init[1]);
@@ -729,10 +745,12 @@ struct digitalDelay : Component<0, 0, 3>
 
     void updateInput(MNASystem & m) final
     {
-    if(digiNets[1]) t = (int)m.digiValues[digiNets[1]];
+
+
+    t = (int)m.getDigital(digiNets[1]);
 
     //Write current value
-    buf[currentSample] = m.digiValues[digiNets[0]];
+    buf[currentSample] = m.getDigital(digiNets[0]);
     }
 
     void update(MNASystem & m) final
@@ -742,13 +760,10 @@ struct digitalDelay : Component<0, 0, 3>
       // Don't delay while loading
       if (currentSample >= 88200) currentSample = currentSample-88200;
 
-
-
       smoothTime = (1-a)*prevTime + a * t;
       prevTime = smoothTime;
 
-      // Read buffered value
-      m.digiValues[digiNets[2]] += buf[int(currentSample+88200-smoothTime)%88200];
+      m.setDigital(digiNets[2], buf[int(currentSample+88200-smoothTime)%88200]);
 
 
     }

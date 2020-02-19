@@ -170,8 +170,31 @@ struct MNASystem
       A[r][c].g -= g;
       A[c][r].g -= g;
       A[c][c].g += g;
+    }
+
+    void setDigital(std::vector<int> outputs, double value)
+    {
+      for (size_t i = 0; i < outputs.size(); i++) {
+        digiValues[outputs[i]] = value;
+      }
 
     }
+
+    double getDigital(std::vector<int> inputs, double fallback = 0)
+    {
+      double accum = 0;
+      if (inputs.size() > 0) {
+      for (size_t i = 0; i < inputs.size(); i++) {
+        accum += digiValues[inputs[i]];
+      }
+    }
+    else {
+      accum = fallback;
+    }
+      return accum;
+    }
+
+
 };
 
 struct IComponent
@@ -184,7 +207,7 @@ struct IComponent
     // return a pointer to array of pin locations
     // NOTE: these will eventually be GUI locations to be unified
     virtual const int* getPinLocs() const = 0;
-    virtual const int* getDigiLocs() const = 0;
+    virtual const std::vector<std::string> getDigiLocs() const = 0;
 
     // setup pins and calculate the size of the full netlist
     // the Component<> will handle this automatically
@@ -192,7 +215,7 @@ struct IComponent
     //  - netSize is the current size of the netlist
     //  - pins is an array of circuits nodes
     //
-    virtual void setupNets(int & netSize, int & states, const int* pins, const int* digiPins) = 0;
+    virtual void setupNets(int & netSize, int & states, const int* pins, const std::vector<std::string> digiPins) = 0;
 
     virtual void digitalReset(const int* digiPins) = 0;
 
@@ -232,23 +255,45 @@ struct Component : IComponent
 
     int pinLoc[nPins];
     int nets[nNets];
-    int digiPins[nDigipins];
-    int digiNets[nDigipins];
+    std::vector<std::vector<int>> digiNets = std::vector<std::vector<int>>(nDigipins);
+    std::vector<std::string> digiPins = std::vector<std::string>(nDigipins);
+
+    //std::string digiNets[nDigipins];
 
     int pinCount() final { return nPins; }
 
     const int* getPinLocs() const final { return pinLoc; } // This is used for running setupnets!!!! (for linking pinloc to nets)
-    const int* getDigiLocs() const final { return digiPins; }
+    const std::vector<std::string> getDigiLocs() const final { return digiPins; }
 
-    void setupNets(int & netSize, int & states, const int* pins, const int* digipins) final
+
+    void setupNets(int & netSize, int & states, const int* pins, const std::vector<std::string> digipins) final
     {
         for(int i = 0; i < nPins; ++i)
         {
             nets[i] = pins[i];
         }
+
         for(int i = 0; i < nDigipins; ++i)
         {
-            digiNets[i] = digipins[i];
+          std::string connections = digipins[i];
+          connections.erase(0, 1);
+          connections.erase(connections.size()-1, 1);
+          std::cout << connections << '\n';
+          std::stringstream ss(connections);
+          std::string obj;
+          std::vector<int> inputs;
+
+          if(connections.size() > 2) {
+          while(std::getline(ss,obj,':')){
+            std::cout << obj << '\n';
+            inputs.push_back(std::stoi(obj));
+          }
+        }
+          else if (connections.size() != 0){
+            inputs.push_back(std::stoi(connections));
+          }
+
+            digiNets[i] = inputs;
         }
 
         for(int i = 0; i < nInternalNets; ++i)
@@ -262,7 +307,7 @@ struct Component : IComponent
     {
         for(int i = 0; i < nDigipins; ++i)
         {
-            digiNets[i] = digipins[i];
+            //digiNets[i] = digipins[i];
         }
     }
 };
@@ -279,6 +324,7 @@ struct NetList
 
     void addComponent(IComponent * c)
     {
+
         c->setupNets(nets, states, c->getPinLocs(), c->getDigiLocs());
         components.push_back(c);
     }
@@ -415,13 +461,8 @@ protected:
 
     MNASystem       system;
 
-    void update()
-    {
+    void update() {
 
-      for(int i = 0; i < 30; i++)
-      {
-          system.digiValues[i] = 0;
-      }
 
       for(int i = 0; i < components.size(); ++i)
       {

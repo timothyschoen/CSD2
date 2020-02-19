@@ -1,3 +1,4 @@
+#include <sstream>
 #include "./jack/jack_module.h"
 #include "./halite.cpp"
 #include "./digitalComponents.cpp"
@@ -6,7 +7,7 @@
 
 #include "./rtmidi-master/RtMidi.h"
 
-#include <sstream>
+
 #include <fstream>
 #include <streambuf>
 #include <tclap/CmdLine.h>
@@ -91,13 +92,9 @@ str.assign((std::istreambuf_iterator<char>(t)),
       }
 
 
-
-      std::string args = seglist[seglist.size()-1];
+      std::stringstream argstream(seglist[seglist.size()-1]);
       std::string parsedargs;
 
-      args.erase(0, 1);
-      args.erase(args.size()-1, 1);
-      std::stringstream argstream(args);
 
       while(std::getline(argstream, parsedargs, ','))
       {
@@ -106,81 +103,82 @@ str.assign((std::istreambuf_iterator<char>(t)),
          optargs.push_back(parsedargs);
       }
 
+      std::cout << seglist[0] << '\n';
+
       if(!seglist[0].compare("ground")) {
       net = new NetList(stoi(seglist[1]));
     }
-
 // Digital components
 
     else if(!seglist[0].compare("cycle-"))
-    net->addComponent(new digitalCycle(optargs, std::stoi(seglist[1]), std::stoi(seglist[2])));
+    net->addComponent(new digitalCycle(optargs, seglist[1], seglist[1]));
 
     else if(!seglist[0].compare("sig-"))
-    net->addComponent(new digitalSignal(std::stof(seglist[1]), std::stoi(seglist[2])));
+    net->addComponent(new digitalSignal(std::stof(seglist[1]), seglist[2]));
 
     else if(!seglist[0].compare("dac"))
-    net->addComponent(new digitalAnalogConverter(std::stoi(seglist[1]), std::stoi(seglist[2]), std::stoi(seglist[3])));
+    net->addComponent(new digitalAnalogConverter(seglist[1], std::stoi(seglist[2]), std::stoi(seglist[3])));
 
     else if(!seglist[0].compare("adc"))
-    net->addComponent(new analogDigitalConverter(std::stoi(seglist[1]), std::stoi(seglist[2]), std::stoi(seglist[3])));
+    net->addComponent(new analogDigitalConverter(std::stoi(seglist[1]), std::stoi(seglist[2]), seglist[3]));
 
     else if(!seglist[0].compare("output-"))
-    net->addComponent(new digitalOutput(std::stof(seglist[1]), std::stoi(seglist[2]), std::stoi(seglist[3])));
+    net->addComponent(new digitalOutput(std::stof(seglist[1]), seglist[2], seglist[3]));
 
     else if(!seglist[0].compare("input-"))
-    net->addComponent(new digitalInput(seglist[1], std::stof(seglist[2]), std::stoi(seglist[2])));
+    net->addComponent(new digitalInput(seglist[1], std::stof(seglist[2]), seglist[1]));
 
     else if(!seglist[0].compare("stinput-"))
-    net->addComponent(new stereoDigitalInput(seglist[1], std::stof(seglist[2]), std::stoi(seglist[3]), std::stoi(seglist[4])));
+    net->addComponent(new stereoDigitalInput(seglist[1], std::stof(seglist[2]), seglist[3], seglist[4]));
 
     else if(!seglist[0].compare("rtinput-"))
-    net->addComponent(new rtDigitalInput(std::stof(seglist[1]), std::stoi(seglist[2])));
+    net->addComponent(new rtDigitalInput(std::stof(seglist[1]), seglist[1]));
 
     else if(!seglist[0].compare("midiin-"))
-    net->addComponent(new MidiInput(std::stoi(seglist[1]), std::stoi(seglist[2])));
+    net->addComponent(new MidiInput(seglist[1], seglist[1]));
 
     else if(!seglist[0].compare("notein-"))
-    net->addComponent(new midiNoteIn(std::stoi(seglist[1]), std::stoi(seglist[2])));
+    net->addComponent(new midiNoteIn(seglist[1], seglist[1]));
 
     else if(!seglist[0].compare("mtof-"))
-    net->addComponent(new mToF(std::stoi(seglist[1]), std::stoi(seglist[2])));
+    net->addComponent(new mToF(seglist[1], seglist[1]));
 
     else if(!seglist[0].compare("digidelay"))
-    net->addComponent(new digitalDelay(optargs, std::stoi(seglist[1]), std::stoi(seglist[2]), std::stoi(seglist[3])));
+    net->addComponent(new digitalDelay(optargs, seglist[1], seglist[2], seglist[3]));
 
     else if(!seglist[0].compare("dcblock-"))
-    net->addComponent(new dcBlock(std::stoi(seglist[1]), std::stoi(seglist[2])));
+    net->addComponent(new dcBlock(seglist[1], seglist[1]));
 
     else if(!seglist[0].compare("change-"))
-    net->addComponent(new Changed(std::stoi(seglist[1]), std::stoi(seglist[2])));
+    net->addComponent(new Changed(seglist[1], seglist[1]));
 
     else if(!seglist[0].compare("delta-"))
-    net->addComponent(new getDelta(std::stoi(seglist[1]), std::stoi(seglist[2])));
+    net->addComponent(new getDelta(seglist[1], seglist[1]));
 
     else if(!seglist[0].compare("history-"))
-    net->addComponent(new History(std::stoi(seglist[1]), std::stoi(seglist[2])));
+    net->addComponent(new History(seglist[1], seglist[1]));
 
     else if(!seglist[0].compare("elapsed-"))
-    net->addComponent(new Elapsed(std::stoi(seglist[1]), std::stoi(seglist[2])));
+    net->addComponent(new Elapsed(seglist[1], seglist[1]));
 
     else if(!seglist[0].compare("accum-"))
-    net->addComponent(new accumulate(std::stoi(seglist[1]), std::stoi(seglist[2])));
+    net->addComponent(new accumulate(seglist[1], seglist[1]));
 
     else if(!seglist[0].compare("abs-"))
-    net->addComponent(new absol(std::stoi(seglist[1]), std::stoi(seglist[2])));
+    net->addComponent(new absol(seglist[1], seglist[1]));
 
     else if(!seglist[0].compare("ceil-"))
-    net->addComponent(new ceiling(std::stoi(seglist[1]), std::stoi(seglist[2])));
+    net->addComponent(new ceiling(seglist[1], seglist[1]));
 
     else if(!seglist[0].compare("floor-"))
-    net->addComponent(new flor(std::stoi(seglist[1]), std::stoi(seglist[2])));
+    net->addComponent(new flor(seglist[1], seglist[1]));
  // Analog components
 
       else if(!seglist[0].compare("resistor"))
       net->addComponent(new Resistor(stof(seglist[1]), std::stoi(seglist[2]), std::stoi(seglist[3])));
 
       else if(!seglist[0].compare("varres"))
-      net->addComponent(new VariableResistor(stof(seglist[1]), std::stoi(seglist[2]), std::stoi(seglist[3]), std::stoi(seglist[4])));
+      net->addComponent(new VariableResistor(stof(seglist[1]), std::stoi(seglist[2]), std::stoi(seglist[3]), seglist[4]));
       else if(!seglist[0].compare("capacitor"))
       net->addComponent(new Capacitor(stod(seglist[1]), std::stoi(seglist[2]), std::stoi(seglist[3])));
 
@@ -203,14 +201,14 @@ str.assign((std::istreambuf_iterator<char>(t)),
       net->addComponent(new OPA(std::stoi(seglist[1]), std::stoi(seglist[2]), std::stoi(seglist[3]), std::stoi(seglist[4]), std::stoi(seglist[5])));
 
       else if(!seglist[0].compare("potentiometer")) {
-        net->addComponent(new Potentiometer(stof(seglist[1]), stoi(seglist[2]), stoi(seglist[3]), stoi(seglist[4]), stoi(seglist[5])));
+        net->addComponent(new Potentiometer(stof(seglist[1]), stoi(seglist[2]), stoi(seglist[3]), stoi(seglist[4]), seglist[5]));
       }
 
       else if(!seglist[0].compare("print"))
       net->addComponent(new Printer(std::stoi(seglist[1]), std::stoi(seglist[2])));
 
       else if(!seglist[0].compare("delay"))
-      net->addComponent(new AnalogDelay(std::stoi(seglist[1]), std::stof(seglist[2]), std::stoi(seglist[3]), std::stoi(seglist[4]), std::stoi(seglist[5])));
+      net->addComponent(new AnalogDelay(std::stoi(seglist[1]), std::stof(seglist[2]), std::stoi(seglist[3]), seglist[4], std::stoi(seglist[5])));
 
 
 
@@ -232,7 +230,7 @@ str.assign((std::istreambuf_iterator<char>(t)),
               !seglist[0].compare("!=-") ||
               !seglist[0].compare("%-")  ||
               !seglist[0].compare("!%-"))
-        net->addComponent(new digitalArithmetic(seglist[0], optargs, std::stoi(seglist[1]), std::stoi(seglist[2]), std::stoi(seglist[3]))); // Add optional arguments in JS!!!!
+        net->addComponent(new digitalArithmetic(seglist[0], optargs, seglist[1], seglist[2],seglist[3]));
 
 
       else if(!seglist[0].compare("probe")) {
@@ -241,8 +239,6 @@ str.assign((std::istreambuf_iterator<char>(t)),
       }
 
     }
-
-
 
 net->buildSystem();
 
@@ -331,7 +327,6 @@ else {
 
   std::vector<unsigned char> message;
   int nBytes;
-  double stamp;
 
   while(true){
     midiin->getMessage( &message );
