@@ -311,10 +311,9 @@ if(connecting != -1) {
 
 // Convert our line-based network into an electrical nodes network that Halite can interpret
 function precompile(save = 1) {
-    let iterconnections = [];
+    let iterconnections = [[[0, 0], [0, 0]]];
     let digitalconns = [];
     let iterboxes = [];
-    let nodes = [];
     for(let i = 0; i < connections.length; i++) {
       if(connections[i].gettype() != 'digital') {
         let lets = connections[i].getinlets();
@@ -326,105 +325,58 @@ function precompile(save = 1) {
       }
     }
 
-
-
-  // First find all unique connection points
-  // This is a real pain in the ass because js doesn't really allow comparing subarrays...
-    for(let x = 0; x < iterconnections.length; x++) {
-        for(let z = 0; z < iterconnections[x].length; z++) {
-          if(!JSON.stringify(nodes).includes(JSON.stringify(iterconnections[x][z]))) {
-              // fix ground to 0
-            if (iterconnections[x][0][0] == 0) {
-              nodes.unshift(iterconnections[x]);
-            }
-            else {
-            nodes.push(iterconnections[x]);
-          }
-          }
-        }
-    }
-    // Check if these points are connected to other points
-      for(let x = 0; x < nodes.length; x++) {
-          for(let y = 0; y < nodes[x].length; y++) {
-            for(let z = 0; z < nodes.length; z++) {
-                for(let a = 0; a < nodes[z].length; a++) {
-            if(JSON.stringify(nodes[x]).includes(JSON.stringify(nodes[z][a])) && x != z) {
-              nodes[x].push(nodes[z][0]);
-              nodes[x].push(nodes[z][1]);
-              nodes[x] = removeDuplicates(nodes[x]);
-              nodes[z] = [];
+    let exists = [[0, 0]];
+    for(let i = 0; i < boxes.length; i++) {
+      let boxtype = boxes[i].gettype();
+      let boxargs = boxes[i].getargs();
+      let optargs = boxes[i].getoptargs();
+      let itercode = types[boxtype]['code'];
+      let amtinlets = int(types[boxtype]['inlets']) + int(types[boxtype]['outlets']);
+      let inletconns = Array(amtinlets).fill([]);
+      for(let x = 0; x < amtinlets; x++) {
+        let target = JSON.stringify([i, x]);
+        for (var d = 0; d < iterconnections.length; d++) {
+          if(JSON.stringify(iterconnections[d]).includes(target)) {
+            let returnval = 0;
+            for (var ex = 0; ex < exists.length; ex++) {
+              if(exists[ex] != undefined && (JSON.stringify(exists[ex]).includes(JSON.stringify(iterconnections[d][0])) || JSON.stringify(exists[ex]).includes(JSON.stringify(iterconnections[d][1])))) {
+                exists[ex].push(iterconnections[d][0])
+                exists[ex].push(iterconnections[d][1])
+                itercode = itercode.replace("i"+x, ex);
+                returnval = 1;
+                break;
               }
             }
-        }
-      }
-    }
-
-  // remove empty leftovers
-  for(let x = nodes.length-1; x >= 0;  x--) {
-      if(nodes[x].length == 0 || nodes[x] == null) {
-        nodes.splice(x, 1);
-      }
-  }
-  let digitalconnections = 0;
-  let digiExists = [[0, 0]];
-  for(let i = 0; i < boxes.length; i++) {
-    let boxtype = boxes[i].gettype();
-    let boxargs = boxes[i].getargs();
-    let optargs = boxes[i].getoptargs();
-    let itercode = types[boxtype]['code'];
-    let amtinlets = int(types[boxtype]['inlets']) + int(types[boxtype]['outlets']);
-
-    for(let x = 0; x < amtinlets; x++) {
-      let target = JSON.stringify([i, x]);
-      for(var y=0; y<nodes.length; y++) {
-             if( JSON.stringify(nodes[y]).includes(target)) break;
+          if(!returnval) {
+            itercode = itercode.replace("i"+x, exists.length);
+            exists.push(iterconnections[d]);
           }
-        if(y >= nodes.length) {
-          if(types[boxtype]["datatypes"] != undefined &&  types[boxtype]["datatypes"][x] == 'digital') {
-
-            for (var d = 0; d < digitalconns.length; d++) {
-              if(JSON.stringify(digitalconns[d]).includes(target)) {
-                // hier ingrijpen!!!
-                console.log(JSON.stringify(digitalconns[d]), d , '\n');
-
-                for (var ex = 0; ex < digiExists.length; ex++) {
-                  //console.log('length: ', digiExists.length, 'index: ', ex, 'array: ', digiExists[ex] == undefined);
-
-                  console.log();
-                  if(digiExists[ex] != undefined && (JSON.stringify(digiExists[ex]).includes(JSON.stringify(digitalconns[d][0])) || JSON.stringify(digiExists[ex]).includes(JSON.stringify(digitalconns[d][1])))) {
-                    digiExists[ex].push(digitalconns[d][0])
-                    digiExists[ex].push(digitalconns[d][1])
-                    itercode = itercode.replace("d"+x, ex+nodes.length);
-                  }
-                  else {
-                    itercode = itercode.replace("d"+x, d+nodes.length);
-                    digiExists[d] = digitalconns[d];
-                  }
-                }
-            }
+       }
+    }
+        // check of type == digital!!
+      for (let d = 0; d < digitalconns.length; d++) {
+        if(JSON.stringify(digitalconns[d]).includes(target)) {
+            inletconns[x] = inletconns[x].concat(d);
 
         }
       }
-        itercode = itercode.replace("d"+x, 0);
+      itercode = itercode.replace("d"+x, JSON.stringify(inletconns[x]));
 
-          y = 0;
+      }
+      for(let x = 0; x < boxargs.length; x++) {
+        itercode = itercode.replace("a"+x, boxargs[x])
         }
-            itercode = itercode.replace("i"+x, y)
-
-
+      itercode = itercode + ', ' + JSON.stringify(optargs);
+      iterboxes[i] = itercode;
     }
-    for(let x = 0; x < boxargs.length; x++) {
-    itercode = itercode.replace("a"+x, boxargs[x])
-  }
-    iterboxes[i] = itercode + ', ' + JSON.stringify(optargs);
-  }
-  let setupnodes = " ground, nodes".replace('nodes', nodes.length);
-  code = setupnodes + iterboxes.join("\n");
-  sbar.codeUpdate(code);
 
-  if(save) {
-  fs.writeFileSync("./precompile.ncl", code);
-  }
+    let setupnodes = " ground, nodes".replace('nodes', exists.length-1);
+    code = setupnodes + iterboxes.join("\n");
+    sbar.codeUpdate(code);
+
+    if(save) {
+      fs.writeFileSync("./precompile.ncl", code);
+    }
 }
 
 function startHalite(realtime) {

@@ -252,7 +252,7 @@ std::cout << (double)1/enginesamplerate << std::endl;
 
 
 net->setTimeStep((double)1/enginesamplerate);
-net->timeJump(10);
+//net->timeJump(10);
 net->simulateTick();
 
 
@@ -272,6 +272,7 @@ if (realtime == false) {
       std::cout << int(i * (100./float(length))) << "%" << std::endl;
     }
     net->simulateTick();
+
     output = net->getAudioOutput();
     //std::cout << *output << '\n';
 
