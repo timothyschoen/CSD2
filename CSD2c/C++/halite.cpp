@@ -282,8 +282,9 @@ struct Component : IComponent
           std::stringstream ss(connections);
           std::string obj;
           std::vector<int> inputs;
-
+          std::cout << "connecions"  << connections << '\n';
           if(connections.size() > 2) {
+
           while(std::getline(ss,obj,':')){
             std::cout << obj << '\n';
             inputs.push_back(std::stoi(obj));

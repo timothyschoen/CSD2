@@ -392,48 +392,6 @@ struct Function : Component<2,1>
 
 };
 
-struct InputSignal : Component<2,1>
-{
-
-    double  v;
-    float freq;
-    double phase;
-
-    InputSignal(float Hz, int l0, int l1)
-    {
-        pinLoc[0] = l0;
-        pinLoc[1] = l1;
-        freq = Hz;
-
-        v = sin(0);
-    }
-
-    void stamp(MNASystem & m) final
-    {
-        // this is identical to voltage source
-        // except voltage is dynanic
-        m.stampStatic(-1, nets[0], nets[2]);
-        m.stampStatic(+1, nets[1], nets[2]);
-
-        m.stampStatic(+1, nets[2], nets[0]);
-        m.stampStatic(-1, nets[2], nets[1]);
-
-        m.b[nets[2]].gdyn.push_back(&v);
-
-        m.nodes[nets[2]].type = MNANodeInfo::tCurrent;
-    }
-
-    void update(MNASystem & m) final
-    {
-        phase += freq / 44100.;
-        if(phase >= 1) phase = phase - 1;
-        v = (sin(phase * 2. * 3.14159265358979323846)+1.)/2.;
-
-
-
-    }
-
-};
 
 struct InputSample : Component<2,1>
 {

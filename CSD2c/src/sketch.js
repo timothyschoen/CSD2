@@ -16,7 +16,6 @@ let types = {
   // Our analog Components
   'varres': {'inlets': 2, 'outlets': 1, 'datatypes': ['analog', 'digital', 'analog'], 'colors': ['#229FD7', '#229FD7'], 'args': 1, 'code': " varres, a0, i0, i1, d1"},
   'pot': {'inlets': 2, 'outlets': 2, 'datatypes': ['analog', 'digital', 'analog', 'analog'], 'args': 1, 'colors': ['#ff0000', '#229FD7', '#000000', '#229FD7'], 'code': " potentiometer, a0, i0, i2, i3, d1"},
-  'cycle': {'inlets': 0, 'outlets': 2, 'args': 1, 'colors': ['#ff0000', '#000000'], 'code': " cycle, a0, i0, i1"},
   'input': {'inlets': 0, 'outlets': 2, 'args': 2, 'colors': ['#ff0000', '#000000'], 'code': " input, a0, a1, i0, i1"},
   'output': {'inlets': 2, 'outlets': 0, 'args': 1, 'colors': ['#229FD7'], 'code': " probe, i0, i1, a0"},
   'print': {'inlets': 1, 'outlets': 1, 'colors': ['#229FD7', '#229FD7'], 'args': 0, 'code': " print, i0, i1"},

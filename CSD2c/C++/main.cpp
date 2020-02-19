@@ -103,15 +103,13 @@ str.assign((std::istreambuf_iterator<char>(t)),
          optargs.push_back(parsedargs);
       }
 
-      std::cout << seglist[0] << '\n';
-
       if(!seglist[0].compare("ground")) {
       net = new NetList(stoi(seglist[1]));
     }
 // Digital components
 
     else if(!seglist[0].compare("cycle-"))
-    net->addComponent(new digitalCycle(optargs, seglist[1], seglist[1]));
+    net->addComponent(new digitalCycle(optargs, seglist[1], seglist[2]));
 
     else if(!seglist[0].compare("sig-"))
     net->addComponent(new digitalSignal(std::stof(seglist[1]), seglist[2]));
@@ -193,9 +191,6 @@ str.assign((std::istreambuf_iterator<char>(t)),
 
       else if(!seglist[0].compare("bjt"))
       net->addComponent(new BJT(std::stoi(seglist[1]), std::stoi(seglist[2]), std::stoi(seglist[3]), std::stoi(seglist[4])));
-
-      else if(!seglist[0].compare("cycle"))
-      net->addComponent(new InputSignal(std::stof(seglist[1]), std::stoi(seglist[2]), std::stoi(seglist[3])));
 
       else if(!seglist[0].compare("opa"))
       net->addComponent(new OPA(std::stoi(seglist[1]), std::stoi(seglist[2]), std::stoi(seglist[3]), std::stoi(seglist[4]), std::stoi(seglist[5])));
