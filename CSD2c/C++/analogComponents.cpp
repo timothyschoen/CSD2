@@ -292,11 +292,7 @@ struct Voltage : Component<2, 1>
 struct Probe : Component<2, 1>
 {
     float impedance = 1;
-    double average;
-    double x = 0;
-    double y = 0;
-    double xm1 = 0;
-    double ym1 = 0;
+
     Probe(int l0, int l1)
     {
         pinLoc[0] = l0;
@@ -314,11 +310,8 @@ struct Probe : Component<2, 1>
     //current = voltage/impedance
     double getAudioOutput(MNASystem & m, int channel) {
 
-      // dc offset removal!!!
-        x = m.b[nets[2]].lu * m.nodes[nets[2]].scale;
-        y = x - xm1 + 0.995 * ym1;
-        xm1 = x;
-        ym1 = y;
+      // dc offset removal???
+
       //std::cout << m.A[0][2].lu;   // -> is altijd 0!!!! zoek uit wat dit is!!
       //return m.A[0][1].lu;
       return m.b[nets[2]].lu * m.nodes[nets[2]].scale; //? Betrek current hierin!!!

@@ -370,7 +370,7 @@ function precompile(save = 1) {
       iterboxes[i] = itercode;
     }
 
-    let setupnodes = " ground, nodes".replace('nodes', exists.length-1);
+    let setupnodes = " ground, nodes".replace('nodes', exists.length);
     code = setupnodes + iterboxes.join("\n");
     sbar.codeUpdate(code);
 
