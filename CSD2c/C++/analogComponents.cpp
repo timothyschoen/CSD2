@@ -44,15 +44,15 @@ struct AnalogDelay : Component<2, 1, 1>
     void stamp(MNASystem & m) final
     {
 
-      m.stampStatic(-dw, nets[0], nets[2]);
-      m.stampStatic(+1, nets[1], nets[2]);
+        m.stampStatic(-dw, nets[0], nets[2]);
+        m.stampStatic(+1, nets[1], nets[2]);
 
-      m.stampStatic(+dw, nets[2], nets[0]);
-      m.stampStatic(-1, nets[2], nets[1]);
+        m.stampStatic(+dw, nets[2], nets[0]);
+        m.stampStatic(-1, nets[2], nets[1]);
 
-      m.b[nets[2]].gdyn.push_back(&v);
+        m.b[nets[2]].gdyn.push_back(&v);
 
-      m.nodes[nets[2]].type = MNANodeInfo::tCurrent;
+        m.nodes[nets[2]].type = MNANodeInfo::tCurrent;
     }
 
     void update(MNASystem & m) final
@@ -93,17 +93,17 @@ struct VariableResistor : Component<3>
     void stamp(MNASystem & m) final
     {
         for (size_t r = 0; r < 2; r++) {
-          for (size_t c = 0; c < 2; c++) {
-            if(r==c) m.A[nets[r]][nets[c]].gdyn.push_back(&resvalue);
-            else m.A[nets[r]][nets[c]].gdyn.push_back(&negresvalue);
-          }
+            for (size_t c = 0; c < 2; c++) {
+                if(r==c) m.A[nets[r]][nets[c]].gdyn.push_back(&resvalue);
+                else m.A[nets[r]][nets[c]].gdyn.push_back(&negresvalue);
+            }
         }
     }
     void updateInput(MNASystem & m) final
     {
 
-      resvalue = 1. / (r * m.getDigital(digiNets[0]));
-      negresvalue = -resvalue;
+        resvalue = 1. / (r * m.getDigital(digiNets[0]));
+        negresvalue = -resvalue;
     }
 
 };
@@ -131,20 +131,20 @@ struct Potentiometer : Component<3, 0, 1>
     void stamp(MNASystem & m) final
     {
 
-      /*
+        /*
 
-        for (size_t r = 0; r < 2; r++) {
-          for (size_t c = 0; c < 2; c++) {
-            if (r==c) {
-              m.A[nets[r]][nets[c]].gdyn.push_back(&resvalue);
-              m.A[nets[r * 2]][nets[c * 2]].gdyn.push_back(&invresvalue);
+          for (size_t r = 0; r < 2; r++) {
+            for (size_t c = 0; c < 2; c++) {
+              if (r==c) {
+                m.A[nets[r]][nets[c]].gdyn.push_back(&resvalue);
+                m.A[nets[r * 2]][nets[c * 2]].gdyn.push_back(&invresvalue);
+              }
+              else  {
+                m.A[nets[r]][nets[c]].gdyn.push_back(&negresvalue);
+                m.A[nets[r * 2]][nets[c * 2]].gdyn.push_back(&neginvresvalue);
+              }
             }
-            else  {
-              m.A[nets[r]][nets[c]].gdyn.push_back(&negresvalue);
-              m.A[nets[r * 2]][nets[c * 2]].gdyn.push_back(&neginvresvalue);
-            }
-          }
-        } */
+          } */
 
         m.stampStatic(+resvalue, nets[0], nets[0]);
         m.stampStatic(-resvalue, nets[0], nets[1]);
@@ -160,8 +160,8 @@ struct Potentiometer : Component<3, 0, 1>
     void updateInput(MNASystem & m) final
     {
 
-      resvalue = 1. / (r * m.getDigital(digiNets[0]));
-      invresvalue = 1. / (r - (r * m.getDigital(digiNets[1])));
+        resvalue = 1. / (r * m.getDigital(digiNets[0]));
+        invresvalue = 1. / (r - (r * m.getDigital(digiNets[1])));
     }
 
     void update(MNASystem & m) final
@@ -312,14 +312,14 @@ struct Probe : Component<2, 1>
     //current = voltage/impedance
     double getAudioOutput(MNASystem & m, int channel) {
 
-      // dc offset removal???
+        // dc offset removal???
 
-      //std::cout << m.A[0][2].lu;   // -> is altijd 0!!!! zoek uit wat dit is!!
-      //return m.A[0][1].lu;
-      return m.b[nets[2]].lu * m.nodes[nets[2]].scale; //? Betrek current hierin!!!
-      // m.A[2].lu = conductance in Siemens
-      // m.A[2].lu (siemens) * m.b[2].lu (voltage) = Current
-      //
+        //std::cout << m.A[0][2].lu;   // -> is altijd 0!!!! zoek uit wat dit is!!
+        //return m.A[0][1].lu;
+        return m.b[nets[2]].lu * m.nodes[nets[2]].scale; //? Betrek current hierin!!!
+        // m.A[2].lu = conductance in Siemens
+        // m.A[2].lu (siemens) * m.b[2].lu (voltage) = Current
+        //
     }
 };
 
@@ -344,13 +344,13 @@ struct Printer : Component<2>
     }
     //current = voltage/resistance
     void update(MNASystem & m) {
-      if(m.ticks % 4410 == 0) {
-        std::cout << "Voltage: " << m.b[nets[0]].lu << "V" << std::endl;
-        std::cout << "Ampere: " << m.A[nets[0]][nets[1]].lu << "A" << std::endl;
-        //prelu waardes zijn altijd 1... m.A.lu is altijd 0, 1 of -1 (dit is vergelijkbaar met een bepaald mna systeem!!)
-        // Overweeg dat de LU solution een vector zou moeten zijn (met voltage en current)
-        // Waarom is lu hier een int en geen vector? Systems zijn wel matrices en vectors, maar zijn onopgelost...
-      }
+        if(m.ticks % 4410 == 0) {
+            std::cout << "Voltage: " << m.b[nets[0]].lu << "V" << std::endl;
+            std::cout << "Ampere: " << m.A[nets[0]][nets[1]].lu << "A" << std::endl;
+            //prelu waardes zijn altijd 1... m.A.lu is altijd 0, 1 of -1 (dit is vergelijkbaar met een bepaald mna systeem!!)
+            // Overweeg dat de LU solution een vector zou moeten zijn (met voltage en current)
+            // Waarom is lu hier een int en geen vector? Systems zijn wel matrices en vectors, maar zijn onopgelost...
+        }
     }
 };
 
@@ -429,7 +429,7 @@ struct InputSample : Component<2,1>
     void update(MNASystem & m) final
     {
         if(m.ticks > 0)
-          v = audioFile.samples[0][fmod(m.ticks, numSamples)]*amplitude;
+            v = audioFile.samples[0][fmod(m.ticks, numSamples)]*amplitude;
 
 
 
@@ -500,7 +500,7 @@ struct Diode : Component<2, 2>
 
     // l0 -->|-- l1 -- parameters default to approx 1N4148
     Diode(int l0, int l1,
-        double rs = 10., double is = 35e-12, double n = 1.24)
+          double rs = 10., double is = 35e-12, double n = 1.24)
         : rs(rs)
     {
         pinLoc[0] = l0;
@@ -631,7 +631,7 @@ struct BJT : Component<3, 4>
     bool newton(MNASystem & m) final
     {
         return newtonJunctionPN(pnC, m.b[nets[3]].lu)
-             & newtonJunctionPN(pnE, m.b[nets[4]].lu);
+               & newtonJunctionPN(pnE, m.b[nets[4]].lu);
     }
 
     void stamp(MNASystem & m) final
@@ -759,7 +759,7 @@ struct OPA : Component<5, 6>
     bool newton(MNASystem & m)
     {
         return newtonJunctionPN(pnPP, m.b[nets[5]].lu)
-            & newtonJunctionPN(pnNN, m.b[nets[6]].lu);
+               & newtonJunctionPN(pnNN, m.b[nets[6]].lu);
     }
 
     void stamp(MNASystem & m)

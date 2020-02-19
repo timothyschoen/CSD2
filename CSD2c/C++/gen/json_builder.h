@@ -124,9 +124,9 @@ json_value * json_null_new ();
 
 typedef struct json_serialize_opts
 {
-   int mode;
-   int opts;
-   int indent_size;
+    int mode;
+    int opts;
+    int indent_size;
 
 } json_serialize_opts;
 

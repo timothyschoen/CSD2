@@ -32,7 +32,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #ifndef GEN_WINDOWS
 #	ifndef _SIZE_T
 #		define	_SIZE_T
-		typedef __typeof__(sizeof(int)) size_t;
+typedef __typeof__(sizeof(int)) size_t;
 #	endif
 #endif
 
@@ -78,43 +78,43 @@ typedef t_ptr_int t_atom_long;		///< the type that is an A_LONG in a #t_atom  @i
 typedef t_atom_long t_max_err;		///< an integer value suitable to be returned as an error code  @ingroup misc
 
 extern "C" {
-	extern t_sample gen_msp_pow (t_sample, t_sample);
+    extern t_sample gen_msp_pow (t_sample, t_sample);
 
 #ifdef MSP_ON_CLANG
-	// TODO: remove (for debugging only)
-	//int printf(const char *fmt, ...);
+    // TODO: remove (for debugging only)
+    //int printf(const char *fmt, ...);
 
-	// math.h:
-	extern double acos(double);
-	extern double asin(double);
-	extern double atan(double);
-	extern double atan2(double, double);
-	extern double cos(double);
-	extern double sin(double);
-	extern double tan(double);
-	extern double acosh(double);
-	extern double asinh(double);
-	extern double atanh(double);
-	extern double cosh(double);
-	extern double sinh(double);
-	extern double tanh(double);
-	extern double exp(double);
-	extern double log(double);
-	extern double log10(double);
-	extern double fmod(double, double);
-	extern double modf(double, double *);
-	extern double fabs(double);
-	extern double hypot(double, double);
-	extern double pow(double, double);
+    // math.h:
+    extern double acos(double);
+    extern double asin(double);
+    extern double atan(double);
+    extern double atan2(double, double);
+    extern double cos(double);
+    extern double sin(double);
+    extern double tan(double);
+    extern double acosh(double);
+    extern double asinh(double);
+    extern double atanh(double);
+    extern double cosh(double);
+    extern double sinh(double);
+    extern double tanh(double);
+    extern double exp(double);
+    extern double log(double);
+    extern double log10(double);
+    extern double fmod(double, double);
+    extern double modf(double, double *);
+    extern double fabs(double);
+    extern double hypot(double, double);
+    extern double pow(double, double);
 
-	extern double sqrt(double);
-	extern double ceil(double);
-	extern double floor(double);
-	extern double trunc(double);
-	extern double round(double);
-	extern int abs(int);
+    extern double sqrt(double);
+    extern double ceil(double);
+    extern double floor(double);
+    extern double trunc(double);
+    extern double round(double);
+    extern int abs(int);
 
-	extern char *strcpy(char *, const char *);
+    extern char *strcpy(char *, const char *);
 #else
 #	include <stdlib.h> // abs
 #endif // MSP_ON_CLANG
@@ -148,35 +148,35 @@ extern "C" {
 #	endif
 #endif // GENLIB_USE_FASTMATH
 
-	// string reference handling:
-	void *genlib_obtain_reference_from_string(const char *name);
-	char *genlib_reference_getname(void *ref);
+    // string reference handling:
+    void *genlib_obtain_reference_from_string(const char *name);
+    char *genlib_reference_getname(void *ref);
 
-	// buffer handling:
-	t_genlib_buffer *genlib_obtain_buffer_from_reference(void *ref);
-	t_genlib_err genlib_buffer_edit_begin(t_genlib_buffer *b);
-	t_genlib_err genlib_buffer_edit_end(t_genlib_buffer *b, long valid);
-	t_genlib_err genlib_buffer_getinfo(t_genlib_buffer *b, t_genlib_buffer_info *info);
-	void genlib_buffer_dirty(t_genlib_buffer *b);
-	t_genlib_err genlib_buffer_perform_begin(t_genlib_buffer *b);
-	void genlib_buffer_perform_end(t_genlib_buffer *b);
+    // buffer handling:
+    t_genlib_buffer *genlib_obtain_buffer_from_reference(void *ref);
+    t_genlib_err genlib_buffer_edit_begin(t_genlib_buffer *b);
+    t_genlib_err genlib_buffer_edit_end(t_genlib_buffer *b, long valid);
+    t_genlib_err genlib_buffer_getinfo(t_genlib_buffer *b, t_genlib_buffer_info *info);
+    void genlib_buffer_dirty(t_genlib_buffer *b);
+    t_genlib_err genlib_buffer_perform_begin(t_genlib_buffer *b);
+    void genlib_buffer_perform_end(t_genlib_buffer *b);
 
-	// data handling:
-	t_genlib_data *genlib_obtain_data_from_reference(void *ref);
-	t_genlib_err genlib_data_getinfo(t_genlib_data *b, t_genlib_data_info *info);
-	void genlib_data_resize(t_genlib_data *b, long dim, long channels);
-	void genlib_data_setbuffer(t_genlib_data *b, void *ref);
-	void genlib_data_release(t_genlib_data *b);
-	void genlib_data_setcursor(t_genlib_data *b, long cursor);
-	long genlib_data_getcursor(t_genlib_data *b);
+    // data handling:
+    t_genlib_data *genlib_obtain_data_from_reference(void *ref);
+    t_genlib_err genlib_data_getinfo(t_genlib_data *b, t_genlib_data_info *info);
+    void genlib_data_resize(t_genlib_data *b, long dim, long channels);
+    void genlib_data_setbuffer(t_genlib_data *b, void *ref);
+    void genlib_data_release(t_genlib_data *b);
+    void genlib_data_setcursor(t_genlib_data *b, long cursor);
+    long genlib_data_getcursor(t_genlib_data *b);
 
-	// other notification:
-	void genlib_reset_complete(void *data);
+    // other notification:
+    void genlib_reset_complete(void *data);
 
-	// get/set state of parameters
-	size_t genlib_getstatesize(CommonState *cself, getparameter_method getmethod);
-	short genlib_getstate(CommonState *cself, char *state, getparameter_method getmethod);
-	short genlib_setstate(CommonState *cself, const char *state, setparameter_method setmethod);
+    // get/set state of parameters
+    size_t genlib_getstatesize(CommonState *cself, getparameter_method getmethod);
+    short genlib_getstate(CommonState *cself, char *state, getparameter_method getmethod);
+    short genlib_setstate(CommonState *cself, const char *state, setparameter_method setmethod);
 
 }; // extern "C"
 

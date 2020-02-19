@@ -50,16 +50,16 @@ struct genLoader : Component<0, 0, 3>
 
         // Map them to pins
         for (size_t i = 0; i < a_args.size(); i++) {
-          digiPins[i] = mylist[i];
+            digiPins[i] = mylist[i];
         }
 
     }
 
     void setPatcher(std::string name) {
-      if(!name.compare("phasor"))
-      namespace Patcher = phasor;
-      else if (!name.compare("count"))
-      namespace Patcher = count;
+        if(!name.compare("phasor"))
+            namespace Patcher = phasor;
+        else if (!name.compare("count"))
+            namespace Patcher = count;
     }
 
     void stamp(MNASystem & m) final
@@ -68,34 +68,34 @@ struct genLoader : Component<0, 0, 3>
 
     void updateInput(MNASystem & m) final
     {
-      // Setting in
-      /*
-    	for (int i = 0; i < nInChannels; i++) {
+        // Setting in
+        /*
+        for (int i = 0; i < nInChannels; i++) {
 
-    			*(gInputs + i) = m.digiValues[digiNets[i]];
+        		*(gInputs + i) = m.digiValues[digiNets[i]];
 
-        inputbuff[i] = *(gInputs + i);
+          inputbuff[i] = *(gInputs + i);
 
-    	} */
+        } */
 
 
     }
 
     void update(MNASystem & m) final
     {
-      /*
-      for (int i = 0; i < nInChannels; i++) {
-        ip[i] = &inputbuff[i];
-      }
+        /*
+        for (int i = 0; i < nInChannels; i++) {
+          ip[i] = &inputbuff[i];
+        }
 
-      op[0] = gOutputs + 1;
+        op[0] = gOutputs + 1;
 
-      // Run the patch!!
-      Patcher::perform(gState, ip, 2, op, 1, 1);
-    // Getting output
-    for (int i = 0; i < nOutChannels; i++) {
-    m.digiValues[digiNets[nInChannels+i]] = *op[0];
-  } */
+        // Run the patch!!
+        Patcher::perform(gState, ip, 2, op, 1, 1);
+        // Getting output
+        for (int i = 0; i < nOutChannels; i++) {
+        m.digiValues[digiNets[nInChannels+i]] = *op[0];
+        } */
 
     }
 

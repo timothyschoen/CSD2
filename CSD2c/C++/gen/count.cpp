@@ -32,55 +32,55 @@ static const int GENLIB_LOOPCOUNT_BAIL = 100000;
 
 // The State struct contains all the state and procedures for the gendsp kernel
 typedef struct State {
-	CommonState __commonstate;
-	Phasor __m_phasor_1;
-	int vectorsize;
-	int __exception;
-	t_sample samples_to_seconds;
-	t_sample samplerate;
-	// re-initialize all member variables;
-	inline void reset(t_param __sr, int __vs) {
-		__exception = 0;
-		vectorsize = __vs;
-		samplerate = __sr;
-		samples_to_seconds = (1 / samplerate);
-		__m_phasor_1.reset(0);
-		genlib_reset_complete(this);
-		
-	};
-	// the signal processing routine;
-	inline int perform(t_sample ** __ins, t_sample ** __outs, int __n) {
-		vectorsize = __n;
-		const t_sample * __in1 = __ins[0];
-		const t_sample * __in2 = __ins[1];
-		t_sample * __out1 = __outs[0];
-		if (__exception) {
-			return __exception;
-			
-		} else if (( (__in1 == 0) || (__in2 == 0) || (__out1 == 0) )) {
-			__exception = GENLIB_ERR_NULL_BUFFER;
-			return __exception;
-			
-		};
-		samples_to_seconds = (1 / samplerate);
-		// the main sample loop;
-		while ((__n--)) {
-			const t_sample in1 = (*(__in1++));
-			const t_sample in2 = (*(__in2++));
-			if ((in2 != 0)) {
-				__m_phasor_1.phase = 0;
-				
-			};
-			t_sample phasor_30 = __m_phasor_1(in1, samples_to_seconds);
-			t_sample out1 = phasor_30;
-			// assign results to output buffer;
-			(*(__out1++)) = out1;
-			
-		};
-		return __exception;
-		
-	};
-	
+    CommonState __commonstate;
+    Phasor __m_phasor_1;
+    int vectorsize;
+    int __exception;
+    t_sample samples_to_seconds;
+    t_sample samplerate;
+    // re-initialize all member variables;
+    inline void reset(t_param __sr, int __vs) {
+        __exception = 0;
+        vectorsize = __vs;
+        samplerate = __sr;
+        samples_to_seconds = (1 / samplerate);
+        __m_phasor_1.reset(0);
+        genlib_reset_complete(this);
+
+    };
+    // the signal processing routine;
+    inline int perform(t_sample ** __ins, t_sample ** __outs, int __n) {
+        vectorsize = __n;
+        const t_sample * __in1 = __ins[0];
+        const t_sample * __in2 = __ins[1];
+        t_sample * __out1 = __outs[0];
+        if (__exception) {
+            return __exception;
+
+        } else if (( (__in1 == 0) || (__in2 == 0) || (__out1 == 0) )) {
+            __exception = GENLIB_ERR_NULL_BUFFER;
+            return __exception;
+
+        };
+        samples_to_seconds = (1 / samplerate);
+        // the main sample loop;
+        while ((__n--)) {
+            const t_sample in1 = (*(__in1++));
+            const t_sample in2 = (*(__in2++));
+            if ((in2 != 0)) {
+                __m_phasor_1.phase = 0;
+
+            };
+            t_sample phasor_30 = __m_phasor_1(in1, samples_to_seconds);
+            t_sample out1 = phasor_30;
+            // assign results to output buffer;
+            (*(__out1++)) = out1;
+
+        };
+        return __exception;
+
+    };
+
 } State;
 
 
@@ -93,9 +93,15 @@ typedef struct State {
 int gen_kernel_numins = 2;
 int gen_kernel_numouts = 1;
 
-int num_inputs() { return gen_kernel_numins; }
-int num_outputs() { return gen_kernel_numouts; }
-int num_params() { return 0; }
+int num_inputs() {
+    return gen_kernel_numins;
+}
+int num_outputs() {
+    return gen_kernel_numouts;
+}
+int num_params() {
+    return 0;
+}
 
 /// Assistive lables for the signal inputs and outputs
 
@@ -105,124 +111,126 @@ const char *gen_kernel_outnames[] = { "out1" };
 /// Invoke the signal process of a State object
 
 int perform(CommonState *cself, t_sample **ins, long numins, t_sample **outs, long numouts, long n) {
-	State* self = (State *)cself;
-	return self->perform(ins, outs, n);
+    State* self = (State *)cself;
+    return self->perform(ins, outs, n);
 }
 
 /// Reset all parameters and stateful operators of a State object
 
 void reset(CommonState *cself) {
-	State* self = (State *)cself;
-	self->reset(cself->sr, cself->vs);
+    State* self = (State *)cself;
+    self->reset(cself->sr, cself->vs);
 }
 
 /// Set a parameter of a State object
 
 void setparameter(CommonState *cself, long index, t_param value, void *ref) {
-	State *self = (State *)cself;
-	switch (index) {
-		
-		default: break;
-	}
+    State *self = (State *)cself;
+    switch (index) {
+
+    default:
+        break;
+    }
 }
 
 /// Get the value of a parameter of a State object
 
 void getparameter(CommonState *cself, long index, t_param *value) {
-	State *self = (State *)cself;
-	switch (index) {
-		
-		default: break;
-	}
+    State *self = (State *)cself;
+    switch (index) {
+
+    default:
+        break;
+    }
 }
 
 /// Get the name of a parameter of a State object
 
 const char *getparametername(CommonState *cself, long index) {
-	if (index >= 0 && index < cself->numparams) {
-		return cself->params[index].name;
-	}
-	return 0;
+    if (index >= 0 && index < cself->numparams) {
+        return cself->params[index].name;
+    }
+    return 0;
 }
 
 /// Get the minimum value of a parameter of a State object
 
 t_param getparametermin(CommonState *cself, long index) {
-	if (index >= 0 && index < cself->numparams) {
-		return cself->params[index].outputmin;
-	}
-	return 0;
+    if (index >= 0 && index < cself->numparams) {
+        return cself->params[index].outputmin;
+    }
+    return 0;
 }
 
 /// Get the maximum value of a parameter of a State object
 
 t_param getparametermax(CommonState *cself, long index) {
-	if (index >= 0 && index < cself->numparams) {
-		return cself->params[index].outputmax;
-	}
-	return 0;
+    if (index >= 0 && index < cself->numparams) {
+        return cself->params[index].outputmax;
+    }
+    return 0;
 }
 
 /// Get parameter of a State object has a minimum and maximum value
 
 char getparameterhasminmax(CommonState *cself, long index) {
-	if (index >= 0 && index < cself->numparams) {
-		return cself->params[index].hasminmax;
-	}
-	return 0;
+    if (index >= 0 && index < cself->numparams) {
+        return cself->params[index].hasminmax;
+    }
+    return 0;
 }
 
 /// Get the units of a parameter of a State object
 
 const char *getparameterunits(CommonState *cself, long index) {
-	if (index >= 0 && index < cself->numparams) {
-		return cself->params[index].units;
-	}
-	return 0;
+    if (index >= 0 && index < cself->numparams) {
+        return cself->params[index].units;
+    }
+    return 0;
 }
 
 /// Get the size of the state of all parameters of a State object
 
 size_t getstatesize(CommonState *cself) {
-	return genlib_getstatesize(cself, &getparameter);
+    return genlib_getstatesize(cself, &getparameter);
 }
 
 /// Get the state of all parameters of a State object
 
 short getstate(CommonState *cself, char *state) {
-	return genlib_getstate(cself, state, &getparameter);
+    return genlib_getstate(cself, state, &getparameter);
 }
 
 /// set the state of all parameters of a State object
 
 short setstate(CommonState *cself, const char *state) {
-	return genlib_setstate(cself, state, &setparameter);
+    return genlib_setstate(cself, state, &setparameter);
 }
 
 /// Allocate and configure a new State object and it's internal CommonState:
 
 void *create(t_param sr, long vs) {
-	State *self = new State;
-	self->reset(sr, vs);
-	ParamInfo *pi;
-	self->__commonstate.inputnames = gen_kernel_innames;
-	self->__commonstate.outputnames = gen_kernel_outnames;
-	self->__commonstate.numins = gen_kernel_numins;
-	self->__commonstate.numouts = gen_kernel_numouts;
-	self->__commonstate.sr = sr;
-	self->__commonstate.vs = vs;
-	self->__commonstate.params = 0;
-	self->__commonstate.numparams = 0;
-	
-	return self;
+    State *self = new State;
+    self->reset(sr, vs);
+    ParamInfo *pi;
+    self->__commonstate.inputnames = gen_kernel_innames;
+    self->__commonstate.outputnames = gen_kernel_outnames;
+    self->__commonstate.numins = gen_kernel_numins;
+    self->__commonstate.numouts = gen_kernel_numouts;
+    self->__commonstate.sr = sr;
+    self->__commonstate.vs = vs;
+    self->__commonstate.params = 0;
+    self->__commonstate.numparams = 0;
+
+    return self;
 }
 
 /// Release all resources and memory used by a State object:
 
 void destroy(CommonState *cself) {
-	State *self = (State *)cself;
-	
-	delete self;
+    State *self = (State *)cself;
+
+    delete self;
 }
 
 

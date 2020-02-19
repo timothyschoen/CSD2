@@ -6,7 +6,7 @@
 #include <cmath>
 #include <unistd.h>
 #include "AudioFile.h"
- // temporary for calculating which functions are slow
+// temporary for calculating which functions are slow
 #include <chrono>
 
 
@@ -120,7 +120,7 @@ struct MNASystem
 
     MNAMatrix   A; // Standard A matrix
     MNAVector   b; // This is likely the Z matrix since that contains our known values
-                  //  Wikipedia: "When solving systems of equations, b is usually treated as a vector with a length equal to the height of matrix A"
+    //  Wikipedia: "When solving systems of equations, b is usually treated as a vector with a length equal to the height of matrix A"
 
     double      time;
     long      ticks;
@@ -166,32 +166,32 @@ struct MNASystem
     // this doesn't work!
     void stampConductor(double g, int r, int c)
     {
-      A[r][r].g += g;
-      A[r][c].g -= g;
-      A[c][r].g -= g;
-      A[c][c].g += g;
+        A[r][r].g += g;
+        A[r][c].g -= g;
+        A[c][r].g -= g;
+        A[c][c].g += g;
     }
 
     void setDigital(std::vector<int> outputs, double value)
     {
-      for (size_t i = 0; i < outputs.size(); i++) {
-        digiValues[outputs[i]] = value;
-      }
+        for (size_t i = 0; i < outputs.size(); i++) {
+            digiValues[outputs[i]] = value;
+        }
 
     }
 
     double getDigital(std::vector<int> inputs, double fallback = 0)
     {
-      double accum = 0;
-      if (inputs.size() > 0) {
-      for (size_t i = 0; i < inputs.size(); i++) {
-        accum += digiValues[inputs[i]];
-      }
-    }
-    else {
-      accum = fallback;
-    }
-      return accum;
+        double accum = 0;
+        if (inputs.size() > 0) {
+            for (size_t i = 0; i < inputs.size(); i++) {
+                accum += digiValues[inputs[i]];
+            }
+        }
+        else {
+            accum = fallback;
+        }
+        return accum;
     }
 
 
@@ -234,10 +234,14 @@ struct IComponent
 
     // return true if we're done - will keep iterating
     // until all the components are happy
-    virtual bool newton(MNASystem & m) { return true; }
+    virtual bool newton(MNASystem & m) {
+        return true;
+    }
 
     // NEW: output function for probe object;
-    virtual double getAudioOutput(MNASystem & m, int c) { return 0; }
+    virtual double getAudioOutput(MNASystem & m, int c) {
+        return 0;
+    }
 
     // realtime input function;
     virtual void setAudioInput(MNASystem & m, double input) {}
@@ -260,10 +264,16 @@ struct Component : IComponent
 
     //std::string digiNets[nDigipins];
 
-    int pinCount() final { return nPins; }
+    int pinCount() final {
+        return nPins;
+    }
 
-    const int* getPinLocs() const final { return pinLoc; } // This is used for running setupnets!!!! (for linking pinloc to nets)
-    const std::vector<std::string> getDigiLocs() const final { return digiPins; }
+    const int* getPinLocs() const final {
+        return pinLoc;    // This is used for running setupnets!!!! (for linking pinloc to nets)
+    }
+    const std::vector<std::string> getDigiLocs() const final {
+        return digiPins;
+    }
 
 
     void setupNets(int & netSize, int & states, const int* pins, const std::vector<std::string> digipins) final
@@ -275,24 +285,21 @@ struct Component : IComponent
 
         for(int i = 0; i < nDigipins; ++i)
         {
-          std::string connections = digipins[i];
-          connections.erase(0, 1);
-          connections.erase(connections.size()-1, 1);
-          std::cout << connections << '\n';
-          std::stringstream ss(connections);
-          std::string obj;
-          std::vector<int> inputs;
-          std::cout << "connecions"  << connections << '\n';
-          if(connections.size() > 2) {
+            std::string connections = digipins[i];
+            connections.erase(0, 1);
+            connections.erase(connections.size()-1, 1);
+            std::stringstream ss(connections);
+            std::string obj;
+            std::vector<int> inputs;
+            if(connections.size() > 2) {
 
-          while(std::getline(ss,obj,':')){
-            std::cout << obj << '\n';
-            inputs.push_back(std::stoi(obj));
-          }
-        }
-          else if (connections.size() != 0){
-            inputs.push_back(std::stoi(connections));
-          }
+                while(std::getline(ss,obj,':')) {
+                    inputs.push_back(std::stoi(obj));
+                }
+            }
+            else if (connections.size() != 0) {
+                inputs.push_back(std::stoi(connections));
+            }
 
             digiNets[i] = inputs;
         }
@@ -364,58 +371,58 @@ struct NetList
         system.ticks = 0;
     }
 
-     double* getAudioOutput() {
-       double* output = new double[2];
-      for (size_t c = 0; c < 2; c++) {
-      for(int i = 0; i < components.size(); ++i)
-      {
-            output[c] += components[i]->getAudioOutput(system, c);
-      }
-    }
-      return output;
+    double* getAudioOutput() {
+        double* output = new double[2];
+        for (size_t c = 0; c < 2; c++) {
+            for(int i = 0; i < components.size(); ++i)
+            {
+                output[c] += components[i]->getAudioOutput(system, c);
+            }
+        }
+        return output;
 
     }
 
     void setAudioInput(double input) {
-      for(int i = 0; i < components.size(); ++i)
-      {
-      components[i]->setAudioInput(system, input);
-      }
-   }
-   void setMidiInput(std::vector<unsigned char> message) {
-     for(int i = 0; i < components.size(); ++i)
-     {
-     components[i]->setMidiInput(system, message);
-     }
-  }
-
-  void timeJump(double amt)
-  {
-
-    int iter;
-    system.time += amt;
-
-    for(iter = 0; iter < maxIter; ++iter)
-    {
-        // restore matrix state and add dynamic values
-
-        updatePre();
-
-
-        if(nets > 1) {
-          luFactor();
-
-          luForward();
-
-          luSolve();
-
-        if(newton()) break;
-      }
+        for(int i = 0; i < components.size(); ++i)
+        {
+            components[i]->setAudioInput(system, input);
+        }
+    }
+    void setMidiInput(std::vector<unsigned char> message) {
+        for(int i = 0; i < components.size(); ++i)
+        {
+            components[i]->setMidiInput(system, message);
+        }
     }
 
-    update();
+    void timeJump(double amt)
+    {
 
-  }
+        int iter;
+        system.time += amt;
+
+        for(iter = 0; iter < maxIter; ++iter)
+        {
+            // restore matrix state and add dynamic values
+
+            updatePre();
+
+
+            if(nets > 1) {
+                luFactor();
+
+                luForward();
+
+                luSolve();
+
+                if(newton()) break;
+            }
+        }
+
+        update();
+
+    }
 
 
 
@@ -432,14 +439,14 @@ struct NetList
 
 
             if(nets > 1) {
-              luFactor();
+                luFactor();
 
-              luForward();
+                luForward();
 
-              luSolve();
+                luSolve();
 
-            if(newton()) break;
-          }
+                if(newton()) break;
+            }
         }
 
         system.time += tStep;
@@ -452,7 +459,9 @@ struct NetList
     }
 
     // plotting and such would want to use this
-    const MNASystem & getMNA() { return system; }
+    const MNASystem & getMNA() {
+        return system;
+    }
 
 protected:
     double  tStep = (double)1/44100;
@@ -465,15 +474,15 @@ protected:
     void update() {
 
 
-      for(int i = 0; i < components.size(); ++i)
-      {
-          components[i]->update(system);
-      }
-      system.digiValues[0] = 0; // node for unconnected digital inlets, clear this to make sure unconnected inlets won't receive eachothers values by accident
-      for(int i = 0; i < components.size(); ++i)
-      {
-          components[i]->updateInput(system);
-      }
+        for(int i = 0; i < components.size(); ++i)
+        {
+            components[i]->update(system);
+        }
+        system.digiValues[0] = 0; // node for unconnected digital inlets, clear this to make sure unconnected inlets won't receive eachothers values by accident
+        for(int i = 0; i < components.size(); ++i)
+        {
+            components[i]->updateInput(system);
+        }
 
 
     }
@@ -512,7 +521,7 @@ protected:
             for(int j = 1; j < nets; ++j)
             {
                 if(system.A[i][j].prelu != 0
-                    || system.A[i][j].gdyn.size()) ++fill;
+                        || system.A[i][j].gdyn.size()) ++fill;
             }
         }
         printf("MNA density %.1f%%\n", 100 * fill / ((nets-1.)*(nets-1.)));
@@ -541,7 +550,7 @@ protected:
                 for(int r = p; r < nets; ++r)
                 {
                     if(fabs(system.A[r][p].lu)
-                    > fabs(system.A[pr][p].lu))
+                            > fabs(system.A[pr][p].lu))
                     {
                         pr = r;
                     }
@@ -575,7 +584,7 @@ protected:
                     if(system.A[p][c].lu == 0) continue;
 
                     system.A[r][c].lu -=
-                    system.A[p][c].lu * system.A[r][p].lu;
+                        system.A[p][c].lu * system.A[r][p].lu;
                 }
 
             }

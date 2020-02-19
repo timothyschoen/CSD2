@@ -43,6 +43,8 @@ let types = {
   'abs-': {'inlets': 1, 'outlets': 1, 'datatypes': ['digital', 'digital'], 'args': 0, 'colors': ['#229FD7'], 'code': " abs-, d0, d1"},
   'ceil-': {'inlets': 1, 'outlets': 1, 'datatypes': ['digital', 'digital'], 'args': 0, 'colors': ['#229FD7'], 'code': " ceil-, d0, d1"},
   'floor-': {'inlets': 1, 'outlets': 1, 'datatypes': ['digital', 'digital'], 'args': 0, 'colors': ['#229FD7'], 'code': " floor-, d0, d1"},
+  'gate-': {'inlets': 2, 'outlets': 1, 'datatypes': ['digital', 'digital', 'digital'], 'args': 0, 'colors': ['#229FD7'], 'code': " floor-, d0, d1, d2"},
+  'scale-': {'inlets': 5, 'outlets': 1, 'datatypes': ['digital', 'digital', 'digital', 'digital', 'digital', 'digital'], 'args': 0, 'colors': ['#229FD7'], 'code': " scale-, d0, d1, d2, d3, d4, d5"},
 
 
   'elapsed-': {'inlets': 0, 'outlets': 1, 'datatypes': ['digital'], 'args': 0, 'colors': ['#229FD7'], 'code': " elapsed-, d0"},
