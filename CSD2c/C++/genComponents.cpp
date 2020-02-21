@@ -22,7 +22,7 @@ struct genLoader : Component<0, 0, 3>
 
 
 
-    genLoader(std::string nom, std::initializer_list<int> a_args)
+    genLoader(std::string nom, std::initializer_list<std::string> a_args)
     {
         // Set variable patcher to the name of the patcher we want to load
         setPatcher(nom);
@@ -33,13 +33,6 @@ struct genLoader : Component<0, 0, 3>
         nDigipins = nInChannels + nOutChannels;
 
         inputbuff.resize(nInChannels);
-
-        // Input buffers
-        gInputs = new t_sample[nInChannels];
-        gOutputs = new t_sample[nOutChannels];
-
-        // Initialize Gen patcher
-        gState = (CommonState*)Patcher::create(44100, 1);
 
         // Change the number of inputs/outputs to what the gen patcher has
         digitalReset(nPins);
@@ -52,6 +45,13 @@ struct genLoader : Component<0, 0, 3>
         for (size_t i = 0; i < a_args.size(); i++) {
             digiPins[i] = mylist[i];
         }
+
+        // Buffers
+        gInputs = new t_sample[nInChannels];
+        gOutputs = new t_sample[nOutChannels];
+
+        // Initialize Gen patcher
+        gState = (CommonState*)Patcher::create(44100, 1);
 
     }
 
@@ -68,22 +68,23 @@ struct genLoader : Component<0, 0, 3>
 
     void updateInput(MNASystem & m) final
     {
+
         // Setting in
-        /*
+
         for (int i = 0; i < nInChannels; i++) {
 
-        		*(gInputs + i) = m.digiValues[digiNets[i]];
+        		*(gInputs + i) = m.getDigital(digiNets[i]);
 
           inputbuff[i] = *(gInputs + i);
 
-        } */
+        }
 
 
     }
 
     void update(MNASystem & m) final
     {
-        /*
+
         for (int i = 0; i < nInChannels; i++) {
           ip[i] = &inputbuff[i];
         }
@@ -94,8 +95,8 @@ struct genLoader : Component<0, 0, 3>
         Patcher::perform(gState, ip, 2, op, 1, 1);
         // Getting output
         for (int i = 0; i < nOutChannels; i++) {
-        m.digiValues[digiNets[nInChannels+i]] = *op[0];
-        } */
+        m.setDigital(digiNets[nInChannels+i], *op[0]);
+        }
 
     }
 

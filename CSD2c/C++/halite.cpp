@@ -61,6 +61,7 @@ struct MNACell
 
     // pointers to dynamic variables, added in once per solve
     std::vector<double*>    gdyn;
+    std::vector<double*>    gdyntimed;
 
     double  lu, prelu;  // lu-solver values and matrix pre-LU cache
 
@@ -73,15 +74,21 @@ struct MNACell
     void initLU(double stepScale)
     {
         prelu = g + gtimed * stepScale;
+
+
     }
 
     // restore matrix state and update dynamic values
-    void updatePre()
+    void updatePre(double stepScale)
     {
         lu = prelu;
         for(int i = 0; i < gdyn.size(); ++i)
         {
             lu += *(gdyn[i]);
+        }
+        for(int i = 0; i < gdyntimed.size(); ++i)
+        {
+            lu += *(gdyntimed[i]) * stepScale;
         }
     }
 };
@@ -125,12 +132,13 @@ struct MNASystem
     double      time;
     long      ticks;
 
-    double digiValues[30];
+    std::vector<double> digiValues;
 
-    void setSize(int n)
+    void setSize(int n, int d)
     {
         A.resize(n);
         b.resize(n);
+        digiValues.resize(d);
 
         nodes.resize(n);
 
@@ -325,7 +333,7 @@ struct NetList
 {
     typedef std::vector<IComponent*> ComponentList;
 
-    NetList(int nodes) : nets(nodes), states(0)
+    NetList(int nodes, int diginodes) : nets(nodes), states(0), diginets(diginodes)
     {
 
     }
@@ -339,7 +347,7 @@ struct NetList
 
     void buildSystem()
     {
-        system.setSize(nets);
+        system.setSize(nets, diginets);
         for(int i = 0; i < components.size(); ++i)
         {
             components[i]->stamp(system);
@@ -406,7 +414,7 @@ struct NetList
         {
             // restore matrix state and add dynamic values
 
-            updatePre();
+            updatePre(tStep);
 
 
             if(nets > 1) {
@@ -435,7 +443,7 @@ struct NetList
         {
             // restore matrix state and add dynamic values
 
-            updatePre();
+            updatePre(tStep);
 
 
             if(nets > 1) {
@@ -466,7 +474,7 @@ struct NetList
 protected:
     double  tStep = (double)1/44100;
 
-    int nets, states;
+    int nets, states, diginets;
     ComponentList   components;
 
     MNASystem       system;
@@ -527,14 +535,14 @@ protected:
         printf("MNA density %.1f%%\n", 100 * fill / ((nets-1.)*(nets-1.)));
     }
 
-    void updatePre()
+    void updatePre(double stepScale)
     {
         for(int i = 0; i < nets; ++i)
         {
-            system.b[i].updatePre();
+            system.b[i].updatePre(stepScale);
             for(int j = 0; j < nets; ++j)
             {
-                system.A[i][j].updatePre();
+                system.A[i][j].updatePre(stepScale);
             }
         }
     }
@@ -571,6 +579,8 @@ protected:
             }
 
             // take reciprocal for D entry
+            // NOTE: Is dit de D matrix, (M*M) die standaard 0 is?? zit wel op system a nml
+            // hoewel, p,p is een diagonaal...
             system.A[p][p].lu = 1 / system.A[p][p].lu;
 
             // perform reduction on rows below

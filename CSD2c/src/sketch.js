@@ -10,11 +10,16 @@ let types = {
   'voltage': {'inlets': 0, 'outlets': 2, 'args': 1, 'colors': ['#ff0000', '#000000'], 'code': " voltage, a0, i0, i1"},
   'capacitor': {'inlets': 1, 'outlets': 1, 'args': 1, 'colors': ['#229FD7', '#229FD7'], 'code': " capacitor, a0, i0, i1"},
   'diode': {'inlets': 1, 'outlets': 1, 'args': 0, 'colors': ['#ff0000', '#229FD7'], 'code': " diode, i0, i1"},
-  'bjt': {'inlets': 1, 'outlets': 2, 'args': 1, 'colors': ['#ff0000', '#000000', '#229FD7'], 'code': " bjt, i0, i1, i2, a0"}, // color coding!!!
+  'bjt': {'inlets': 1, 'outlets': 2, 'args': 1, 'colors': ['#ff0000', '#000000', '#229FD7'], 'code': " bjt, i0, i1, i2, a0"},
+  'pnp': {'inlets': 1, 'outlets': 2, 'args': 0, 'colors': ['#ff0000', '#000000', '#229FD7'], 'code': " bjt, i0, i1, i2, 1"},
+  'npn': {'inlets': 1, 'outlets': 2, 'args': 0, 'colors': ['#ff0000', '#000000', '#229FD7'], 'code': " bjt, i0, i1, i2, 0"},
+
   'op-amp': {'inlets': 4, 'outlets': 1, 'args': 0, 'colors': ['#229FD7', '#000000', '#ff0000', '#000000', '#229FD7'], 'code': " opa, i4, i0, i1, i2, i3"},
 
   // Our analog Components
-  'varres': {'inlets': 2, 'outlets': 1, 'datatypes': ['analog', 'digital', 'analog'], 'colors': ['#229FD7', '#229FD7'], 'args': 1, 'code': " varres, a0, i0, i1, d1"},
+  'varres': {'inlets': 2, 'outlets': 1, 'datatypes': ['analog', 'digital', 'analog'], 'colors': ['#229FD7', '#229FD7'], 'args': 1, 'code': " varres, a0, i0, i2, d1"},
+  'varcap': {'inlets': 2, 'outlets': 1, 'datatypes': ['analog', 'digital', 'analog'], 'colors': ['#229FD7', '#229FD7'], 'args': 1, 'code': " varcap, a0, i0, i2, d1"},
+
   'pot': {'inlets': 2, 'outlets': 2, 'datatypes': ['analog', 'digital', 'analog', 'analog'], 'args': 1, 'colors': ['#ff0000', '#229FD7', '#000000', '#229FD7'], 'code': " potentiometer, a0, i0, i2, i3, d1"},
   'input': {'inlets': 0, 'outlets': 2, 'args': 2, 'colors': ['#ff0000', '#000000'], 'code': " input, a0, a1, i0, i1"},
   'output': {'inlets': 2, 'outlets': 0, 'args': 1, 'colors': ['#229FD7'], 'code': " probe, i0, i1, a0"},
@@ -367,12 +372,13 @@ function precompile(save = 1) {
       for(let x = 0; x < boxargs.length; x++) {
         itercode = itercode.replace("a"+x, boxargs[x])
         }
-      itercode = itercode + ', ' + JSON.stringify(optargs);
+      itercode = itercode + ', ' + JSON.stringify(optargs) + '\n';
+
       iterboxes[i] = itercode;
     }
 
-    let setupnodes = " ground, nodes".replace('nodes', exists.length);
-    code = setupnodes + iterboxes.join("\n");
+    let setupnodes = " setup, nodes, digiconns".replace('nodes', exists.length).replace('digiconns', digitalconns.length+1);
+    code = setupnodes + iterboxes.join("");
     sbar.codeUpdate(code);
 
     if(save) {

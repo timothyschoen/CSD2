@@ -105,8 +105,10 @@ int main(int argc, char* argv[])
             optargs.push_back(parsedargs);
         }
 
-        if(!seglist[0].compare("ground")) {
-            net = new NetList(stoi(seglist[1]));
+        std::cout << seglist[0] << '\n';
+
+        if(!seglist[0].compare("setup")) {
+        net = new NetList(stoi(seglist[1]), stoi(seglist[2]));
         }
 // Digital components
 
@@ -126,7 +128,7 @@ int main(int argc, char* argv[])
             net->addComponent(new digitalOutput(std::stof(seglist[1]), seglist[2], seglist[3]));
 
         else if(!seglist[0].compare("input-"))
-            net->addComponent(new digitalInput(seglist[1], std::stof(seglist[2]), seglist[1]));
+            net->addComponent(new digitalInput(seglist[1], std::stof(seglist[2]), seglist[3]));
 
         else if(!seglist[0].compare("stinput-"))
             net->addComponent(new stereoDigitalInput(seglist[1], std::stof(seglist[2]), seglist[3], seglist[4]));
@@ -185,8 +187,13 @@ int main(int argc, char* argv[])
 
         else if(!seglist[0].compare("varres"))
             net->addComponent(new VariableResistor(stof(seglist[1]), std::stoi(seglist[2]), std::stoi(seglist[3]), seglist[4]));
+
         else if(!seglist[0].compare("capacitor"))
             net->addComponent(new Capacitor(stod(seglist[1]), std::stoi(seglist[2]), std::stoi(seglist[3])));
+
+        else if(!seglist[0].compare("varcap"))
+            net->addComponent(new VariableCapacitor(stof(seglist[1]), std::stoi(seglist[2]), std::stoi(seglist[3]), seglist[4]));
+
 
         else if(!seglist[0].compare("voltage"))
             net->addComponent(new Voltage(stof(seglist[1]), std::stoi(seglist[2]), std::stoi(seglist[3])));
@@ -216,7 +223,7 @@ int main(int argc, char* argv[])
 
 
         else if(!seglist[0].compare("phasor"))
-            net->addComponent(new genLoader("phasor", {std::stoi(seglist[1]), std::stoi(seglist[2]), std::stoi(seglist[3])}));
+            net->addComponent(new genLoader("phasor", {seglist[1], seglist[2], seglist[3]}));
 
 
         else if(!seglist[0].compare("+-")  ||

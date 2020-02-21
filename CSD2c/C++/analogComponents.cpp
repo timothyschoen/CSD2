@@ -74,7 +74,7 @@ struct AnalogDelay : Component<2, 1, 1>
     }
 
 };
-struct VariableResistor : Component<3>
+struct VariableResistor : Component<2, 0, 1>
 {
     double  r;
     double  resvalue;
@@ -241,6 +241,8 @@ struct Capacitor : Component<2, 1>
 
     void update(MNASystem & m) final
     {
+
+
         stateVar = m.b[nets[2]].lu;
 
         // solve legit voltage from the pins
@@ -254,12 +256,86 @@ struct Capacitor : Component<2, 1>
     void scaleTime(double told_per_new) final
     {
         // the state is 2*c*voltage - i/t0
-        // so we subtract out the voltage, scale current       (!!!!!!!!!!!!!!!!!!!!!)
+        // so we subtract out the voltage, scale current
         // and then add the voltage back to get new state
         //
         // note that this also works if the old rate is infinite
         // (ie. t0=0) when going from DC analysis to transient
         //
+        double qq = 2*c*voltage;
+        stateVar = qq + (stateVar - qq)*told_per_new;
+    }
+};
+
+struct VariableCapacitor : Component<2, 1, 1> // doesn't seem to do anything atm
+{
+    double max;
+    double c;
+    double g;
+    double ng;
+    double twog;
+    double ntwog;
+
+    double stateVar;
+    double voltage;
+
+    VariableCapacitor(double c, int l0, int l1, std::string d0) : c(c)
+    {
+        pinLoc[0] = l0;
+        pinLoc[1] = l1;
+        digiPins[0] = d0;
+        max = c;
+
+        stateVar = 0;
+        voltage = 0;
+    }
+
+    void stamp(MNASystem & m) final
+    {
+
+
+        m.stampTimed(+1, nets[0], nets[2]);
+        m.stampTimed(-1, nets[1], nets[2]);
+
+        m.A[0][0].gdyntimed.push_back(&ng);
+        m.A[0][1].gdyntimed.push_back(&g);
+        m.A[1][0].gdyntimed.push_back(&g);
+        m.A[1][1].gdyntimed.push_back(&ng);
+
+        m.A[2][0].gdyntimed.push_back(&twog);
+        m.A[2][1].gdyntimed.push_back(&ntwog);
+
+
+        m.stampStatic(-1, nets[2], nets[2]);
+
+        m.b[nets[2]].gdyn.push_back(&stateVar);
+
+
+    }
+
+    void updateInput(MNASystem & m)
+    {
+      c = max * m.getDigital(digiNets[0]);
+      g = 2. * c;
+      ng = -g;
+      twog = 2. * g;
+      ntwog = 2. * ng;
+
+    }
+
+    void update(MNASystem & m) final
+    {
+      m.nodes[nets[2]].scale = 1. / c;
+
+      stateVar = m.b[nets[2]].lu;
+
+      voltage = m.b[nets[0]].lu - m.b[nets[1]].lu;
+
+      m.b[nets[2]].lu = c*voltage;
+    }
+
+    void scaleTime(double told_per_new) final
+    {
         double qq = 2*c*voltage;
         stateVar = qq + (stateVar - qq)*told_per_new;
     }
