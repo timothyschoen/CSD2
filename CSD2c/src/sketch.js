@@ -388,7 +388,7 @@ function precompile(save = 1) {
 
 function startHalite(realtime) {
   let haliteappendix;
-  let halitecmd = './compiled/Halite'
+  let halitecmd = 'compiled/Halite'
 
   // Write our patch to a file that Halite can read
   precompile(1);
@@ -410,7 +410,7 @@ function startHalite(realtime) {
 
   if(!(realtime && (realtime_playing || !sbar.getJackStatus())))  {
 
-    halite = spawn('./compiled/Halite',  haliteappendix);
+    halite = spawn('compiled/Halite',  haliteappendix);
 
     halite.stdout.on('data', function (data) {
       console.log('Halite: ' + data);

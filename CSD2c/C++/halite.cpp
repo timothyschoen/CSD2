@@ -5,6 +5,7 @@
 #include <iostream>
 #include <cmath>
 #include <unistd.h>
+
 #include "AudioFile.h"
 // temporary for calculating which functions are slow
 #include <chrono>
@@ -22,7 +23,7 @@ constexpr double vTolerance = 5e-5;
 // thermal voltage for diodes/transistors
 constexpr double vThermal = 0.026;
 
-constexpr unsigned maxIter = 200;
+constexpr unsigned maxIter = 20;
 
 constexpr bool VERBOSE_LU = false;
 
@@ -113,10 +114,34 @@ struct MNANodeInfo
 
 // Stores A and b for A*x - b = 0, where x is the solution.            !!!!!!!!!!!!!!!!!!!
 
-// A en B zijn dus matrix A en Z?? Want X is normaal de solution
+// A en B zijn dus matrix A en Z. Want X is normaal de solution
 // Wat krijg je dan eigenlijk met a.lu en b.lu? (bonusvraag waarom is A.lu altijd 1, 0 of -1 wait dat is dan de Z matrix??? maar a.g dan???/)
 // A is stored as a vector of rows, for easy in-place pivots
 //
+
+// Ik probeer hier om variabelen uit de code te koppelen aan theoretische uitleg van MNA.
+// De beste plekken om te beginnen zijn:
+
+// http://qucs.sourceforge.net/tech/node14.html
+// https://www.swarthmore.edu/NatSci/echeeve1/Ref/mna/MNA2.html
+
+// In deze documenten wordt gesproken over een A, z en x matrix. Dit heb ik als volgt kunnen thuisbrengen in de code:
+
+// a.g -> conductance (1/weestand) tussen elke node, verder ook aansluiting van voltagebronnen.
+
+// System A bestaat uit 4 matrices die in een matrix zitten, dit zijn de volgende matrices:
+// a.g[n][n] komt overeen met A.G
+// a.g[m][n] komt overeen met A.B
+// a.g[n][m] komt overeen met A.C
+// a.g[M][m] komt overeen met A.D
+
+// a.lu -> tussenberekeningen voor pivot????
+
+
+
+// b.g -> bekende voltages uit voltagebronnen, vector Z
+// b.lu -> oplossingsvector, vector X
+
 struct MNASystem
 {
     typedef std::vector<MNACell>    MNAVector;
@@ -125,7 +150,7 @@ struct MNASystem
     // node names - for output
     std::vector<MNANodeInfo>    nodes;
 
-    MNAMatrix   A; // Standard A matrix
+    MNAMatrix   A; // A matrix
     MNAVector   b; // This is likely the Z matrix since that contains our known values
     //  Wikipedia: "When solving systems of equations, b is usually treated as a vector with a length equal to the height of matrix A"
 
@@ -136,6 +161,7 @@ struct MNASystem
 
     void setSize(int n, int d)
     {
+        std::cout << "size: " << n << '\n';
         A.resize(n);
         b.resize(n);
         digiValues.resize(d);
@@ -205,6 +231,11 @@ struct MNASystem
 
 };
 
+
+
+
+
+
 struct IComponent
 {
     virtual ~IComponent() {}
@@ -259,6 +290,9 @@ struct IComponent
     // time-step change, for caps to fix their state-variables
     virtual void scaleTime(double told_per_new) {}
 };
+
+// whoopsie not so neat i'll fix it later
+#include "MNASolver.cpp"
 
 template <int nPins = 0, int nInternalNets = 0, int nDigipins = 0>
 struct Component : IComponent
@@ -348,6 +382,8 @@ struct NetList
     void buildSystem()
     {
         system.setSize(nets, diginets);
+
+
         for(int i = 0; i < components.size(); ++i)
         {
             components[i]->stamp(system);
@@ -356,9 +392,12 @@ struct NetList
 
         // TODO: doe die begin time skip hier!!!!
 
+
         setStepScale((double)1/44100);
         tStep = (double)1/44100;
+        solver.setSize(nets, tStep);
     }
+
 
 
     void setTimeStep(double tStepSize)
@@ -404,34 +443,6 @@ struct NetList
         }
     }
 
-    void timeJump(double amt)
-    {
-
-        int iter;
-        system.time += amt;
-
-        for(iter = 0; iter < maxIter; ++iter)
-        {
-            // restore matrix state and add dynamic values
-
-            updatePre(tStep);
-
-
-            if(nets > 1) {
-                luFactor();
-
-                luForward();
-
-                luSolve();
-
-                if(newton()) break;
-            }
-        }
-
-        update();
-
-    }
-
 
 
     void simulateTick()
@@ -439,23 +450,51 @@ struct NetList
         //auto t1 = std::chrono::high_resolution_clock::now();
         int iter;
 
-        for(iter = 0; iter < maxIter; ++iter)
+
+
+
+
+
+
+        /*
+
+
+        for ( std::vector<std::vector<double>>::size_type i = 0; i < aSize; i++ )
         {
-            // restore matrix state and add dynamic values
+           for ( std::vector<double>::size_type j = 0; j < aSize; j++ )
+           {
+              std::cout << system.A[i][j].lu << ' ';
+           }
+           std::cout << std::endl;
+        } */
 
-            updatePre(tStep);
+        solver.solve(system);
+        //solver.solve2(system);
+        //solver.solve3(components, system);
+        /*
+
+        std::cout << "Nieuwe solver B uit:" << '\n';
+
+        for (size_t i = 0; i < aSize; i++) {
+          std::cout << system.b[i].lu << '\n';
+        } */
 
 
-            if(nets > 1) {
-                luFactor();
+        /*
 
-                luForward();
 
-                luSolve();
 
-                if(newton()) break;
-            }
-        }
+
+        /*
+        std::cout << "Oude solver B uit:" << '\n';
+
+        for (size_t i = 0; i < aSize; i++) {
+          std::cout << system.b[i].lu << '\n';
+        } */
+
+
+        //usleep(100000);
+
 
         system.time += tStep;
         system.ticks++;
@@ -478,6 +517,8 @@ protected:
     ComponentList   components;
 
     MNASystem       system;
+    MNASystem       system2;
+    MNASolver       solver;
 
     void update() {
 
@@ -493,17 +534,6 @@ protected:
         }
 
 
-    }
-
-    // return true if we're done
-    bool newton()
-    {
-        bool done = 1;
-        for(int i = 0; i < components.size(); ++i)
-        {
-            done &= components[i]->newton(system);
-        }
-        return done;
     }
 
     void initLU(double stepScale)
@@ -535,104 +565,5 @@ protected:
         printf("MNA density %.1f%%\n", 100 * fill / ((nets-1.)*(nets-1.)));
     }
 
-    void updatePre(double stepScale)
-    {
-        for(int i = 0; i < nets; ++i)
-        {
-            system.b[i].updatePre(stepScale);
-            for(int j = 0; j < nets; ++j)
-            {
-                system.A[i][j].updatePre(stepScale);
-            }
-        }
-    }
 
-    void luFactor()
-    {
-        int p;
-        for(p = 1; p < nets; ++p)
-        {
-            // FIND PIVOT
-            {
-                int pr = p;
-                for(int r = p; r < nets; ++r)
-                {
-                    if(fabs(system.A[r][p].lu)
-                            > fabs(system.A[pr][p].lu))
-                    {
-                        pr = r;
-                    }
-                }
-                // swap if necessary
-                if(pr != p)
-                {
-                    std::swap(system.A[p], system.A[pr]);
-                    std::swap(system.b[p], system.b[pr]);
-                }
-            }
-            if(0 == system.A[p][p].lu)
-            {
-                printf("Failed to find a pivot!!");
-                printf("ERROR: Invalid circuit");
-                throw;
-                return;
-            }
-
-            // take reciprocal for D entry
-            // NOTE: Is dit de D matrix, (M*M) die standaard 0 is?? zit wel op system a nml
-            // hoewel, p,p is een diagonaal...
-            system.A[p][p].lu = 1 / system.A[p][p].lu;
-
-            // perform reduction on rows below
-            for(int r = p+1; r < nets; ++r)
-            {
-                if(system.A[r][p].lu == 0) continue;
-
-                system.A[r][p].lu *= system.A[p][p].lu;
-                for(int c = p+1; c < nets; ++c)
-                {
-                    if(system.A[p][c].lu == 0) continue;
-
-                    system.A[r][c].lu -=
-                        system.A[p][c].lu * system.A[r][p].lu;
-                }
-
-            }
-        }
-    }
-
-    // this does forward substitution for the solution vector
-    int luForward()
-    {
-        int p;
-        for(p = 1; p < nets; ++p)
-        {
-            // perform reduction on rows below
-            // Dit iss mss wel uit te vogelen... welke waardes moeten gesubstitueerd worden?
-            for(int r = p+1; r < nets; ++r)
-            {
-                if(system.A[r][p].lu == 0) continue;
-                if(system.b[p].lu == 0) continue;
-
-                system.b[r].lu -= system.b[p].lu * system.A[r][p].lu;
-            }
-        }
-        return p;
-    }
-
-    // solves nodes backwards from limit-1
-    int luSolve()
-    {
-        for(int r = nets; --r;)
-        {
-            //printf("solve node %d\n", r);
-            for(int s = r+1; s < nets; ++s)
-            {
-                system.b[r].lu -= system.b[s].lu * system.A[r][s].lu;
-            }
-
-            system.b[r].lu *= system.A[r][r].lu;
-        }
-        return 1;
-    }
 };

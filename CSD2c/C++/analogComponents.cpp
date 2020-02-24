@@ -15,8 +15,8 @@ struct Resistor : Component<2>
     {
 
         double g = 1. / r;
-        m.stampStatic(+g, nets[0], nets[0]);
-        m.stampStatic(-g, nets[0], nets[1]);
+        m.stampStatic(+g, nets[0], nets[0]); //Positive on diagonal elements
+        m.stampStatic(-g, nets[0], nets[1]); //Negative on off-diagonal elements
         m.stampStatic(-g, nets[1], nets[0]);
         m.stampStatic(+g, nets[1], nets[1]);
     }
@@ -353,7 +353,8 @@ struct Voltage : Component<2, 1>
 
     void stamp(MNASystem & m) final
     {
-        m.stampStatic(-1, nets[0], nets[2]);
+        // Gets written to A matrix (B and C parts)
+        m.stampStatic(-1, nets[0], nets[2]); // -1 to the net connected to the negative
         m.stampStatic(+1, nets[1], nets[2]);
 
         m.stampStatic(+1, nets[2], nets[0]);

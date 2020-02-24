@@ -2,11 +2,13 @@ CC = g++
 CFLAGS = -Wall -std=c++17
 LDFLAGS= -ljack
 CAFLAGS= -D__MACOSX_CORE__ -framework CoreMIDI -framework CoreAudio -framework CoreFoundation
+AFFLAGS= -I/opt/arrayfire/include -rpath /opt/arrayfire/lib -lafcpu -L/opt/arrayfire/lib
+
 
 all: Halite
 
-Halite : jack_module.o all_headers.h RtMidi.o
-	$(CC) -o $@ $(CFLAGS) main.cpp ./gen/phasor.cpp ./gen/genlib.cpp jack_module.o ./gen/json.o ./gen/json_builder.o RtMidi.o $(LDFLAGS) $(CAFLAGS)
+Halite : jack_module.o RtMidi.o
+	$(CC) -o $@ $(CFLAGS) main.cpp ./gen/phasor.cpp ./gen/genlib.cpp jack_module.o ./gen/json.o ./gen/json_builder.o RtMidi.o $(LDFLAGS) $(CAFLAGS) $(AFFLAGS)
 	mv Halite ../compiled/
 
 jack_module.o:
@@ -21,12 +23,17 @@ genlib.o: json.o
 RtMidi.o:
 	$(CC) -c $< -D__MACOSX_CORE__ $(CFLAGS) ./rtmidi-master/RtMidi.cpp -framework CoreMIDI -framework CoreAudio -framework CoreFoundation
 
-
-genHeaders.h:
-	bash -c 'for i in `ls ./gen/*.h`; do echo "#include <$i>" >>genHeaders.h; done'
+#genHeaders.h:
+#	bash -c 'for i in `ls ./gen/*.h`; do echo "#include <$i>" >>genHeaders.h; done'
 
 json.o:
 	gcc -c ./gen/json.o ./gen/json_builder.o
+
+
+
+
+
+
 
 clean:
 	rm -f *.o

@@ -256,7 +256,7 @@ int main(int argc, char* argv[])
     std::cout << enginesamplerate << std::endl;
     std::cout << (double)1/enginesamplerate << std::endl;
 
-
+    //net->simulateTick();
     net->setTimeStep((double)1/enginesamplerate);
     net->simulateTick();
 
