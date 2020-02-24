@@ -148,7 +148,6 @@ struct digitalAnalogConverter : Component<2,1,1>
 
         m.b[nets[2]].gdyn.push_back(&v);
 
-        m.nodes[nets[2]].type = MNANodeInfo::tCurrent;
     }
 
     void updateInput(MNASystem & m) final
@@ -182,7 +181,7 @@ struct analogDigitalConverter : Component<2, 1, 1>
     }
     void update(MNASystem & m) final
     {
-        x = m.b[nets[2]].lu * m.nodes[nets[2]].scale;
+        x = m.b[nets[2]].lu;
         y = x - xm1 + 0.995 * ym1;
         xm1 = x;
         ym1 = y;

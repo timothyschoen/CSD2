@@ -52,7 +52,6 @@ struct AnalogDelay : Component<2, 1, 1>
 
         m.b[nets[2]].gdyn.push_back(&v);
 
-        m.nodes[nets[2]].type = MNANodeInfo::tCurrent;
     }
 
     void update(MNASystem & m) final
@@ -236,7 +235,7 @@ struct Capacitor : Component<2, 1>
 
         // this isn't quite right as state stores 2*c*v - i/t
         // however, we'll fix this in updateFull() for display
-        m.nodes[nets[2]].scale = 1 / c;
+        //m.nodes[nets[2]].scale = 1 / c;
     }
 
     void update(MNASystem & m) final
@@ -325,7 +324,7 @@ struct VariableCapacitor : Component<2, 1, 1> // doesn't seem to do anything atm
 
     void update(MNASystem & m) final
     {
-      m.nodes[nets[2]].scale = 1. / c;
+      //m.nodes[nets[2]].scale = 1. / c;
 
       stateVar = m.b[nets[2]].lu;
 
@@ -362,7 +361,6 @@ struct Voltage : Component<2, 1>
 
         m.b[nets[2]].g = v;
 
-        m.nodes[nets[2]].type = MNANodeInfo::tCurrent;
     }
 };
 
@@ -393,7 +391,7 @@ struct Probe : Component<2, 1>
 
         //std::cout << m.A[0][2].lu;   // -> is altijd 0!!!! zoek uit wat dit is!!
         //return m.A[0][1].lu;
-        return m.b[nets[2]].lu * m.nodes[nets[2]].scale; //? Betrek current hierin!!!
+        return m.b[nets[2]].lu; //? Betrek current hierin!!!
         // m.A[2].lu = conductance in Siemens
         // m.A[2].lu (siemens) * m.b[2].lu (voltage) = Current
         //
@@ -459,7 +457,6 @@ struct Function : Component<2,1>
 
         m.b[nets[2]].gdyn.push_back(&v);
 
-        m.nodes[nets[2]].type = MNANodeInfo::tCurrent;
     }
 
     void update(MNASystem & m) final
@@ -500,7 +497,6 @@ struct InputSample : Component<2,1>
 
         m.b[nets[2]].gdyn.push_back(&v);
 
-        m.nodes[nets[2]].type = MNANodeInfo::tCurrent;
     }
 
     void update(MNASystem & m) final
@@ -649,7 +645,6 @@ struct Diode : Component<2, 2>
         m.A[nets[2]][nets[2]].gdyn.push_back(&pn.geq);
         m.b[nets[2]].gdyn.push_back(&pn.ieq);
 
-        m.nodes[nets[3]].type = MNANodeInfo::tCurrent;
 
     }
 };
@@ -795,12 +790,8 @@ struct BJT : Component<3, 4>
 
 
 
-        m.nodes[nets[5]].type = MNANodeInfo::tCurrent;
-        m.nodes[nets[5]].scale = 1 - ar;
 
 
-        m.nodes[nets[6]].type = MNANodeInfo::tCurrent;
-        m.nodes[nets[6]].scale = 1 - af;
     }
 };
 
@@ -926,13 +917,10 @@ struct OPA : Component<5, 6>
         m.b[nets[6]].gdyn.push_back(&pnNN.ieq);
 
 
-        m.nodes[nets[7]].type = MNANodeInfo::tCurrent;
 
 
-        m.nodes[nets[8]].type = MNANodeInfo::tCurrent;
 
 
-        m.nodes[nets[9]].type = MNANodeInfo::tCurrent;
 
         // this is useless as far as simulation goes
         // it's just for getting a nice current value
@@ -942,6 +930,5 @@ struct OPA : Component<5, 6>
         m.stampStatic(+1, nets[10], nets[10]);
 
 
-        m.nodes[nets[10]].type = MNANodeInfo::tCurrent;
     }
 };

@@ -7,6 +7,11 @@
 #include <unistd.h>
 
 #include "AudioFile.h"
+
+#include "MNACell.cpp"
+#include "MNASystem.cpp"
+#include "IComponent.h"
+#include "MNASolver.cpp"
 // temporary for calculating which functions are slow
 #include <chrono>
 
@@ -55,62 +60,6 @@ constexpr const char* unitValueSuffixes[] = {
 //
 // We track enough information here that we only need to stamp once.
 //
-struct MNACell
-{
-    double g;       // simple values (eg. resistor conductance)
-    double gtimed;  // time-scaled values (eg. capacitor conductance)
-
-    // pointers to dynamic variables, added in once per solve
-    std::vector<double*>    gdyn;
-    std::vector<double*>    gdyntimed;
-
-    double  lu, prelu;  // lu-solver values and matrix pre-LU cache
-
-    void clear()
-    {
-        g = 0;
-        gtimed = 0;
-    }
-
-    void initLU(double stepScale)
-    {
-        prelu = g + gtimed * stepScale;
-
-
-    }
-
-    // restore matrix state and update dynamic values
-    void updatePre(double stepScale)
-    {
-        lu = prelu;
-        for(int i = 0; i < gdyn.size(); ++i)
-        {
-            lu += *(gdyn[i]);
-        }
-        for(int i = 0; i < gdyntimed.size(); ++i)
-        {
-            lu += *(gdyntimed[i]) * stepScale;
-        }
-    }
-};
-
-// this is for keeping track of node information
-// for the purposes of more intelligent plotting
-struct MNANodeInfo
-{
-    enum Type
-    {
-        tVoltage,
-        tCurrent,
-
-        tCount
-    };
-
-    Type    type;   // one auto-range per unit-type
-    double  scale;  // scale factor (eg. charge to voltage)
-
-    std::string name;   // node name for display
-};
 
 // Stores A and b for A*x - b = 0, where x is the solution.            !!!!!!!!!!!!!!!!!!!
 
@@ -142,157 +91,7 @@ struct MNANodeInfo
 // b.g -> bekende voltages uit voltagebronnen, vector Z
 // b.lu -> oplossingsvector, vector X
 
-struct MNASystem
-{
-    typedef std::vector<MNACell>    MNAVector;
-    typedef std::vector<MNAVector>  MNAMatrix;
 
-    // node names - for output
-    std::vector<MNANodeInfo>    nodes;
-
-    MNAMatrix   A; // A matrix
-    MNAVector   b; // This is likely the Z matrix since that contains our known values
-    //  Wikipedia: "When solving systems of equations, b is usually treated as a vector with a length equal to the height of matrix A"
-
-    double      time;
-    long      ticks;
-
-    std::vector<double> digiValues;
-
-    void setSize(int n, int d)
-    {
-        std::cout << "size: " << n << '\n';
-        A.resize(n);
-        b.resize(n);
-        digiValues.resize(d);
-
-        nodes.resize(n);
-
-        for(unsigned i = 0; i < n; ++i)
-        {
-            b[i].clear(); // keeping it 2d
-            A[i].resize(n); // making it 3d
-
-            nodes[i].type = MNANodeInfo::tVoltage;
-            nodes[i].scale = 1;
-
-            for(unsigned j = 0; j < n; ++j)
-            {
-                A[i][j].clear();
-            }
-        }
-
-        time = 0;
-        ticks = 0;
-    }
-
-    void stampTimed(double g, int r, int c)
-    {
-        A[r][c].gtimed += g;
-    }
-
-
-    void stampStatic(double g, int r, int c)
-    {
-        A[r][c].g += g;
-    }
-
-    // this doesn't work!
-    void stampConductor(double g, int r, int c)
-    {
-        A[r][r].g += g;
-        A[r][c].g -= g;
-        A[c][r].g -= g;
-        A[c][c].g += g;
-    }
-
-    void setDigital(std::vector<int> outputs, double value)
-    {
-        for (size_t i = 0; i < outputs.size(); i++) {
-            digiValues[outputs[i]] = value;
-        }
-
-    }
-
-    double getDigital(std::vector<int> inputs, double fallback = 0)
-    {
-        double accum = 0;
-        if (inputs.size() > 0) {
-            for (size_t i = 0; i < inputs.size(); i++) {
-                accum += digiValues[inputs[i]];
-            }
-        }
-        else {
-            accum = fallback;
-        }
-        return accum;
-    }
-
-
-};
-
-
-
-
-
-
-struct IComponent
-{
-    virtual ~IComponent() {}
-
-    // return the number of pins for this component
-    virtual int pinCount() = 0;
-
-    // return a pointer to array of pin locations
-    // NOTE: these will eventually be GUI locations to be unified
-    virtual const int* getPinLocs() const = 0;
-    virtual const std::vector<std::string> getDigiLocs() const = 0;
-
-    // setup pins and calculate the size of the full netlist
-    // the Component<> will handle this automatically
-    //
-    //  - netSize is the current size of the netlist
-    //  - pins is an array of circuits nodes
-    //
-    virtual void setupNets(int & netSize, int & states, const int* pins, const std::vector<std::string> digiPins) = 0;
-
-    virtual void digitalReset(const int* digiPins) = 0;
-
-
-    // stamp constants into the matrix
-    virtual void stamp(MNASystem & m) = 0;
-
-    // this is for allocating state variables
-    virtual void setupStates(int & states) {}
-
-    // update state variables, only tagged nodes
-    // this is intended for fixed-time compatible
-    // testing to make sure we can code-gen stuff
-    virtual void update(MNASystem & m) {}
-    virtual void updateInput(MNASystem & m) {}
-
-    // return true if we're done - will keep iterating
-    // until all the components are happy
-    virtual bool newton(MNASystem & m) {
-        return true;
-    }
-
-    // NEW: output function for probe object;
-    virtual double getAudioOutput(MNASystem & m, int c) {
-        return 0;
-    }
-
-    // realtime input function;
-    virtual void setAudioInput(MNASystem & m, double input) {}
-
-    virtual void setMidiInput(MNASystem & m, std::vector<unsigned char> message) {}
-
-    // time-step change, for caps to fix their state-variables
-    virtual void scaleTime(double told_per_new) {}
-};
-
-// whoopsie not so neat i'll fix it later
-#include "MNASolver.cpp"
 
 template <int nPins = 0, int nInternalNets = 0, int nDigipins = 0>
 struct Component : IComponent
@@ -448,56 +247,23 @@ struct NetList
     void simulateTick()
     {
         //auto t1 = std::chrono::high_resolution_clock::now();
-        int iter;
-
-
-
-
-
-
-
-        /*
-
-
-        for ( std::vector<std::vector<double>>::size_type i = 0; i < aSize; i++ )
-        {
-           for ( std::vector<double>::size_type j = 0; j < aSize; j++ )
-           {
-              std::cout << system.A[i][j].lu << ' ';
-           }
-           std::cout << std::endl;
-        } */
 
         solver.solve(system);
         //solver.solve2(system);
         //solver.solve3(components, system);
-        /*
 
-        std::cout << "Nieuwe solver B uit:" << '\n';
+        /*
+        std::cout << "B uit:" << '\n';
 
         for (size_t i = 0; i < aSize; i++) {
           std::cout << system.b[i].lu << '\n';
-        } */
-
-
-        /*
-
-
-
-
-        /*
-        std::cout << "Oude solver B uit:" << '\n';
-
-        for (size_t i = 0; i < aSize; i++) {
-          std::cout << system.b[i].lu << '\n';
-        } */
-
-
-        //usleep(100000);
+        }
+        usleep(100000); */
 
 
         system.time += tStep;
         system.ticks++;
+
 
         update();
         //auto t2 = std::chrono::high_resolution_clock::now();
