@@ -194,7 +194,7 @@ struct NetList
 
         setStepScale((double)1/44100);
         tStep = (double)1/44100;
-        solver.setSize(nets, tStep);
+        solver.setSize(nets, tStep, system);
     }
 
 

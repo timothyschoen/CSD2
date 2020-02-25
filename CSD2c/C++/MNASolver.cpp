@@ -19,14 +19,14 @@ struct MNASolver
     int rNets;
     int maxIter = 20;
     double tStep;
-    float *systemA;
-    float *systemA_lu;
+    double **systemA;
+    double *systemA_lu;
     int *pivot;
-    float *systemB;
-    float *systemX;
-    float *r;
-    float *c;
-    float *work;
+    double **systemB;
+    double *systemX;
+    double *r;
+    double *c;
+    double *work;
     int *iwork;
     float rcond;
     float ferr;
@@ -48,22 +48,29 @@ struct MNASolver
 
 public:
 
-    void setSize(int size, double timestep)
+    void setSize(int size, double timestep, MNASystem & m)
     {
 
         nets = size;
         rNets = size-1;
         tStep = timestep;
 
-        systemA = new float[rNets*rNets];
-         systemA_lu = new float[rNets*rNets];
+         systemA = new double*[rNets*rNets];
+         systemA_lu = new double[rNets*rNets];
          pivot = new int[rNets*rNets];
-         systemB = new float[rNets];
-         systemX = new float[rNets];
-         r = new float[rNets];
-         c = new float[rNets];
-         work = new float[rNets*rNets];
+         systemB = new double*[rNets];
+         //systemX = new double*[rNets];
+         r = new double[rNets];
+         c = new double[rNets];
+         work = new double[rNets*rNets];
          iwork = new int[rNets*rNets];
+
+         for (int i = 0; i < rNets; i++ ) {
+             systemB[i] = &m.b[i+1].lu;
+             for (int j = 0; j < rNets; j++ ) {
+                 systemA[(i*(rNets))+j] = &m.A[j+1][i+1].lu; //Fill a 1D array with pointers to the 2D matrix, because lapack requires a 1d matrix
+             }
+         }
 
 
     }
@@ -252,7 +259,7 @@ public:
 
               //cblas_dgesvx_();
               /*
-              cblas_dgesvx(CblasRowMajor, CblasNoTrans, 8, 4, 1.0f, (float*)a, 4, x, 1, 1.0f, y, 1);
+              cblas_dgesvx(CblasRowMajor, CblasNoTrans, 8, 4, 1.0f, (*)a, 4, x, 1, 1.0f, y, 1);
 
               std::vector<double> a1(systemA);
               std::vector<double> b1(systemB);
@@ -276,17 +283,17 @@ public:
           char *__trans,
           int *__n,
           int *__nrhs,
-          float *__a,
+           *__a,
           int *__lda,
-          float *__af,
+           *__af,
           int *__ldaf,
           int *__ipiv,
           char *__equed,
-          float *__r__, float *__c__,
-                float *__b, int *__ldb, float *__x,
-                int *__ldx, float *__rcond,
-                float *__ferr, float *__berr,
-                float *__work, int *__iwork,
+           *__r__,  *__c__,
+                 *__b, int *__ldb,  *__x,
+                int *__ldx, double *__rcond,
+                double *__ferr, double *__berr,
+                double *__work, int *__iwork,
                 int *__info) */
 
 
@@ -300,28 +307,7 @@ public:
 
                     updatePre(tStep, m);
 
-                    for (int i = 0; i < rNets; i++ ) {
-                        systemB[i] = (float)m.b[i+1].lu;
-                        for (int j = 0; j < rNets; j++ ) {
-                            systemA[(i*(rNets))+j] = (float)m.A[j+1][i+1].lu; //klopt dit??
-                        }
-                    }
-
-                      sgesv_(&rNets, &one, systemA, &rNets, pivot, systemB, &rNets, &info);
-
-
-
-
-                     //ssysv_rk_("UPPER", &rNets, &one, systemA, &rNets, &room, pivot, systemB, &rNets, work, iwork, &info);
-
-                       //la_solve();
-
-                       m.b[0].lu = 0;
-                       for (size_t i = 1; i < nets; i++) {
-                          m.b[i].lu = systemB[i-1];
-
-                      }
-                      //std::cout << "nieuwe iter "<< iter << '\n';
+                      dgesv_(&rNets, &one, *systemA, &rNets, pivot, *systemB, &rNets, &info);
 
                       if(newton(components, m)) break;
 
@@ -342,24 +328,14 @@ public:
 
                   updatePre(tStep, m);
 
-                  for (int i = 0; i < rNets; i++ ) {
-                      systemB[i] = (float)m.b[i+1].lu;
-                      for (int j = 0; j < rNets; j++ ) {
-                          systemA[(i*(rNets))+j] = (float)m.A[j+1][i+1].lu; //klopt dit??
-                      }
-                  }
 
 
 
-                    sposv_( "Lower", &rNets, &one, systemA, &rNets, systemB, &rNets, &info );
+                    //sposv_( "Lower", &rNets, &one, systemA, &rNets, systemB, &rNets, &info );
 
                      //la_solve();
 
-                     m.b[0].lu = 0;
-                     for (size_t i = 1; i < nets; i++) {
-                        m.b[i].lu = systemB[i-1];
 
-                    }
                     //std::cout << "nieuwe iter "<< iter << '\n';
 
                     if(newton(components, m)) break;

@@ -7,27 +7,47 @@ function Inlet(x, y, instance, type, datatype, color = '#229FD7') {
 
 
              // This is the actual inlet
-             let inletbutton = createButton("");
-    inletbutton.size(8, 8);
+
+    var inletbutton = document.createElement("BUTTON");
+             //let inletbutton = createButton("");
+    //inletbutton.size(8, 8);
+
+
     if(datatype == 'digital') {
         color = '#fcba03';
     }
 
+    inletbutton.style.position = "absolute";
+    inletbutton.style.height = "8px";
+    inletbutton.style.width = "8px";
+    inletbutton.style.padding = "0";
+    inletbutton.style.margin = "0";
+    inletbutton.style.borderRadius = '100%'
+    inletbutton.style.border = '0px'
 
+    inletbutton.style.background = color;
+    inletbutton.style.top =  y + "px";
+    inletbutton.style.left = x + "px";
 
-    inletbutton.style("border-radius:100%; border:none; outline:none; font-size:15; color:white; background-color:colorcode ; border: 0 none transparent; padding:0; margin:0;".replace('colorcode', color));
+    //inletbutton.style("border-radius:100%; border:none; position:absolute; outline:none; font-size:15; color:white; background-color:colorcode ; border: 0 none transparent; padding:0; margin:0;".replace('colorcode', color));
 
-    inletbutton.position(x, y);
+    //inletbutton.position(x, y);
 
+    document.body.appendChild(inletbutton);
 
     // basic getters and setters
     this.setposition = function(x, y) {
         this.x = x;
         this.y = y;
-        inletbutton.position(this.x, this.y);
+        inletbutton.style.top =  y + "px";
+        inletbutton.style.left = x + "px";
     }
     this.gettype = function() {
         return type;
+    }
+
+    this.getdiv = function() {
+        return inletbutton;
     }
 
     this.getdatatype = function() {
@@ -41,16 +61,18 @@ function Inlet(x, y, instance, type, datatype, color = '#229FD7') {
     // HTML buttons overlap any p5js draws, so we need to hide it manually when it's under the sidebar
     this.show = function(boolean) {
         if(boolean) {
-            inletbutton.show();
+            //inletbutton.show();
         }
         else {
-            inletbutton.hide();
+            //inletbutton.hide();
         }
     }
     // Delete inlet
     this.remove = function() {
         inletbutton.remove();
     }
+
+    /*
 
     inletbutton.mousePressed(function () {
         if (connecting == -1) {
@@ -66,11 +88,62 @@ function Inlet(x, y, instance, type, datatype, color = '#229FD7') {
             }
             connecting = -1;
         }
-    });
+    }); */
 }
 
 // Object for connections
 function Connection(start, end, datatype = 'analog') { // Optional argument 'datatype' provides legacy support for all the patches we made before adding digital signals
+
+  function getOffset( el ) {
+      var rect = el.getBoundingClientRect();
+      return {
+          left: rect.left + window.pageXOffset,
+          top: rect.top + window.pageYOffset,
+          width: rect.width || el.offsetWidth,
+          height: rect.height || el.offsetHeight
+      };
+  }
+
+
+
+      var off1 = getOffset(start[0].getinlets()[start[1]].getdiv());
+      var off2 = getOffset(end[0].getinlets()[end[1]].getdiv());
+
+      // bottom right
+      var x1 = off1.left + off1.width;
+      var y1 = off1.top + off1.height;
+      // top right
+      var x2 = off2.left + off2.width;
+      var y2 = off2.top;
+      // distance
+      var length = Math.sqrt(((x2-x1) * (x2-x1)) + ((y2-y1) * (y2-y1)));
+      // center
+      var cx = ((x1 + x2) / 2) - (length / 2);
+      var cy = ((y1 + y2) / 2) - (1 / 2);
+      // angle
+      var angle = Math.atan2((y1-y2),(x1-x2))*(180/Math.PI);
+      // make hr
+      //var htmlLine = "<div style='padding:0px; margin:0px; height:" + 1 + "px; background-color:" + color + "; line-height:1px; position:absolute; left:" + cx + "px; top:" + cy + "px; width:" + length + "px; -moz-transform:rotate(" + angle + "deg); -webkit-transform:rotate(" + angle + "deg); -o-transform:rotate(" + angle + "deg); -ms-transform:rotate(" + angle + "deg); transform:rotate(" + angle + "deg);' />";
+      var htmlLine = document.createElement("div");
+
+      htmlLine.style.position = "absolute";
+      htmlLine.style.height = "1px";
+      htmlLine.style.width = length + "px";
+      htmlLine.style.padding = "0px";
+      htmlLine.style.margin = "0px";
+      htmlLine.style.border = '1px'
+      htmlLine.style.lineHeight = '1px'
+      htmlLine.style.transform = 'rotate(' + angle + 'deg)'
+
+      //htmlline.style += '-webkit-transform:rotate(" + angle + "deg)';
+
+      htmlLine.style.background = 'black';
+      htmlLine.style.top =  cy + "px";
+      htmlLine.style.left = cx + "px";
+
+      //
+      // alert(htmlLine);
+      document.body.appendChild(htmlLine);
 
 
     // Getters and setters
@@ -87,6 +160,32 @@ function Connection(start, end, datatype = 'analog') { // Optional argument 'dat
 
     this.gettype = function() {
         return datatype;
+    }
+
+    this.update = function() {
+      var off1 = getOffset(start[0].getinlets()[start[1]].getdiv());
+      var off2 = getOffset(end[0].getinlets()[end[1]].getdiv());
+
+      // bottom right
+      var x1 = off1.left + off1.width;
+      var y1 = off1.top + off1.height;
+      // top right
+      var x2 = off2.left + off2.width;
+      var y2 = off2.top;
+      // distance
+      var length = Math.sqrt(((x2-x1) * (x2-x1)) + ((y2-y1) * (y2-y1)));
+      // center
+      var cx = ((x1 + x2) / 2) - (length / 2);
+      var cy = ((y1 + y2) / 2) - (1 / 2);
+      // angle
+      var angle = Math.atan2((y1-y2),(x1-x2))*(180/Math.PI);
+
+
+      htmlLine.style.width = length + "px";
+      htmlLine.style.transform = 'rotate(' + angle + 'deg)'
+      htmlLine.style.top =  cy + "px";
+      htmlLine.style.left = cx + "px";
+
     }
 
     // Draw the line
@@ -122,7 +221,7 @@ function Connection(start, end, datatype = 'analog') { // Optional argument 'dat
             }
         }
         // Draw it!
-        line(line1x, line1y, line2x,line2y);
+        //line(line1x, line1y, line2x,line2y);
     }
 }
 

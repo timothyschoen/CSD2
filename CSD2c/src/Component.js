@@ -28,6 +28,142 @@ function Component(name, xin = mouseX,  yin = mouseY-100) {
     w = 70;
     h = 20;
 
+    var myCircle = document.createElement("div");
+    var textblocker = document.createElement("div");
+
+    //myCircle.style.width = "100px";
+    myCircle.style.position = "absolute";
+    myCircle.style.height = "17px";
+    myCircle.style.paddingLeft = "12px";
+    myCircle.style.paddingTop = "2px";
+    myCircle.style.paddingBottom = "0px";
+    myCircle.style.paddingRight = "12px";
+    myCircle.style.background = "#afafaf";
+    myCircle.style.top =  y+h + "px";
+    myCircle.style.left = x + "px";
+    myCircle.style.color = "black";
+    myCircle.style.border = "1px solid black"
+    myCircle.style.fontFamily = "sans-serif";
+    myCircle.style.fontSize = "12px";
+    myCircle.style.fontAlign = "center";
+    myCircle.style.unselectable = 'on'
+    myCircle.style.cursor = 'default'
+    myCircle.style.userSelect = 'false'
+    myCircle.innerHTML = name;
+    myCircle.onselectstart="return false;"
+    myCircle.setAttribute('unselectable', 'on');
+
+    textblocker.style = myCircle.style;
+    textblocker.innerHTML = 'name';
+
+
+    textblocker.style.top =  y+h + "px";
+    textblocker.style.left = x + "px";
+    textblocker.style.opacity = "0";
+
+
+    document.body.appendChild(myCircle);
+
+    var dragItem = myCircle;
+    var container = myCircle;
+
+    var active = false;
+    var currentX;
+    var currentY;
+    var initialX;
+    var initialY;
+    var xOffset = 0;
+    var yOffset = 0;
+
+    container.addEventListener("touchstart", dragStart, false);
+    container.addEventListener("touchend", dragEnd, false);
+    container.addEventListener("touchmove", drag, false);
+
+    container.addEventListener("mousedown", dragStart, false);
+    container.addEventListener("mouseup", dragEnd, false);
+    container.addEventListener("mousemove", drag, false);
+
+    function dragStart(e) {
+      if (e.type === "touchstart") {
+        initialX = e.touches[0].clientX - xOffset;
+        initialY = e.touches[0].clientY - yOffset;
+      } else {
+        initialX = e.clientX - xOffset;
+        initialY = e.clientY - yOffset;
+      }
+
+      if (e.target === dragItem) {
+        active = true;
+      }
+    }
+
+    function dragEnd(e) {
+      initialX = currentX;
+      initialY = currentY;
+
+      active = false;
+    }
+
+    function drag(e) {
+      if (active) {
+
+        e.preventDefault();
+
+        if (e.type === "touchmove") {
+          currentX = e.touches[0].clientX - initialX;
+          currentY = e.touches[0].clientY - initialY;
+        } else {
+          currentX = e.clientX - initialX;
+          currentY = e.clientY - initialY;
+        }
+
+        xOffset = currentX;
+        yOffset = currentY;
+
+        x = e.clientX
+        y = e.clientY
+
+        setTranslate(currentX, currentY, dragItem);
+      }
+    }
+
+    function setTranslate(xPos, yPos, el) {
+
+      dragging = true;
+      selecting = false;
+      // Make it public that this component is being dragged
+      draginstance = boxes.indexOf(this)
+      el.style.transform = "translate3d(" + xPos + "px, " + yPos + "px, 0)";
+      var bodyRect = document.body.getBoundingClientRect(),
+          elemRect = myCircle.getBoundingClientRect(),
+          offsety   = elemRect.top - bodyRect.top,
+          offsetx   = elemRect.left - bodyRect.left;
+
+      let offset = 0;
+
+      for (var i = 0; i < connections.length; i++) {
+        connections[i].update();
+      }
+
+
+      for(let i = 0; i < inlets.length; i++) {
+          if(inlets[i].gettype() == 'inlet') {
+              inlets[i].setposition(offsetx+(10*offset)+20, offsety+h-3)
+              offset++;
+          }
+          else {
+              inlets[i].setposition(offsetx+(10*(i-offset))+20, offsety+h+h-4);
+          }
+          if(inlets[i].getposition()[0] > cnvwidth) {
+              inlets[i].show(false);
+          }
+          else {
+              inlets[i].show(true);
+          }
+        }
+
+    }
+
     // Open input field
     this.inputname = function(text) {
         inp = createInput(text);

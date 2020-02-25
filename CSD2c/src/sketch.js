@@ -179,10 +179,10 @@ let halite; // letiable for halite process
 
 let realtime_playing = false; // Checks if we are playing in realtime
 
-let sbar; // Sidebar (see sidebar.js)
-let sbarwidth = 350;
+let sbar = new Sidebar; // Sidebar (see sidebar.js)
+//let sbarwidth = 350;
 
-let cnvwidth; // Width of our canvas without the sidebar
+
 
 let code = ''; // letiable to store code to use for exporting and displaying
 
@@ -270,24 +270,21 @@ let buttonpresets = [['+', 100, function () {
 let buttons = [];
 
 
-function setup() {
-    // Limit framerate for improved performance (maybe set is lower though?)
-    frameRate(50);
 
-    createCanvas(windowWidth, windowHeight);
+    //createCanvas(window.innerWidth, window.innerHeight);
 
     // Initialize the sidebar (from sidebar.js)
-    sbar = new Sidebar;
+    //sbar = new Sidebar;
 
     // Set the canvas size
-    cnvwidth = windowWidth-sbarwidth;
+    cnvwidth = window.innerWidth-sbarwidth;
 
     // Loads our last session from local storage
     // This should make sure that refreshing or closing the app (or a potential crash) won't mean our patch is lost!
     var state = localStorage.getItem("load");
     if(state == undefined || state == 'new') {
         for(let i = 0; i<3; i++) {
-            boxes[i] = new Component(preset[i], (windowWidth/2)+((i-1)*100), windowHeight/2-250+((3-i)*100));
+            boxes[i] = new Component(preset[i], (window.innerWidth/2)+((i-1)*100), window.innerHeight/2-250+((3-i)*100));
         }
     }
     else {
@@ -313,33 +310,22 @@ function setup() {
     }
 
 
-
-}
-
-
+/*
 function draw() {
 
     background(255,255,255);
 
     noStroke();
 
-    if(width < windowWidth) {
-        resizeCanvas(windowWidth, windowHeight);
+    if(width < window.innerWidth) {
+        resizeCanvas(window.innerWidth, window.innerHeight);
     }
 
-    sbar.draw()
-
-    for(let i = 0; i<boxes.length; i++) {
-        boxes[i].draw();
-    }
-
-// Draw each connection
-    connections.forEach(conn => {
-        conn.draw();
-    });
+    //sbar.draw()
 
 
     // TODO maybe make a mousedown function so we don't need to do this at every draw?
+    /*
     if(mouseIsPressed && draginstance == -1 && !selecting) {
         selecting = true;
         selectX = mouseX;
@@ -375,6 +361,15 @@ function draw() {
         }
     }
 
+    (function($){
+    $.fn.disableSelection = function() {
+        return this
+        .attr('unselectable', 'on')
+        .css('user-select', 'none')
+        .on('selectstart dragstart', false);
+    };
+})(jQuery);
+
 
 
     //Draw a line to the mouse while making the connection
@@ -385,7 +380,7 @@ function draw() {
         line(linex, liney, mouseX, mouseY);
     }
     sbar.draw2();
-}
+} */
 
 
 
@@ -558,7 +553,7 @@ function openSavedFile(path) {
     } catch(err) {
         console.warn(err);
         for(let i = 0; i<3; i++) {
-            boxes[i] = new Component(preset[i], (windowWidth/2)+((i-1)*100), windowHeight/2-250+((3-i)*100));
+            boxes[i] = new Component(preset[i], (window.innerWidth/2)+((i-1)*100), window.innerHeight/2-250+((3-i)*100));
         }
     }
 }
@@ -635,7 +630,7 @@ function doubleClicked() {
 
 // Resize everything accordingly on windowResize
 function windowResized() {
-    resizeCanvas(windowWidth, windowHeight);
+    resizeCanvas(window.innerWidth, window.innerHeight);
     sbar.windowresize();
     for (let i = 0; i < 3; i++) {
         buttons[i].style("left:x0px;".replace("x0", (cnvwidth/2)+buttonpresets[i][1]));
