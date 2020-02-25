@@ -125,10 +125,12 @@ typedef struct _json_value
 
 #if defined(__cplusplus) && __cplusplus >= 201103L
             decltype(values) begin () const
-            {   return values;
+            {
+                return values;
             }
             decltype(values) end () const
-            {   return values + length;
+            {
+                return values + length;
             }
 #endif
 
@@ -141,10 +143,12 @@ typedef struct _json_value
 
 #if defined(__cplusplus) && __cplusplus >= 201103L
             decltype(values) begin () const
-            {   return values;
+            {
+                return values;
             }
             decltype(values) end () const
-            {   return values + length;
+            {
+                return values + length;
             }
 #endif
 
@@ -175,7 +179,8 @@ typedef struct _json_value
 public:
 
     inline _json_value ()
-    {   memset (this, 0, sizeof (_json_value));
+    {
+        memset (this, 0, sizeof (_json_value));
     }
 
     inline const struct _json_value &operator [] (int index) const

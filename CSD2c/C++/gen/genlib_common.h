@@ -42,7 +42,8 @@ typedef double t_param;
 typedef char *t_ptr;
 
 typedef long t_genlib_err;
-typedef enum {
+typedef enum
+{
     GENLIB_ERR_NONE =			0,	///< No error
     GENLIB_ERR_GENERIC =		-1,	///< Generic error
     GENLIB_ERR_INVALID_PTR =	-2,	///< Invalid Pointer
@@ -54,7 +55,8 @@ typedef enum {
 
 } e_genlib_errorcodes;
 
-typedef enum {
+typedef enum
+{
     GENLIB_PARAMTYPE_FLOAT	=	0,
     GENLIB_PARAMTYPE_SYM	= 	1
 } e_genlib_paramtypes;
@@ -90,7 +92,8 @@ struct CommonState
 
 // opaque interface to float32 buffer:
 typedef struct _genlib_buffer t_genlib_buffer;
-typedef struct {
+typedef struct
+{
     char b_name[256];	///< name of the buffer
     float *b_samples;	///< stored with interleaved channels if multi-channel
     long b_frames;		///< number of sample frames (each one is sizeof(float) * b_nchans bytes)
@@ -103,7 +106,8 @@ typedef struct {
 
 // opaque interface to float64 buffer:
 typedef struct _genlib_data t_genlib_data;
-typedef struct {
+typedef struct
+{
     int					dim, channels;
     t_sample *			data;
 } t_genlib_data_info;

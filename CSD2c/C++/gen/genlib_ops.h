@@ -93,16 +93,20 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 #define GENLIB_QUANT(f1,f2)			t_sample(floor((f1)*(f2)+0.5)/(f2))
 
-inline t_sample genlib_isnan(t_sample v) {
+inline t_sample genlib_isnan(t_sample v)
+{
     return GENLIB_IS_NAN(v);
 }
-inline t_sample fixnan(t_sample v) {
+inline t_sample fixnan(t_sample v)
+{
     return GENLIB_FIX_NAN(v);
 }
-inline t_sample fixdenorm(t_sample v) {
+inline t_sample fixdenorm(t_sample v)
+{
     return GENLIB_FIX_DENORM(v);
 }
-inline t_sample isdenorm(t_sample v) {
+inline t_sample isdenorm(t_sample v)
+{
     return GENLIB_IS_DENORM(v);
 }
 
@@ -112,55 +116,70 @@ inline t_sample fastercosfull(t_sample x);
 inline t_sample fastersinfull(t_sample x);
 inline t_sample fastertanfull(t_sample x);
 
-inline t_sample safemod(t_sample f, t_sample m) {
-    if (m > GENLIB_DBL_EPSILON || m < -GENLIB_DBL_EPSILON) {
+inline t_sample safemod(t_sample f, t_sample m)
+{
+    if (m > GENLIB_DBL_EPSILON || m < -GENLIB_DBL_EPSILON)
+    {
         if (m<0)
             m = -m; // modulus needs to be absolute value
-        if (f>=m) {
-            if (f>=(m*2.)) {
+        if (f>=m)
+        {
+            if (f>=(m*2.))
+            {
                 t_sample d = f / m;
                 d = d - (long) d;
                 f = d * m;
             }
-            else {
+            else
+            {
                 f -= m;
             }
         }
-        else if (f<=(-m)) {
-            if (f<=(-m*2.)) {
+        else if (f<=(-m))
+        {
+            if (f<=(-m*2.))
+            {
                 t_sample d = f / m;
                 d = d - (long) d;
                 f = d * m;
             }
-            else {
+            else
+            {
                 f += m;
             }
         }
-    } else {
+    }
+    else
+    {
         f = 0.0; //don't divide by zero
     }
     return f;
 }
 
-inline t_sample safediv(t_sample num, t_sample denom) {
+inline t_sample safediv(t_sample num, t_sample denom)
+{
     return denom == 0. ? (t_sample)0. : (t_sample)(num/denom);
 }
 
 // fixnan for case of negative base and non-integer exponent:
-inline t_sample safepow(t_sample base, t_sample exponent) {
+inline t_sample safepow(t_sample base, t_sample exponent)
+{
     return fixnan(pow(base, exponent));
 }
 
-inline t_sample absdiff(t_sample a, t_sample b) {
+inline t_sample absdiff(t_sample a, t_sample b)
+{
     return fabs(a-b);
 }
 
 #ifndef WIN32
-inline t_sample exp2(t_sample v) {
+inline t_sample exp2(t_sample v)
+{
     return pow(2., v);
 }
 
-inline t_sample trunc(t_sample v) {
+inline t_sample trunc(t_sample v)
+{
     t_sample epsilon = (v<0.0) * -2 * 1E-9 + 1E-9;
     // copy to long so it gets truncated (probably cheaper than floor())
     long val = v + epsilon;
@@ -168,15 +187,18 @@ inline t_sample trunc(t_sample v) {
 }
 #endif // WIN32
 
-inline t_sample sign(t_sample v) {
+inline t_sample sign(t_sample v)
+{
     return v > t_sample(0) ? t_sample(1) : v < t_sample(0) ? t_sample(-1) : t_sample(0);
 }
 
-inline long is_poweroftwo(long x) {
+inline long is_poweroftwo(long x)
+{
     return (x & (x - 1)) == 0;
 }
 
-inline uint64_t next_power_of_two(uint64_t v) {
+inline uint64_t next_power_of_two(uint64_t v)
+{
     v--;
     v |= v >> 1;
     v |= v >> 2;
@@ -188,31 +210,41 @@ inline uint64_t next_power_of_two(uint64_t v) {
     return v;
 }
 
-inline t_sample fold(t_sample v, t_sample lo1, t_sample hi1) {
+inline t_sample fold(t_sample v, t_sample lo1, t_sample hi1)
+{
     t_sample lo;
     t_sample hi;
-    if(lo1 == hi1) {
+    if(lo1 == hi1)
+    {
         return lo1;
     }
-    if (lo1 > hi1) {
+    if (lo1 > hi1)
+    {
         hi = lo1;
         lo = hi1;
-    } else {
+    }
+    else
+    {
         lo = lo1;
         hi = hi1;
     }
     const t_sample range = hi - lo;
     long numWraps = 0;
-    if(v >= hi) {
+    if(v >= hi)
+    {
         v -= range;
-        if(v >= hi) {
+        if(v >= hi)
+        {
             numWraps = (long)((v - lo)/range);
             v -= range * (t_sample)numWraps;
         }
         numWraps++;
-    } else if(v < lo) {
+    }
+    else if(v < lo)
+    {
         v += range;
-        if(v < lo) {
+        if(v < lo)
+        {
             numWraps = (long)((v - lo)/range) - 1;
             v -= range * (t_sample)numWraps;
         }
@@ -222,14 +254,18 @@ inline t_sample fold(t_sample v, t_sample lo1, t_sample hi1) {
     return v;
 }
 
-inline t_sample wrap(t_sample v, t_sample lo1, t_sample hi1) {
+inline t_sample wrap(t_sample v, t_sample lo1, t_sample hi1)
+{
     t_sample lo;
     t_sample hi;
     if(lo1 == hi1) return lo1;
-    if (lo1 > hi1) {
+    if (lo1 > hi1)
+    {
         hi = lo1;
         lo = hi1;
-    } else {
+    }
+    else
+    {
         lo = lo1;
         hi = hi1;
     }
@@ -243,17 +279,20 @@ inline t_sample wrap(t_sample v, t_sample lo1, t_sample hi1) {
 // this version gives far better performance when wrapping is relatively rare
 // and typically double of wraps is very low (>1%)
 // but catastrophic if wraps is high (1000%+)
-inline t_sample genlib_wrapfew(t_sample v, t_sample lo, t_sample hi) {
+inline t_sample genlib_wrapfew(t_sample v, t_sample lo, t_sample hi)
+{
     const t_sample range = hi - lo;
     while (v >= hi) v -= range;
     while (v < lo) v += range;
     return v;
 }
 
-inline t_sample phasewrap(t_sample val) {
+inline t_sample phasewrap(t_sample val)
+{
     const t_sample twopi = GENLIB_PI*2.;
     const t_sample oneovertwopi = t_sample(1./twopi);
-    if (val>= twopi || val <= twopi) {
+    if (val>= twopi || val <= twopi)
+    {
         t_sample d = val * oneovertwopi;	//multiply faster
         d = d - (long)d;
         val = d * twopi;
@@ -265,7 +304,8 @@ inline t_sample phasewrap(t_sample val) {
 
 /// 8th order Taylor series approximation to a cosine.
 /// r must be in [-pi, pi].
-inline t_sample genlib_cosT8(t_sample r) {
+inline t_sample genlib_cosT8(t_sample r)
+{
     const t_sample t84 = 56.;
     const t_sample t83 = 1680.;
     const t_sample t82 = 20160.;
@@ -273,16 +313,19 @@ inline t_sample genlib_cosT8(t_sample r) {
     const t_sample t73 = 42.;
     const t_sample t72 = 840.;
     const t_sample t71 = t_sample(1.9841269841e-04);
-    if (r < GENLIB_PI_OVER_4 && r > -GENLIB_PI_OVER_4) {
+    if (r < GENLIB_PI_OVER_4 && r > -GENLIB_PI_OVER_4)
+    {
         t_sample rr = r*r;
         return t_sample(1. - rr * t81 * (t82 - rr * (t83 - rr * (t84 - rr))));
     }
-    else if (r > 0.) {
+    else if (r > 0.)
+    {
         r -= GENLIB_PI_OVER_2;
         t_sample rr = r*r;
         return t_sample(-r * (1. - t71 * rr * (t72 - rr * (t73 - rr))));
     }
-    else {
+    else
+    {
         r += GENLIB_PI_OVER_2;
         t_sample rr = r*r;
         return t_sample(r * (1. - t71 * rr * (t72 - rr * (t73 - rr))));
@@ -329,7 +372,8 @@ inline t_sample genlib_cosT8(t_sample r) {
 //}
 
 // use these if r is not known to be in [-pi, pi]:
-inline t_sample genlib_cosT8_safe(t_sample r) {
+inline t_sample genlib_cosT8_safe(t_sample r)
+{
     return genlib_cosT8(phasewrap(r));
 }
 //inline double genlib_sin_fast_safe(double r) { return genlib_sin_fast(phasewrap(r)); }
@@ -379,15 +423,18 @@ inline t_sample genlib_cosT8_safe(t_sample r) {
  * Contact: Paul Mineiro <paul@mineiro.com>                            *
  *=====================================================================*/
 
-inline float genlib_fastersin(float x) {
+inline float genlib_fastersin(float x)
+{
     static const float fouroverpi = 1.2732395447351627f;
     static const float fouroverpisq = 0.40528473456935109f;
     static const float q = 0.77633023248007499f;
-    union {
+    union
+    {
         float f;
         uint32_t i;
     } p = { 0.22308510060189463f };
-    union {
+    union
+    {
         float f;
         uint32_t i;
     } vx = { x };
@@ -398,10 +445,12 @@ inline float genlib_fastersin(float x) {
     return qpprox * (q + p.f * qpprox);
 }
 
-inline float genlib_fastercos(float x) {
+inline float genlib_fastercos(float x)
+{
     static const float twooverpi = 0.63661977236758134f;
     static const float p = 0.54641335845679634f;
-    union {
+    union
+    {
         float f;
         uint32_t i;
     } vx = { x };
@@ -410,7 +459,8 @@ inline float genlib_fastercos(float x) {
     return qpprox + p * qpprox * (1.0f - qpprox * qpprox);
 }
 
-inline float genlib_fastersinfull(float x) {
+inline float genlib_fastersinfull(float x)
+{
     static const float twopi = 6.2831853071795865f;
     static const float invtwopi = 0.15915494309189534f;
     int k = int(x * invtwopi);
@@ -418,12 +468,14 @@ inline float genlib_fastersinfull(float x) {
     return genlib_fastersin ((half + k) * twopi - x);
 }
 
-inline float genlib_fastercosfull(float x) {
+inline float genlib_fastercosfull(float x)
+{
     static const float halfpi = 1.5707963267948966f;
     return genlib_fastersinfull (x + halfpi);
 }
 
-inline float genlib_fastertanfull(float x) {
+inline float genlib_fastertanfull(float x)
+{
     static const float twopi = 6.2831853071795865f;
     static const float invtwopi = 0.15915494309189534f;
     int k = int(x * invtwopi);
@@ -434,21 +486,26 @@ inline float genlib_fastertanfull(float x) {
 
 
 #define cast_uint32_t static_cast<uint32_t>
-inline float genlib_fasterpow2(float p) {
+inline float genlib_fasterpow2(float p)
+{
     float clipp = (p < -126) ? -126.0f : p;
-    union {
+    union
+    {
         uint32_t i;
         float f;
     } v = { cast_uint32_t ( (1 << 23) * (clipp + 126.94269504f) ) };
     return v.f;
 }
 
-inline float genlib_fasterexp(float p) {
+inline float genlib_fasterexp(float p)
+{
     return genlib_fasterpow2 (1.442695040f * p);
 }
 
-inline float genlib_fasterlog2(float x) {
-    union {
+inline float genlib_fasterlog2(float x)
+{
+    union
+    {
         float f;
         uint32_t i;
     } vx = { x };
@@ -457,73 +514,89 @@ inline float genlib_fasterlog2(float x) {
     return y - 126.94269504f;
 }
 
-inline float genlib_fasterpow(float x, float p) {
+inline float genlib_fasterpow(float x, float p)
+{
     return genlib_fasterpow2(p * genlib_fasterlog2 (x));
 }
 
 // from http://dspguru.com/dsp/tricks/fixed-point-atan2-with-self-normalization
-inline float genlib_fasteratan2(float y, float x) {
+inline float genlib_fasteratan2(float y, float x)
+{
     const float coeff_1 = (float)(GENLIB_PI/4);
     const float coeff_2 = 3 * (float)(GENLIB_PI/4);
     float abs_y = fabs(y) + 1e-10; // kludge to prevent 0/0 condition
     float r, angle;
-    if (x >= 0) {
+    if (x >= 0)
+    {
         r = (x - abs_y) / (x + abs_y);
         angle = coeff_1 - coeff_1 * r;
     }
-    else {
+    else
+    {
         r = (x + abs_y) / (abs_y - x);
         angle = coeff_2 - coeff_1 * r;
     }
-    if (y < 0) {
+    if (y < 0)
+    {
         return (-angle); // negate if in quad III or IV
     }
-    else {
+    else
+    {
         return (angle);
     }
 }
 
 // http://math.stackexchange.com/questions/107292/rapid-approximation-of-tanhx
-inline float genlib_fastertanh(float x) {
+inline float genlib_fastertanh(float x)
+{
     return (-.67436811832e-5 + (.2468149110712040 + (.583691066395175e-1 + .3357335044280075e-1 * x) * x) * x) /
            (.2464845986383725 + (.609347197060491e-1 + (.1086202599228572 + .2874707922475963e-1 * x) * x) * x);
 }
 
 ////////////////////////////////////////////////////////////////
 
-inline t_sample fastertanfull(t_sample x) {
+inline t_sample fastertanfull(t_sample x)
+{
     return (t_sample)genlib_fastertanfull((float)x);
 }
 
-inline t_sample fastersinfull(t_sample x) {
+inline t_sample fastersinfull(t_sample x)
+{
     return (t_sample)genlib_fastersinfull((float)x);
 }
 
-inline t_sample fastercosfull(t_sample x) {
+inline t_sample fastercosfull(t_sample x)
+{
     return (t_sample)genlib_fastercosfull((float)x);
 }
 
-inline t_sample fasterexp(t_sample x) {
+inline t_sample fasterexp(t_sample x)
+{
     return (t_sample)genlib_fasterexp((float)x);
 }
 
-inline t_sample fasterlog2(t_sample x) {
+inline t_sample fasterlog2(t_sample x)
+{
     return (t_sample)genlib_fasterlog2((float)x);
 }
 
-inline t_sample fasterpow(t_sample x, t_sample p) {
+inline t_sample fasterpow(t_sample x, t_sample p)
+{
     return (t_sample)genlib_fasterpow((float)x, (float)p);
 }
 
-inline t_sample fasterpow2(t_sample p) {
+inline t_sample fasterpow2(t_sample p)
+{
     return (t_sample)genlib_fasterpow2((float)p);
 }
 
-inline t_sample fasteratan2(t_sample y, t_sample x) {
+inline t_sample fasteratan2(t_sample y, t_sample x)
+{
     return (t_sample)genlib_fasteratan2(y, x);
 }
 
-inline t_sample fastertanh(t_sample x) {
+inline t_sample fastertanh(t_sample x)
+{
     return (t_sample)genlib_fastertanh((float)x);
 }
 
@@ -531,24 +604,29 @@ inline t_sample fastertanh(t_sample x) {
 
 
 
-inline t_sample minimum(t_sample x, t_sample y) {
+inline t_sample minimum(t_sample x, t_sample y)
+{
     return (y<x?y:x);
 }
-inline t_sample maximum(t_sample x, t_sample y) {
+inline t_sample maximum(t_sample x, t_sample y)
+{
     return (x<y?y:x);
 }
 
-inline t_sample clamp(t_sample x, t_sample minVal, t_sample maxVal) {
+inline t_sample clamp(t_sample x, t_sample minVal, t_sample maxVal)
+{
     return minimum(maximum(x,minVal),maxVal);
 }
 
 template<typename T>
-inline T smoothstep(t_sample e0, t_sample e1, T x) {
+inline T smoothstep(t_sample e0, t_sample e1, T x)
+{
     T t = clamp( safediv(x-T(e0),T(e1-e0)), 0., 1. );
     return t*t*(T(3) - T(2)*t);
 }
 
-inline t_sample mix(t_sample x, t_sample y, t_sample a) {
+inline t_sample mix(t_sample x, t_sample y, t_sample a)
+{
     return x+a*(y-x);
 }
 
@@ -568,16 +646,19 @@ inline t_sample scale(t_sample in, t_sample inlow, t_sample inhigh, t_sample out
     return value;
 }
 
-inline t_sample linear_interp(t_sample a, t_sample x, t_sample y) {
+inline t_sample linear_interp(t_sample a, t_sample x, t_sample y)
+{
     return x+a*(y-x);
 }
 
-inline t_sample cosine_interp(t_sample a, t_sample x, t_sample y) {
+inline t_sample cosine_interp(t_sample a, t_sample x, t_sample y)
+{
     const t_sample a2 = (t_sample(1.)-genlib_cosT8_safe(a*t_sample(GENLIB_PI)))/t_sample(2.);
     return(x*(t_sample(1.)-a2)+y*a2);
 }
 
-inline t_sample cubic_interp(t_sample a, t_sample w, t_sample x, t_sample y, t_sample z) {
+inline t_sample cubic_interp(t_sample a, t_sample w, t_sample x, t_sample y, t_sample z)
+{
     const t_sample a1 = t_sample(1.) + a;
     const t_sample aa = a * a1;
     const t_sample b = t_sample(1.) - a;
@@ -591,7 +672,8 @@ inline t_sample cubic_interp(t_sample a, t_sample w, t_sample x, t_sample y, t_s
 }
 
 // deprecated, as it shows some instability with feedback
-inline t_sample fastcubic_interp(t_sample a, t_sample w, t_sample x, t_sample y, t_sample z) {
+inline t_sample fastcubic_interp(t_sample a, t_sample w, t_sample x, t_sample y, t_sample z)
+{
     const t_sample a2 = a*a;
     const t_sample f0 = z - y - w + x;
     const t_sample f1 = w - x - f0;
@@ -601,7 +683,8 @@ inline t_sample fastcubic_interp(t_sample a, t_sample w, t_sample x, t_sample y,
 }
 
 // Breeuwsma catmull-rom spline interpolation
-inline t_sample spline_interp(t_sample a, t_sample w, t_sample x, t_sample y, t_sample z) {
+inline t_sample spline_interp(t_sample a, t_sample w, t_sample x, t_sample y, t_sample z)
+{
     const t_sample c0 = x;
     const t_sample c1 = t_sample(0.5) * (y - w);
     const t_sample c2 = w - t_sample(2.5) * x + y + y - t_sample(0.5) * z;
@@ -610,7 +693,8 @@ inline t_sample spline_interp(t_sample a, t_sample w, t_sample x, t_sample y, t_
 }
 
 // 6-point, 5th-order B-spline
-inline t_sample spline6_interp(t_sample a, t_sample y0, t_sample y1, t_sample y2, t_sample y3, t_sample y4, t_sample y5) {
+inline t_sample spline6_interp(t_sample a, t_sample y0, t_sample y1, t_sample y2, t_sample y3, t_sample y4, t_sample y5)
+{
     // http://yehar.com/blog/wp-content/uploads/2009/08/deip.pdf
     // 6-point, 5th-order B-spline (x-form)
     const t_sample ym2py2 = y0+y4;
@@ -628,63 +712,77 @@ inline t_sample spline6_interp(t_sample a, t_sample y0, t_sample y1, t_sample y2
 }
 
 template<typename T1, typename T2>
-inline T1 neqp(T1 x, T2 y) {
+inline T1 neqp(T1 x, T2 y)
+{
     return ((((x) != T1(y))) ? (x) : T1(0));
 }
 
 template<typename T1, typename T2>
-inline T1 gtp(T1 x, T2 y) {
+inline T1 gtp(T1 x, T2 y)
+{
     return ((((x) > T1(y))) ? (x) : T1(0));
 }
 template<typename T1, typename T2>
-inline T1 gtep(T1 x, T2 y) {
+inline T1 gtep(T1 x, T2 y)
+{
     return ((((x) >= T1(y))) ? (x) : T1(0));
 }
 template<typename T1, typename T2>
-inline T1 ltp(T1 x, T2 y) {
+inline T1 ltp(T1 x, T2 y)
+{
     return ((((x) < T1(y))) ? (x) : T1(0));
 }
 template<typename T1, typename T2>
-inline T1 ltep(T1 x, T2 y) {
+inline T1 ltep(T1 x, T2 y)
+{
     return ((((x) <= T1(y))) ? (x) : T1(0));
 }
 
-inline t_sample fract(t_sample x) {
+inline t_sample fract(t_sample x)
+{
     double unused;
     return (t_sample)modf((double)x, &unused);
 }
 
 // log2(x) = log(x)/log(2)
 template<typename T>
-inline T log2(T x) {
+inline T log2(T x)
+{
     return log(x)*GENLIB_1_OVER_LOG_2;
 }
 
-inline t_sample atodb(t_sample in) {
+inline t_sample atodb(t_sample in)
+{
     return t_sample((in <= 0.) ? -999. : (20. * log10(in)));
 }
 
-inline t_sample dbtoa(t_sample in) {
+inline t_sample dbtoa(t_sample in)
+{
     return t_sample(pow(10., in * 0.05));
 }
 
-inline t_sample ftom(t_sample in, t_sample tuning=440.) {
+inline t_sample ftom(t_sample in, t_sample tuning=440.)
+{
     return t_sample(69. + 17.31234050465299 * log(safediv(in, tuning)));
 }
 
-inline t_sample mtof(t_sample in, t_sample tuning=440.) {
+inline t_sample mtof(t_sample in, t_sample tuning=440.)
+{
     return t_sample(tuning * exp(.057762265 * (in - 69.0)));
 }
 
-inline t_sample mstosamps(t_sample ms, t_sample samplerate=44100.) {
+inline t_sample mstosamps(t_sample ms, t_sample samplerate=44100.)
+{
     return t_sample(samplerate * ms * t_sample(0.001));
 }
 
-inline t_sample sampstoms(t_sample s, t_sample samplerate=44100.) {
+inline t_sample sampstoms(t_sample s, t_sample samplerate=44100.)
+{
     return t_sample(t_sample(1000.) * s / samplerate);
 }
 
-inline t_sample triangle(t_sample phase, t_sample p1) {
+inline t_sample triangle(t_sample phase, t_sample p1)
+{
     phase = wrap(phase, 0., 1.);
     p1 = clamp(p1, 0., 1.);
     if (phase < p1)
@@ -693,79 +791,99 @@ inline t_sample triangle(t_sample phase, t_sample p1) {
         return t_sample((p1==1.) ? phase : 1. - ((phase - p1) / (1. - p1)));
 }
 
-struct Delta {
+struct Delta
+{
     t_sample history;
-    Delta() {
+    Delta()
+    {
         reset();
     }
-    inline void reset(t_sample init=0) {
+    inline void reset(t_sample init=0)
+    {
         history=init;
     }
 
-    inline t_sample operator()(t_sample in1) {
+    inline t_sample operator()(t_sample in1)
+    {
         t_sample ret = in1 - history;
         history = in1;
         return ret;
     }
 };
-struct Change {
+struct Change
+{
     t_sample history;
-    Change() {
+    Change()
+    {
         reset();
     }
-    inline void reset(t_sample init=0) {
+    inline void reset(t_sample init=0)
+    {
         history=init;
     }
 
-    inline t_sample operator()(t_sample in1) {
+    inline t_sample operator()(t_sample in1)
+    {
         t_sample ret = in1 - history;
         history = in1;
         return sign(ret);
     }
 };
 
-struct Rate {
+struct Rate
+{
     t_sample phase, diff, mult, invmult, prev;
     int wantlock, quant;
 
-    Rate() {
+    Rate()
+    {
         reset();
     }
 
-    inline void reset() {
+    inline void reset()
+    {
         phase = diff = prev = 0;
         mult = invmult = 1;
         wantlock = 1;
         quant = 1;
     }
 
-    inline t_sample perform_lock(t_sample in1, t_sample in2) {
+    inline t_sample perform_lock(t_sample in1, t_sample in2)
+    {
         // did multiplier change?
-        if (in2 != mult && !genlib_isnan(in2)) {
+        if (in2 != mult && !genlib_isnan(in2))
+        {
             mult = in2;
             invmult = safediv(1., mult);
             wantlock = 1;
         }
         t_sample diff = in1 - prev;
 
-        if (diff < t_sample(-0.5)) {
+        if (diff < t_sample(-0.5))
+        {
             diff += t_sample(1);
-        } else if (diff > t_sample(0.5)) {
+        }
+        else if (diff > t_sample(0.5))
+        {
             diff -= t_sample(1);
         }
 
-        if (wantlock) {
+        if (wantlock)
+        {
             // recalculate phase
             phase = (in1 - GENLIB_QUANT(in1, quant)) * invmult
                     + GENLIB_QUANT(in1, quant * mult);
             diff = 0;
             wantlock = 0;
-        } else {
+        }
+        else
+        {
             // diff is always between -0.5 and 0.5
             phase += diff * invmult;
         }
 
-        if (phase > t_sample(1.) || phase < t_sample(-0.)) {
+        if (phase > t_sample(1.) || phase < t_sample(-0.))
+        {
             phase = phase - (long)(phase);
         }
 
@@ -774,29 +892,40 @@ struct Rate {
         return phase;
     }
 
-    inline t_sample perform_cycle(t_sample in1, t_sample in2) {
+    inline t_sample perform_cycle(t_sample in1, t_sample in2)
+    {
         // did multiplier change?
-        if (in2 != mult && !genlib_isnan(in2)) {
+        if (in2 != mult && !genlib_isnan(in2))
+        {
             mult = in2;
             invmult = safediv(1., mult);
             wantlock = 1;
         }
         t_sample diff = in1 - prev;
 
-        if (diff < t_sample(-0.5)) {
-            if (wantlock) {
+        if (diff < t_sample(-0.5))
+        {
+            if (wantlock)
+            {
                 wantlock = 0;
                 phase = in1 * invmult;
                 diff = t_sample(0);
-            } else {
+            }
+            else
+            {
                 diff += t_sample(1);
             }
-        } else if (diff > t_sample(0.5)) {
-            if (wantlock) {
+        }
+        else if (diff > t_sample(0.5))
+        {
+            if (wantlock)
+            {
                 wantlock = 0;
                 phase = in1 * invmult;
                 diff = t_sample(0);
-            } else {
+            }
+            else
+            {
                 diff -= t_sample(1);
             }
         }
@@ -804,7 +933,8 @@ struct Rate {
         // diff is always between -0.5 and 0.5
         phase += diff * invmult;
 
-        if (phase > t_sample(1.) || phase < t_sample(-0.)) {
+        if (phase > t_sample(1.) || phase < t_sample(-0.))
+        {
             phase = phase - (long)(phase);
         }
 
@@ -813,24 +943,30 @@ struct Rate {
         return phase;
     }
 
-    inline t_sample perform_off(t_sample in1, t_sample in2) {
+    inline t_sample perform_off(t_sample in1, t_sample in2)
+    {
         // did multiplier change?
-        if (in2 != mult && !genlib_isnan(in2)) {
+        if (in2 != mult && !genlib_isnan(in2))
+        {
             mult = in2;
             invmult = safediv(1., mult);
             wantlock = 1;
         }
         t_sample diff = in1 - prev;
 
-        if (diff < t_sample(-0.5)) {
+        if (diff < t_sample(-0.5))
+        {
             diff += t_sample(1);
-        } else if (diff > t_sample(0.5)) {
+        }
+        else if (diff > t_sample(0.5))
+        {
             diff -= t_sample(1);
         }
 
         phase += diff * invmult;
 
-        if (phase > t_sample(1.) || phase < t_sample(-0.)) {
+        if (phase > t_sample(1.) || phase < t_sample(-0.))
+        {
             phase = phase - (long)(phase);
         }
 
@@ -840,17 +976,21 @@ struct Rate {
     }
 };
 
-struct DCBlock {
+struct DCBlock
+{
     t_sample x1, y1;
-    DCBlock() {
+    DCBlock()
+    {
         reset();
     }
-    inline void reset() {
+    inline void reset()
+    {
         x1=0;
         y1=0;
     }
 
-    inline t_sample operator()(t_sample in1) {
+    inline t_sample operator()(t_sample in1)
+    {
         t_sample y = in1 - x1 + y1*t_sample(0.9997);
         x1 = in1;
         y1 = y;
@@ -858,30 +998,38 @@ struct DCBlock {
     }
 };
 
-struct Noise {
+struct Noise
+{
     unsigned long last;
-    static long uniqueTickCount(void) {
+    static long uniqueTickCount(void)
+    {
         static long lasttime = 0;
         long time = genlib_ticks();
         return (time <= lasttime) ? (++lasttime) : (lasttime = time);
     }
 
-    Noise() {
+    Noise()
+    {
         reset();
     }
-    Noise(t_sample seed) {
+    Noise(t_sample seed)
+    {
         reset(seed);
     }
-    void reset() {
+    void reset()
+    {
         last = uniqueTickCount() * uniqueTickCount();
     }
-    void reset(t_sample seed) {
+    void reset(t_sample seed)
+    {
         last = (unsigned long)(seed);
     }
 
-    inline t_sample operator()() {
+    inline t_sample operator()()
+    {
         last = 1664525L * last + 1013904223L;
-        union {
+        union
+        {
             uint32_t ui32;
             float f;
         } u = { uint32_t(0x3f800000 | (0x007fffff & last)) }; // type-punning
@@ -890,15 +1038,19 @@ struct Noise {
     }
 };
 
-struct Phasor {
+struct Phasor
+{
     t_sample phase;
-    Phasor() {
+    Phasor()
+    {
         reset();
     }
-    void reset(t_sample v=0.) {
+    void reset(t_sample v=0.)
+    {
         phase=v;
     }
-    inline t_sample operator()(t_sample freq, t_sample invsamplerate) {
+    inline t_sample operator()(t_sample freq, t_sample invsamplerate)
+    {
         const t_sample pincr = freq * invsamplerate;
         //phase = genlib_wrapfew(phase + pincr, 0., 1.); // faster for low frequencies, but explodes with high frequencies
         phase = wrap(phase + pincr, 0., 1.);
@@ -906,77 +1058,96 @@ struct Phasor {
     }
 };
 
-struct PlusEquals {
+struct PlusEquals
+{
     t_sample count;
-    PlusEquals() {
+    PlusEquals()
+    {
         reset();
     }
-    void reset(t_sample v=0.) {
+    void reset(t_sample v=0.)
+    {
         count=v;
     }
 
     // reset post-application mode:
-    inline t_sample post(t_sample incr, t_sample reset, t_sample min, t_sample max) {
+    inline t_sample post(t_sample incr, t_sample reset, t_sample min, t_sample max)
+    {
         count = reset ? min : wrap(count+incr, min, max);
         return count;
     }
-    inline t_sample post(t_sample incr=1., t_sample reset=0., t_sample min=0.) {
+    inline t_sample post(t_sample incr=1., t_sample reset=0., t_sample min=0.)
+    {
         count = reset ? min : count+incr;
         return count;
     }
 
     // reset pre-application mode:
-    inline t_sample pre(t_sample incr, t_sample reset, t_sample min, t_sample max) {
+    inline t_sample pre(t_sample incr, t_sample reset, t_sample min, t_sample max)
+    {
         count = reset ? min+incr : wrap(count+incr, min, max);
         return count;
     }
-    inline t_sample pre(t_sample incr=1., t_sample reset=0., t_sample min=0.) {
+    inline t_sample pre(t_sample incr=1., t_sample reset=0., t_sample min=0.)
+    {
         count = reset ? min+incr : count+incr;
         return count;
     }
 };
 
-struct MulEquals {
+struct MulEquals
+{
     t_sample count;
-    MulEquals() {
+    MulEquals()
+    {
         reset();
     }
-    void reset(t_sample v=0.) {
+    void reset(t_sample v=0.)
+    {
         count=v;
     }
 
     // reset post-application mode:
-    inline t_sample post(t_sample incr, t_sample reset, t_sample min, t_sample max) {
+    inline t_sample post(t_sample incr, t_sample reset, t_sample min, t_sample max)
+    {
         count = reset ? min : wrap(fixdenorm(count*incr), min, max);
         return count;
     }
-    inline t_sample post(t_sample incr=1., t_sample reset=0., t_sample min=0.) {
+    inline t_sample post(t_sample incr=1., t_sample reset=0., t_sample min=0.)
+    {
         count = reset ? min : fixdenorm(count*incr);
         return count;
     }
 
     // reset pre-application mode:
-    inline t_sample pre(t_sample incr, t_sample reset, t_sample min, t_sample max) {
+    inline t_sample pre(t_sample incr, t_sample reset, t_sample min, t_sample max)
+    {
         count = reset ? min*incr : wrap(fixdenorm(count*incr), min, max);
         return count;
     }
-    inline t_sample pre(t_sample incr=1., t_sample reset=0., t_sample min=0.) {
+    inline t_sample pre(t_sample incr=1., t_sample reset=0., t_sample min=0.)
+    {
         count = reset ? min*incr : fixdenorm(count*incr);
         return count;
     }
 };
 
-struct Sah {
+struct Sah
+{
     t_sample prev, output;
-    Sah() {
+    Sah()
+    {
         reset();
     }
-    void reset(t_sample o=0.) {
+    void reset(t_sample o=0.)
+    {
         output = prev = o;
     }
 
-    inline t_sample operator()(t_sample in, t_sample trig, t_sample thresh) {
-        if (prev <= thresh && trig > thresh) {
+    inline t_sample operator()(t_sample in, t_sample trig, t_sample thresh)
+    {
+        if (prev <= thresh && trig > thresh)
+        {
             output = in;
         }
         prev = trig;
@@ -984,34 +1155,48 @@ struct Sah {
     }
 };
 
-struct Train {
+struct Train
+{
     t_sample phase, state;
-    Train() {
+    Train()
+    {
         reset();
     }
-    void reset(t_sample p=0) {
+    void reset(t_sample p=0)
+    {
         phase = p;
         state = 0.;
     }
 
-    inline t_sample operator()(t_sample pulseinterval, t_sample width, t_sample pulsephase) {
-        if (width <= t_sample(0.)) {
+    inline t_sample operator()(t_sample pulseinterval, t_sample width, t_sample pulsephase)
+    {
+        if (width <= t_sample(0.))
+        {
             state = t_sample(0.);	// no pulse!
-        } else if (width >= 1.) {
+        }
+        else if (width >= 1.)
+        {
             state = t_sample(1.); // constant pulse!
-        } else {
+        }
+        else
+        {
             const t_sample interval = maximum(pulseinterval, t_sample(1.));	// >= 1.
             const t_sample p1 = clamp(pulsephase, t_sample(0.), t_sample(1.));	// [0..1]
             const t_sample p2 = p1+width;						// (p1..p1+1)
             const t_sample pincr = t_sample(1.)/interval;			// (0..1]
             phase += pincr;								// +ve
-            if (state) {	// on:
-                if (phase > p2) {
+            if (state)  	// on:
+            {
+                if (phase > p2)
+                {
                     state = t_sample(0.);				// turn off
                     phase -= (int)(1.+phase-p2);		// wrap phase back down
                 }
-            } else {		// off:
-                if (phase > p1) {
+            }
+            else  		// off:
+            {
+                if (phase > p1)
+                {
                     state = t_sample(1.);				// turn on.
                 }
             }
@@ -1020,20 +1205,24 @@ struct Train {
     }
 };
 
-struct Delay {
+struct Delay
+{
     t_sample *memory;
     long size, wrap, maxdelay;
     long reader, writer;
 
     t_genlib_data *dataRef;
 
-    Delay() : memory(0) {
+    Delay() : memory(0)
+    {
         size = wrap = maxdelay = 0;
         reader = writer = 0;
         dataRef = 0;
     }
-    ~Delay() {
-        if (dataRef != 0) {
+    ~Delay()
+    {
+        if (dataRef != 0)
+        {
             // store write position for persistence:
             genlib_data_setcursor(dataRef, writer);
             // decrement reference count:
@@ -1041,13 +1230,16 @@ struct Delay {
         }
     }
 
-    inline void reset(const char *name, long d) {
+    inline void reset(const char *name, long d)
+    {
         // if needed, acquire the Data's global reference:
-        if (dataRef == 0) {
+        if (dataRef == 0)
+        {
 
             void *ref = genlib_obtain_reference_from_string(name);
             dataRef = genlib_obtain_data_from_reference(ref);
-            if (dataRef == 0) {
+            if (dataRef == 0)
+            {
                 genlib_report_error("failed to acquire data");
                 return;
             }
@@ -1061,8 +1253,10 @@ struct Delay {
             genlib_data_resize(dataRef, size, 1);
 
             t_genlib_data_info info;
-            if (genlib_data_getinfo(dataRef, &info) == GENLIB_ERR_NONE) {
-                if (info.dim != size) {
+            if (genlib_data_getinfo(dataRef, &info) == GENLIB_ERR_NONE)
+            {
+                if (info.dim != size)
+                {
                     // at this point, could resolve by reducing to
                     // maxdelay = size = next_power_of_two(info.dim+1)/2;
                     // but really, if this happens, it means more than one
@@ -1074,11 +1268,15 @@ struct Delay {
                 }
                 memory = info.data;
                 writer = genlib_data_getcursor(dataRef);
-            } else {
+            }
+            else
+            {
                 genlib_report_error("failed to acquire data info");
             }
 
-        } else {
+        }
+        else
+        {
             // subsequent reset should zero the memory & heads:
             set_zero64(memory, size);
             writer = 0;
@@ -1089,17 +1287,20 @@ struct Delay {
     }
 
     // called at bufferloop end, updates read pointer time
-    inline void step() {
+    inline void step()
+    {
         reader++;
         if (reader >= size) reader = 0;
     }
 
-    inline void write(t_sample x) {
+    inline void write(t_sample x)
+    {
         writer = reader;	// update write ptr
         memory[writer] = x;
     }
 
-    inline t_sample read_step(t_sample d) {
+    inline t_sample read_step(t_sample d)
+    {
         // extra half for nice rounding:
         // min 1 sample delay for read before write (r != w)
         const t_sample r = t_sample(size + reader) - clamp(d-t_sample(0.5), t_sample(reader != writer), t_sample(maxdelay));
@@ -1107,7 +1308,8 @@ struct Delay {
         return memory[r1 & wrap];
     }
 
-    inline t_sample read_linear(t_sample d) {
+    inline t_sample read_linear(t_sample d)
+    {
         // min 1 sample delay for read before write (r != w)
         t_sample c = t_sample(clamp(d, t_sample(reader != writer), t_sample(maxdelay)));
         const t_sample r = t_sample(size + reader) - c;
@@ -1119,7 +1321,8 @@ struct Delay {
         return linear_interp(a, x, y);
     }
 
-    inline t_sample read_cosine(t_sample d) {
+    inline t_sample read_cosine(t_sample d)
+    {
         // min 1 sample delay for read before write (r != w)
         const t_sample r = t_sample(size + reader) - clamp(d, t_sample(reader != writer), t_sample(maxdelay));
         long r1 = long(r);
@@ -1131,7 +1334,8 @@ struct Delay {
     }
 
     // cubic requires extra sample of compensation:
-    inline t_sample read_fastcubic(t_sample d) {
+    inline t_sample read_fastcubic(t_sample d)
+    {
         // min 1 sample delay for read before write (r != w)
         // plus extra 1 sample compensation for 4-point interpolation
         const t_sample r = t_sample(size + reader) - clamp(d, t_sample(1.) + t_sample(reader != writer), t_sample(maxdelay));
@@ -1148,7 +1352,8 @@ struct Delay {
     }
 
     // cubic requires extra sample of compensation:
-    inline t_sample read_cubic(t_sample d) {
+    inline t_sample read_cubic(t_sample d)
+    {
         // min 1 sample delay for read before write (r != w)
         // plus extra 1 sample compensation for 4-point interpolation
         const t_sample r = t_sample(size + reader) - clamp(d, t_sample(1.) + t_sample(reader != writer), t_sample(maxdelay));
@@ -1165,7 +1370,8 @@ struct Delay {
     }
 
     // spline requires extra sample of compensation:
-    inline t_sample read_spline(t_sample d) {
+    inline t_sample read_spline(t_sample d)
+    {
         // min 1 sample delay for read before write (r != w)
         // plus extra 1 sample compensation for 4-point interpolation
         const t_sample r = t_sample(size + reader) - clamp(d, t_sample(1.) + t_sample(reader != writer), t_sample(maxdelay));
@@ -1182,7 +1388,8 @@ struct Delay {
     }
 
     // spline requires extra sample of compensation:
-    inline t_sample read_spline6(t_sample d) {
+    inline t_sample read_spline6(t_sample d)
+    {
         // min 1 sample delay for read before write (r != w)
         // plus extra 1 sample compensation for 4-point interpolation
         const t_sample r = t_sample(size + reader) - clamp(d, t_sample(1.) + t_sample(reader != writer), t_sample(maxdelay));
@@ -1204,32 +1411,38 @@ struct Delay {
 };
 
 template<typename T=t_sample>
-struct DataInterface {
+struct DataInterface
+{
     long dim, channels;
     T *mData;
     void *mDataReference;		// this was t_symbol *mName
     int modified;
 
-    DataInterface() : dim(0), channels(1), mData(0), modified(0) {
+    DataInterface() : dim(0), channels(1), mData(0), modified(0)
+    {
         mDataReference = 0;
     }
 
     // raw reading/writing/overdubbing (internal use only, no bounds checking)
-    inline t_sample read(long index, long channel=0) const {
+    inline t_sample read(long index, long channel=0) const
+    {
         return mData[channel+index*channels];
     }
-    inline void write(T value, long index, long channel=0) {
+    inline void write(T value, long index, long channel=0)
+    {
         mData[channel+index*channels] = value;
         modified = 1;
     }
     // NO LONGER USED:
-    inline void overdub(T value, long index, long channel=0) {
+    inline void overdub(T value, long index, long channel=0)
+    {
         mData[channel+index*channels] += value;
         modified = 1;
     }
 
     // averaging overdub (used by splat)
-    inline void blend(T value, long index, long channel, t_sample alpha) {
+    inline void blend(T value, long index, long channel, t_sample alpha)
+    {
         long offset = channel+index*channels;
         const T old = mData[offset];
         mData[offset] = old + alpha * (value - old);
@@ -1237,76 +1450,97 @@ struct DataInterface {
     }
 
     // NO LONGER USED:
-    inline void read_ok(long index, long channel=0, bool ok=1) const {
+    inline void read_ok(long index, long channel=0, bool ok=1) const
+    {
         return ok ? mData[channel+index*channels] : T(0);
     }
-    inline void write_ok(T value, long index, long channel=0, bool ok=1) {
+    inline void write_ok(T value, long index, long channel=0, bool ok=1)
+    {
         if (ok) mData[channel+index*channels] = value;
     }
-    inline void overdub_ok(T value, long index, long channel=0, bool ok=1) {
+    inline void overdub_ok(T value, long index, long channel=0, bool ok=1)
+    {
         if (ok) mData[channel+index*channels] += value;
     }
 
     // Bounds strategies:
-    inline long index_clamp(long index) const {
+    inline long index_clamp(long index) const
+    {
         return clamp(index, 0, dim-1);
     }
-    inline long index_wrap(long index) const {
+    inline long index_wrap(long index) const
+    {
         return wrap(index, 0, dim);
     }
-    inline long index_fold(long index) const {
+    inline long index_fold(long index) const
+    {
         return fold(index, 0, dim);
     }
-    inline bool index_oob(long index) const {
+    inline bool index_oob(long index) const
+    {
         return (index < 0 || index >= dim);
     }
-    inline bool index_inbounds(long index) const {
+    inline bool index_inbounds(long index) const
+    {
         return (index >=0 && index < dim);
     }
 
     // channel bounds:
-    inline long channel_clamp(long c) const {
+    inline long channel_clamp(long c) const
+    {
         return clamp(c, 0, channels-1);
     }
-    inline long channel_wrap(long c) const {
+    inline long channel_wrap(long c) const
+    {
         return wrap(c, 0, channels);
     }
-    inline long channel_fold(long c) const {
+    inline long channel_fold(long c) const
+    {
         return fold(c, 0, channels);
     }
-    inline bool channel_oob(long c) const {
+    inline bool channel_oob(long c) const
+    {
         return (c < 0 || c >= channels);
     }
-    inline bool channel_inbounds(long c) const {
+    inline bool channel_inbounds(long c) const
+    {
         return !channel_oob(c);
     }
 
     // Indexing strategies:
     // [0..1] -> [0..(dim-1)]
-    inline t_sample phase2index(t_sample phase) const {
+    inline t_sample phase2index(t_sample phase) const
+    {
         return phase * t_sample(dim-1);
     }
     // [0..1] -> [min..max]
-    inline t_sample subphase2index(t_sample phase, long min, long max) const {
+    inline t_sample subphase2index(t_sample phase, long min, long max) const
+    {
         min = index_clamp(min);
         max = index_clamp(max);
         return t_sample(min) + phase * t_sample(max-min);
     }
     // [-1..1] -> [0..(dim-1)]
-    inline t_sample signal2index(t_sample signal) const {
+    inline t_sample signal2index(t_sample signal) const
+    {
         return phase2index((signal+t_sample(1.)) * t_sample(0.5));
     }
 
-    inline T peek(t_sample index, long channel=0) const {
+    inline T peek(t_sample index, long channel=0) const
+    {
         const long i = (long)index;
-        if (index_oob(i) || channel_oob(channel)) {
+        if (index_oob(i) || channel_oob(channel))
+        {
             return 0.;
-        } else {
+        }
+        else
+        {
             return read(i, channel);
         }
     }
 
-    inline T index(t_sample index, long channel=0) const {
+    inline T index(t_sample index, long channel=0) const
+    {
         channel = channel_clamp(channel);
         // no-interp:
         long i = (long)index;
@@ -1315,7 +1549,8 @@ struct DataInterface {
         return read(i, channel);
     }
 
-    inline T cell(t_sample index, long channel=0) const {
+    inline T cell(t_sample index, long channel=0) const
+    {
         channel = channel_clamp(channel);
         // no-interp:
         long i = (long)index;
@@ -1324,7 +1559,8 @@ struct DataInterface {
         return read(i, channel);
     }
 
-    inline T cycle(t_sample phase, long channel=0) const {
+    inline T cycle(t_sample phase, long channel=0) const
+    {
         channel = channel_clamp(channel);
         t_sample index = phase2index(phase);
         // interp:
@@ -1340,7 +1576,8 @@ struct DataInterface {
         return mix(v1, v2, alpha);
     }
 
-    inline T lookup(t_sample signal, long channel=0) const {
+    inline T lookup(t_sample signal, long channel=0) const
+    {
         channel = channel_clamp(channel);
         t_sample index = signal2index(signal);
         // interp:
@@ -1356,14 +1593,17 @@ struct DataInterface {
         return mix(v1, v2, alpha);
     }
     // NO LONGER USED:
-    inline void poke(t_sample value, t_sample index, long channel=0) {
+    inline void poke(t_sample value, t_sample index, long channel=0)
+    {
         const long i = (long)index;
-        if (!(index_oob(i) || channel_oob(channel))) {
+        if (!(index_oob(i) || channel_oob(channel)))
+        {
             write(fixdenorm(value), i, channel);
         }
     }
     // NO LONGER USED:
-    inline void splat_adding(t_sample value, t_sample phase, long channel=0) {
+    inline void splat_adding(t_sample value, t_sample phase, long channel=0)
+    {
         const t_sample valuef = fixdenorm(value);
         channel = channel_clamp(channel);
         t_sample index = phase2index(phase);
@@ -1379,7 +1619,8 @@ struct DataInterface {
         overdub(valuef*alpha,      i2, channel);
     }
     // NO LONGER USED:
-    inline void splat(t_sample value, t_sample phase, long channel=0) {
+    inline void splat(t_sample value, t_sample phase, long channel=0)
+    {
         const t_sample valuef = fixdenorm(value);
         channel = channel_clamp(channel);
         t_sample index = phase2index(phase);
@@ -1401,24 +1642,31 @@ struct DataInterface {
 // DATA_MAXIMUM_ELEMENTS * 8 bytes = 256 mb limit
 #define DATA_MAXIMUM_ELEMENTS	(33554432)
 
-struct Data : public DataInterface<t_sample> {
+struct Data : public DataInterface<t_sample>
+{
     t_genlib_data * dataRef;	// a pointer to some external source of the data
 
-    Data() : DataInterface<t_sample>() {
+    Data() : DataInterface<t_sample>()
+    {
         dataRef = 0;
     }
-    ~Data() {
+    ~Data()
+    {
         //genlib_report_message("releasing data handle %d", dataRef);
-        if (dataRef != 0) {
+        if (dataRef != 0)
+        {
             genlib_data_release(dataRef);
         }
     }
-    void reset(const char * name, long s, long c) {
+    void reset(const char * name, long s, long c)
+    {
         // if needed, acquire the Data's global reference:
-        if (dataRef == 0) {
+        if (dataRef == 0)
+        {
             void *ref = genlib_obtain_reference_from_string(name);
             dataRef = genlib_obtain_data_from_reference(ref);
-            if (dataRef == 0) {
+            if (dataRef == 0)
+            {
                 genlib_report_error("failed to acquire data");
                 return;
             }
@@ -1426,9 +1674,11 @@ struct Data : public DataInterface<t_sample> {
         genlib_data_resize(dataRef, s, c);
         getinfo();
     }
-    bool setbuffer(void *bufferRef) {
+    bool setbuffer(void *bufferRef)
+    {
         //genlib_report_message("set buffer %p", bufferRef);
-        if (dataRef == 0) {
+        if (dataRef == 0)
+        {
             // error: no data, or obtain?
             return false;
         }
@@ -1437,46 +1687,61 @@ struct Data : public DataInterface<t_sample> {
         return true;
     }
 
-    void getinfo() {
+    void getinfo()
+    {
         t_genlib_data_info info;
-        if (genlib_data_getinfo(dataRef, &info) == GENLIB_ERR_NONE) {
+        if (genlib_data_getinfo(dataRef, &info) == GENLIB_ERR_NONE)
+        {
             mData = info.data;
             dim = info.dim;
             channels = info.channels;
-        } else {
+        }
+        else
+        {
             genlib_report_error("failed to acquire data info");
         }
     }
 };
 
 // Used by SineData
-struct DataLocal : public DataInterface<t_sample> {
+struct DataLocal : public DataInterface<t_sample>
+{
     DataLocal() : DataInterface<t_sample>() {}
-    ~DataLocal() {
+    ~DataLocal()
+    {
         if (mData) sysmem_freeptr(mData);
         mData = 0;
     }
 
-    void reset(long s, long c) {
+    void reset(long s, long c)
+    {
         mData=0;
         resize(s, c);
     }
 
-    void resize(long s, long c) {
-        if (s * c > DATA_MAXIMUM_ELEMENTS) {
+    void resize(long s, long c)
+    {
+        if (s * c > DATA_MAXIMUM_ELEMENTS)
+        {
             s = DATA_MAXIMUM_ELEMENTS/c;
             genlib_report_message("warning: resizing data to < 256MB");
         }
-        if (mData) {
+        if (mData)
+        {
             sysmem_resizeptr(mData, sizeof(t_sample) * s * c);
-        } else {
+        }
+        else
+        {
             mData = (t_sample *)sysmem_newptr(sizeof(t_sample) * s * c);
         }
-        if (!mData) {
+        if (!mData)
+        {
             genlib_report_error("out of memory");
             resize(512, 1);
             return;
-        } else {
+        }
+        else
+        {
             dim = s;
             channels = c;
         }
@@ -1485,16 +1750,21 @@ struct DataLocal : public DataInterface<t_sample> {
 
     // copy from a buffer~
     // resizing is safe only during initialization!
-    bool setbuffer(void *dataReference) {
+    bool setbuffer(void *dataReference)
+    {
         mDataReference = dataReference; // replaced mName
         bool result = false;
         t_genlib_buffer *b;
         t_genlib_buffer_info info;
-        if (mDataReference != 0) {
+        if (mDataReference != 0)
+        {
             b = (t_genlib_buffer *)genlib_obtain_buffer_from_reference(mDataReference);
-            if (b) {
-                if (genlib_buffer_edit_begin(b)==GENLIB_ERR_NONE) {
-                    if (genlib_buffer_getinfo(b, &info)==GENLIB_ERR_NONE) {
+            if (b)
+            {
+                if (genlib_buffer_edit_begin(b)==GENLIB_ERR_NONE)
+                {
+                    if (genlib_buffer_getinfo(b, &info)==GENLIB_ERR_NONE)
+                    {
                         float *samples = info.b_samples;
                         long frames = info.b_frames;
                         long nchans = info.b_nchans;
@@ -1507,36 +1777,46 @@ struct DataLocal : public DataInterface<t_sample> {
                         long frames_safe = frames < dim ? frames : dim;
                         long channels_safe = nchans < channels ? nchans : channels;
                         // copy:
-                        for (int f=0; f<frames_safe; f++) {
-                            for (int c=0; c<channels_safe; c++) {
+                        for (int f=0; f<frames_safe; f++)
+                        {
+                            for (int c=0; c<channels_safe; c++)
+                            {
                                 t_sample value = samples[c+f*nchans];
                                 write(value, f, c);
                             }
                         }
                         result = true;
-                    } else {
+                    }
+                    else
+                    {
                         genlib_report_message("couldn't get info for buffer\n");
                     }
                     genlib_buffer_edit_end(b, 1);
-                } else {
+                }
+                else
+                {
                     genlib_report_message("buffer locked\n");
                 }
             }
-        } else {
+        }
+        else
+        {
             genlib_report_message("buffer reference not valid");
         }
         return result;
     }
 };
 
-struct Buffer : public DataInterface<float> {
+struct Buffer : public DataInterface<float>
+{
     t_genlib_buffer* mBuf;
     t_genlib_buffer_info mInfo;
     float mDummy;		// safe access in case buffer is not valid
 
     Buffer() : DataInterface<float>() {}
 
-    void reset(const char *name) {
+    void reset(const char *name)
+    {
         dim = 1;
         channels = 1;
         mData = &mDummy;
@@ -1547,30 +1827,41 @@ struct Buffer : public DataInterface<float> {
         mDataReference = genlib_obtain_reference_from_string(name);
     }
 
-    void setbuffer(void *ref) {
+    void setbuffer(void *ref)
+    {
         mDataReference = ref;
     }
 
-    void begin() {
+    void begin()
+    {
         t_genlib_buffer *b = genlib_obtain_buffer_from_reference(mDataReference);
         mBuf = 0;
-        if (b) {
-            if (genlib_buffer_perform_begin(b) == GENLIB_ERR_NONE) {
+        if (b)
+        {
+            if (genlib_buffer_perform_begin(b) == GENLIB_ERR_NONE)
+            {
                 mBuf = b;
-            } else {
+            }
+            else
+            {
                 //genlib_report_message ("not a buffer~ %s", mName->s_name);
             }
-        } else {
+        }
+        else
+        {
             //genlib_report_message("no object %s\n", mName->s_name);
         }
 
-        if (mBuf && genlib_buffer_getinfo(mBuf, &mInfo)==GENLIB_ERR_NONE) {
+        if (mBuf && genlib_buffer_getinfo(mBuf, &mInfo)==GENLIB_ERR_NONE)
+        {
             // grab data:
             mBuf = b;
             mData = mInfo.b_samples;
             dim = mInfo.b_frames;
             channels = mInfo.b_nchans;
-        } else {
+        }
+        else
+        {
             //genlib_report_message("couldn't get info");
             mBuf = 0;
             mData = &mDummy;
@@ -1579,10 +1870,13 @@ struct Buffer : public DataInterface<float> {
         }
     }
 
-    void end() {
-        if (mBuf) {
+    void end()
+    {
+        if (mBuf)
+        {
             genlib_buffer_perform_end(mBuf);
-            if (modified) {
+            if (modified)
+            {
                 genlib_buffer_dirty(mBuf);
             }
             modified = 0;
@@ -1591,58 +1885,70 @@ struct Buffer : public DataInterface<float> {
     }
 };
 
-struct SineData : public DataLocal {
-    SineData() : DataLocal() {
+struct SineData : public DataLocal
+{
+    SineData() : DataLocal()
+    {
         const int costable_size = 1 << 14;	// 14 bit index (noise floor at around -156 dB)
         mData = 0;
         resize(costable_size, 1);
-        for (int i=0; i<dim; i++) {
+        for (int i=0; i<dim; i++)
+        {
             mData[i] = t_sample(cos(i * GENLIB_PI * 2. / (t_sample)(dim)));
         }
     }
 
-    ~SineData() {
+    ~SineData()
+    {
         if (mData) sysmem_freeptr(mData);
         mData = 0;
     }
 };
 
 template<typename T>
-inline int dim(const T& data) {
+inline int dim(const T& data)
+{
     return data.dim;
 }
 
 template<typename T>
-inline int channels(const T& data) {
+inline int channels(const T& data)
+{
     return data.channels;
 }
 
 // used by cycle when no buffer/data is specified:
-struct SineCycle {
+struct SineCycle
+{
 
     uint32_t phasei, pincr;
     t_sample f2i;
 
-    void reset(t_sample samplerate, t_sample init = 0) {
+    void reset(t_sample samplerate, t_sample init = 0)
+    {
         phasei = uint32_t(init * t_sample(4294967296.0));
         pincr = 0;
         f2i = t_sample(4294967296.0) / samplerate;
     }
 
-    inline void freq(t_sample f) {
+    inline void freq(t_sample f)
+    {
         pincr = uint32_t(f * f2i);
     }
 
-    inline void phase(t_sample f) {
+    inline void phase(t_sample f)
+    {
         phasei = uint32_t(f * t_sample(4294967296.0));
     }
 
-    inline t_sample phase() const {
+    inline t_sample phase() const
+    {
         return t_sample(phasei * t_sample(0.232830643653869629e-9));
     }
 
     template<typename T>
-    inline t_sample operator()(const DataInterface<T>& buf) {
+    inline t_sample operator()(const DataInterface<T>& buf)
+    {
         T *data = buf.mData;
         // divide uint32_t range down to buffer size (32-bit to 14-bit)
         uint32_t idx = phasei >> 18;

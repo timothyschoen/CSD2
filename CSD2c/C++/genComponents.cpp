@@ -2,11 +2,11 @@
 #include "./gen/phasor.h"
 #include "./gen/count.h"
 
-// Components from gendsp
+// Component2s from gendsp
 
 namespace Patcher = phasor;
 
-struct genLoader : Component<0, 0, 3>
+struct genLoader : Component2<0, 0, 3>
 {
 
     CommonState* gState = NULL;
@@ -73,9 +73,9 @@ struct genLoader : Component<0, 0, 3>
 
         for (int i = 0; i < nInChannels; i++) {
 
-        		*(gInputs + i) = m.getDigital(digiNets[i]);
+            *(gInputs + i) = m.getDigital(digiNets[i]);
 
-          inputbuff[i] = *(gInputs + i);
+            inputbuff[i] = *(gInputs + i);
 
         }
 
@@ -86,7 +86,7 @@ struct genLoader : Component<0, 0, 3>
     {
 
         for (int i = 0; i < nInChannels; i++) {
-          ip[i] = &inputbuff[i];
+            ip[i] = &inputbuff[i];
         }
 
         op[0] = gOutputs + 1;
@@ -95,7 +95,7 @@ struct genLoader : Component<0, 0, 3>
         Patcher::perform(gState, ip, 2, op, 1, 1);
         // Getting output
         for (int i = 0; i < nOutChannels; i++) {
-        m.setDigital(digiNets[nInChannels+i], *op[0]);
+            m.setDigital(digiNets[nInChannels+i], *op[0]);
         }
 
     }

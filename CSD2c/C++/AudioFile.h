@@ -184,7 +184,8 @@ private:
 
 //=============================================================
 // Pre-defined 10-byte representations of common sample rates
-static std::unordered_map <uint32_t, std::vector<uint8_t>> aiffSampleRateTable = {
+static std::unordered_map <uint32_t, std::vector<uint8_t>> aiffSampleRateTable =
+{
     {8000, {64, 11, 250, 0, 0, 0, 0, 0, 0, 0}},
     {11025, {64, 12, 172, 68, 0, 0, 0, 0, 0, 0}},
     {16000, {64, 12, 250, 0, 0, 0, 0, 0, 0, 0}},

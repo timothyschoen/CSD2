@@ -1,7 +1,7 @@
 
 // Analog components
 
-struct Resistor : Component<2>
+struct Resistor : Component2<2>
 {
     double  r;
 
@@ -22,7 +22,7 @@ struct Resistor : Component<2>
     }
 };
 
-struct AnalogDelay : Component<2, 1, 1>
+struct AnalogDelay : Component2<2, 1, 1>
 {
     double  v;
     int t;
@@ -73,7 +73,7 @@ struct AnalogDelay : Component<2, 1, 1>
     }
 
 };
-struct VariableResistor : Component<2, 0, 1>
+struct VariableResistor : Component2<2, 0, 1>
 {
     double  r;
     double  resvalue;
@@ -107,7 +107,7 @@ struct VariableResistor : Component<2, 0, 1>
 
 };
 
-struct Potentiometer : Component<3, 0, 1>
+struct Potentiometer : Component2<3, 0, 1>
 {
     double  r;
 
@@ -172,7 +172,7 @@ struct Potentiometer : Component<3, 0, 1>
     }
 };
 
-struct Capacitor : Component<2, 1>
+struct Capacitor : Component2<2, 1>
 {
     double c;
     double stateVar;
@@ -266,7 +266,102 @@ struct Capacitor : Component<2, 1>
     }
 };
 
-struct VariableCapacitor : Component<2, 1, 1> // doesn't seem to do anything atm
+
+struct Inductor : Component2<2, 1>
+{
+    double c;
+    double stateVar;
+    double voltage;
+
+    Inductor(double c, int l0, int l1) : c(c)
+    {
+        pinLoc[0] = l0;
+        pinLoc[1] = l1;
+
+        stateVar = 0;
+        voltage = 0;
+    }
+
+    void stamp(MNASystem & m) final
+    {
+
+        // we can use a trick here, to get the capacitor to
+        // work on it's own line with direct trapezoidal:
+        //
+        // | -g*t  +g*t  +t | v+
+        // | +g*t  -g*t  -t | v-
+        // | +2*g  -2*g  -1 | state
+        //
+        // the logic with this is that for constant timestep:
+        //
+        //  i1 = g*v1 - s0   , s0 = g*v0 + i0
+        //  s1 = 2*g*v1 - s0 <-> s0 = 2*g*v1 - s1
+        //
+        // then if we substitute back:
+        //  i1 = g*v1 - (2*g*v1 - s1)
+        //     = s1 - g*v1
+        //
+        // this way we just need to copy the new state to the
+        // next timestep and there's no actual integration needed
+        //
+        // the "half time-step" error here means that our state
+        // is 2*c*v - i/t but we fix this for display in update
+        // and correct the current-part on time-step changes
+
+        // trapezoidal needs another factor of two for the g
+        // since c*(v1 - v0) = (i1 + i0)/(2*t), where t = 1/T
+        double g = 2*c;
+
+        m.stampTimed(+1, nets[0], nets[2]);
+        m.stampTimed(-1, nets[1], nets[2]);
+
+        m.stampTimed(-g, nets[0], nets[0]);
+        m.stampTimed(+g, nets[0], nets[1]);
+        m.stampTimed(+g, nets[1], nets[0]);
+        m.stampTimed(-g, nets[1], nets[1]);
+
+        m.stampStatic(+2*g, nets[2], nets[0]);
+        m.stampStatic(-2*g, nets[2], nets[1]);
+
+        m.stampStatic(-1, nets[2], nets[2]);
+
+        // see the comment about v:C[%d] below
+        m.b[nets[2]].gdyn.push_back(&stateVar);
+
+        // this isn't quite right as state stores 2*c*v - i/t
+        // however, we'll fix this in updateFull() for display
+        //m.nodes[nets[2]].scale = 1 / c;
+    }
+
+    void update(MNASystem & m) final
+    {
+
+
+        stateVar = m.b[nets[2]].lu;
+
+        // solve legit voltage from the pins
+        voltage = m.b[nets[0]].lu - m.b[nets[1]].lu;
+
+        // then we can store this for display here
+        // since this value won't be used at this point
+        m.b[nets[2]].lu = c*voltage;
+    }
+
+    void scaleTime(double told_per_new) final
+    {
+        // the state is 2*c*voltage - i/t0
+        // so we subtract out the voltage, scale current
+        // and then add the voltage back to get new state
+        //
+        // note that this also works if the old rate is infinite
+        // (ie. t0=0) when going from DC analysis to transient
+        //
+        double qq = 2*c*voltage;
+        stateVar = qq + (stateVar - qq)*told_per_new;
+    }
+};
+
+struct VariableCapacitor : Component2<2, 1, 1> // doesn't seem to do anything atm
 {
     double max;
     double c;
@@ -314,23 +409,23 @@ struct VariableCapacitor : Component<2, 1, 1> // doesn't seem to do anything atm
 
     void updateInput(MNASystem & m)
     {
-      c = max * m.getDigital(digiNets[0]);
-      g = 2. * c;
-      ng = -g;
-      twog = 2. * g;
-      ntwog = 2. * ng;
+        c = max * m.getDigital(digiNets[0]);
+        g = 2. * c;
+        ng = -g;
+        twog = 2. * g;
+        ntwog = 2. * ng;
 
     }
 
     void update(MNASystem & m) final
     {
-      //m.nodes[nets[2]].scale = 1. / c;
+        //m.nodes[nets[2]].scale = 1. / c;
 
-      stateVar = m.b[nets[2]].lu;
+        stateVar = m.b[nets[2]].lu;
 
-      voltage = m.b[nets[0]].lu - m.b[nets[1]].lu;
+        voltage = m.b[nets[0]].lu - m.b[nets[1]].lu;
 
-      m.b[nets[2]].lu = c*voltage;
+        m.b[nets[2]].lu = c*voltage;
     }
 
     void scaleTime(double told_per_new) final
@@ -340,7 +435,7 @@ struct VariableCapacitor : Component<2, 1, 1> // doesn't seem to do anything atm
     }
 };
 
-struct Voltage : Component<2, 1>
+struct Voltage : Component2<2, 1>
 {
     double v;
 
@@ -366,7 +461,7 @@ struct Voltage : Component<2, 1>
 
 // probe a differential voltage
 // also forces this voltage to actually get solved :)
-struct Probe : Component<2, 1>
+struct Probe : Component2<2, 1>
 {
     float impedance = 1;
 
@@ -399,7 +494,7 @@ struct Probe : Component<2, 1>
 };
 
 
-struct Printer : Component<2>
+struct Printer : Component2<2>
 {
     float g = 2;
     Printer(int l0, int l1)
@@ -430,7 +525,7 @@ struct Printer : Component<2>
 };
 
 // function voltage generator
-struct Function : Component<2,1>
+struct Function : Component2<2,1>
 {
     typedef double (*FuncPtr)(double t);
 
@@ -467,7 +562,7 @@ struct Function : Component<2,1>
 };
 
 
-struct InputSample : Component<2,1>
+struct InputSample : Component2<2,1>
 {
 
     double v;
@@ -564,7 +659,7 @@ bool newtonJunctionPN(JunctionPN & pn, double v)
     return false;
 }
 
-struct Diode : Component<2, 2>
+struct Diode : Component2<2, 2>
 {
     JunctionPN  pn;
 
@@ -649,7 +744,7 @@ struct Diode : Component<2, 2>
     }
 };
 
-struct BJT : Component<3, 4>
+struct BJT : Component2<3, 4>
 {
     // emitter and collector junctions
     JunctionPN  pnC, pnE;
@@ -795,7 +890,7 @@ struct BJT : Component<3, 4>
     }
 };
 
-struct OPA : Component<5, 6>
+struct OPA : Component2<5, 6>
 {
     // diode clamps
     JunctionPN  pnPP, pnNN;

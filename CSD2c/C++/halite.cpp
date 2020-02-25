@@ -94,7 +94,7 @@ constexpr const char* unitValueSuffixes[] = {
 
 
 template <int nPins = 0, int nInternalNets = 0, int nDigipins = 0>
-struct Component : IComponent
+struct Component2 : IComponent
 {
     static const int nNets = nPins + nInternalNets;
 
@@ -246,12 +246,28 @@ struct NetList
 
     void simulateTick()
     {
+        //solver.solve3(components, system);
         //auto t1 = std::chrono::high_resolution_clock::now();
 
-        solver.solve(system);
+        //solver.solve(system);
         //solver.solve2(system);
-        //solver.solve3(components, system);
 
+
+        //solver.solve3(components, system);
+        //auto t2 = std::chrono::high_resolution_clock::now();
+        //auto duration = std::chrono::duration_cast<std::chrono::microseconds>( t2 - t1 ).count();
+
+
+        //std::cout << "oude solver: " << duration << "us" << '\n';
+
+
+        //t1 = std::chrono::high_resolution_clock::now();
+        solver.solve3(components, system);
+
+        //t2 = std::chrono::high_resolution_clock::now();
+        //duration = std::chrono::duration_cast<std::chrono::microseconds>( t2 - t1 ).count();
+
+        //std::cout << "nieuwe solver: " << duration << "us" << '\n';
         /*
         std::cout << "B uit:" << '\n';
 
@@ -266,8 +282,7 @@ struct NetList
 
 
         update();
-        //auto t2 = std::chrono::high_resolution_clock::now();
-        //auto duration = std::chrono::duration_cast<std::chrono::microseconds>( t2 - t1 ).count();
+
         //std::cout << "Per sample: " << duration << '\n';
     }
 

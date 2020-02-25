@@ -1,7 +1,7 @@
-// Digital Components
+// Digital Component2s
 
 // Basic arithmetics
-struct digitalArithmetic : Component<0, 0, 3>
+struct digitalArithmetic : Component2<0, 0, 3>
 {
     double  outvalue;
     double  value;
@@ -71,7 +71,7 @@ struct digitalArithmetic : Component<0, 0, 3>
     }
 };
 
-struct digitalSignal : Component<0, 0, 1>
+struct digitalSignal : Component2<0, 0, 1>
 {
     double  value;
 
@@ -91,7 +91,7 @@ struct digitalSignal : Component<0, 0, 1>
     }
 };
 
-struct digitalOutput : Component<0, 0, 2>
+struct digitalOutput : Component2<0, 0, 2>
 {
     double value[2];
     float amplitude;
@@ -123,7 +123,7 @@ struct digitalOutput : Component<0, 0, 2>
 };
 
 
-struct digitalAnalogConverter : Component<2,1,1>
+struct digitalAnalogConverter : Component2<2,1,1>
 {
 
     double  v;
@@ -157,7 +157,7 @@ struct digitalAnalogConverter : Component<2,1,1>
 
 };
 
-struct analogDigitalConverter : Component<2, 1, 1>
+struct analogDigitalConverter : Component2<2, 1, 1>
 {
     float impedance = 1;
     double x = 0;
@@ -191,7 +191,7 @@ struct analogDigitalConverter : Component<2, 1, 1>
 
 };
 
-struct dcBlock : Component<0, 0, 2>
+struct dcBlock : Component2<0, 0, 2>
 {
     double x = 0;
     double y = 0;
@@ -223,7 +223,7 @@ struct dcBlock : Component<0, 0, 2>
 
 };
 
-struct Changed : Component<0, 0, 2>
+struct Changed : Component2<0, 0, 2>
 {
     double old;
     double in;
@@ -254,7 +254,7 @@ struct Changed : Component<0, 0, 2>
 
 };
 
-struct History : Component<0, 0, 2>
+struct History : Component2<0, 0, 2>
 {
     double old;
     double in;
@@ -285,7 +285,7 @@ struct History : Component<0, 0, 2>
 
 };
 
-struct getDelta : Component<0, 0, 2>
+struct getDelta : Component2<0, 0, 2>
 {
     double old;
     double in;
@@ -317,7 +317,7 @@ struct getDelta : Component<0, 0, 2>
 };
 
 
-struct accumulate : Component<0, 0, 2>
+struct accumulate : Component2<0, 0, 2>
 {
     long double accum;
 
@@ -347,7 +347,7 @@ struct accumulate : Component<0, 0, 2>
 };
 
 
-struct absol : Component<0, 0, 2>
+struct absol : Component2<0, 0, 2>
 {
     double input;
 
@@ -376,7 +376,7 @@ struct absol : Component<0, 0, 2>
     }
 
 };
-struct flor : Component<0, 0, 2>
+struct flor : Component2<0, 0, 2>
 {
     double input;
 
@@ -404,7 +404,7 @@ struct flor : Component<0, 0, 2>
     }
 };
 
-struct ceiling : Component<0, 0, 2>
+struct ceiling : Component2<0, 0, 2>
 {
     double input;
 
@@ -434,7 +434,7 @@ struct ceiling : Component<0, 0, 2>
 
 };
 
-struct Gate : Component<0, 0, 3>
+struct Gate : Component2<0, 0, 3>
 {
     double output;
 
@@ -465,7 +465,7 @@ struct Gate : Component<0, 0, 3>
 
 };
 
-struct Scale : Component<0, 0, 6>
+struct Scale : Component2<0, 0, 6>
 {
     double input;
     double inMin;
@@ -522,7 +522,7 @@ struct Scale : Component<0, 0, 6>
 };
 
 
-struct Elapsed : Component<0, 0, 1>
+struct Elapsed : Component2<0, 0, 1>
 {
 
 
@@ -548,7 +548,7 @@ struct Elapsed : Component<0, 0, 1>
 
 
 
-struct digitalInput : Component<0, 0, 1>
+struct digitalInput : Component2<0, 0, 1>
 {
 
     double amplitude;
@@ -577,7 +577,7 @@ struct digitalInput : Component<0, 0, 1>
 
 };
 
-struct rtDigitalInput : Component<0, 0, 1>
+struct rtDigitalInput : Component2<0, 0, 1>
 {
 
     double amplitude;
@@ -609,7 +609,7 @@ struct rtDigitalInput : Component<0, 0, 1>
 
 };
 
-struct MidiInput : Component<0, 0, 3>
+struct MidiInput : Component2<0, 0, 3>
 {
 
     int input;
@@ -638,7 +638,7 @@ struct MidiInput : Component<0, 0, 3>
 
 };
 
-struct mToF : Component<0, 0, 2>
+struct mToF : Component2<0, 0, 2>
 {
 
     double input;
@@ -667,7 +667,7 @@ struct mToF : Component<0, 0, 2>
 };
 
 
-struct midiNoteIn : Component<0, 0, 2>
+struct midiNoteIn : Component2<0, 0, 2>
 {
 
     int note;
@@ -707,7 +707,7 @@ struct midiNoteIn : Component<0, 0, 2>
 
 };
 
-struct stereoDigitalInput : Component<0,0,2>
+struct stereoDigitalInput : Component2<0,0,2>
 {
 
     double amplitude;
@@ -740,7 +740,7 @@ struct stereoDigitalInput : Component<0,0,2>
 
 
 
-struct digitalCycle : Component<0, 0, 2>
+struct digitalCycle : Component2<0, 0, 2>
 {
     double  freq;
     double phase;
@@ -773,7 +773,7 @@ struct digitalCycle : Component<0, 0, 2>
     }
 };
 
-struct digitalDelay : Component<0, 0, 3>
+struct digitalDelay : Component2<0, 0, 3>
 {
     int t = 10000;
     int currentSample;

@@ -25,7 +25,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include "genlib_exportfunctions.h"
 #include "genlib_ops.h"
 
-namespace phasor {
+namespace phasor
+{
 
 int num_inputs();
 int num_outputs();

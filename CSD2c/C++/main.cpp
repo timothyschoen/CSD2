@@ -108,7 +108,7 @@ int main(int argc, char* argv[])
         std::cout << seglist[0] << '\n';
 
         if(!seglist[0].compare("setup")) {
-        net = new NetList(stoi(seglist[1]), stoi(seglist[2]));
+            net = new NetList(stoi(seglist[1]), stoi(seglist[2]));
         }
 // Digital components
 
@@ -256,7 +256,7 @@ int main(int argc, char* argv[])
     std::cout << enginesamplerate << std::endl;
     std::cout << (double)1/enginesamplerate << std::endl;
 
-    //net->simulateTick();
+    net->simulateTick();
     net->setTimeStep((double)1/enginesamplerate);
     net->simulateTick();
 

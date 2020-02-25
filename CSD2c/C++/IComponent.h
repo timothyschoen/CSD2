@@ -1,3 +1,4 @@
+
 struct IComponent
 {
     virtual ~IComponent() {}
@@ -35,12 +36,14 @@ struct IComponent
 
     // return true if we're done - will keep iterating
     // until all the components are happy
-    virtual bool newton(MNASystem & m) {
+    virtual bool newton(MNASystem & m)
+    {
         return true;
     }
 
     // NEW: output function for probe object;
-    virtual double getAudioOutput(MNASystem & m, int c) {
+    virtual double getAudioOutput(MNASystem & m, int c)
+    {
         return 0;
     }
 
