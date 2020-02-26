@@ -1,3 +1,17 @@
+
+let mouseX = 0;
+let mouseY = 0;
+
+let connectingline;
+
+onmousemove = function(e){
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+    if(connectingline != undefined) {
+      connectingline(false);
+      }
+    }
+
 // Object for individual inlets
 // Also manages the creation of connections
 function Inlet(x, y, instance, type, datatype, color = '#229FD7') {
@@ -55,7 +69,7 @@ function Inlet(x, y, instance, type, datatype, color = '#229FD7') {
     }
 
     this.getposition = function() {
-        return [this.x-4, this.y-16];
+        return [this.x, this.y];
     }
 
     // HTML buttons overlap any p5js draws, so we need to hide it manually when it's under the sidebar
@@ -72,15 +86,30 @@ function Inlet(x, y, instance, type, datatype, color = '#229FD7') {
         inletbutton.remove();
     }
 
-    /*
 
-    inletbutton.mousePressed(function () {
-        if (connecting == -1) {
+    inletbutton.onclick = function () {
+        if (connectingline == undefined) {
             connecting = instance;
+            let htmlLine = document.createElement("div");
+            connectingline = function(del) {
+              if(!del) {
+                var off1 = getOffset(inletbutton);
+                var off2 = getmousePos();
+                updateLine(off1, off2, htmlLine);
+              }
+              else
+              {
+                htmlLine.parentNode.removeChild(htmlLine);
+                connectingline = undefined;
+              }
+              }
+            document.body.appendChild(htmlLine);
+
         }
         else {
             let sametype = instance[0].getinlets()[instance[1]].getdatatype() == connecting[0].getinlets()[connecting[1]].getdatatype();
             if(connecting[0] != instance[0] && sametype) {
+                connectingline(true)
                 connections.push(new Connection([instance[0],instance[1]], [connecting[0],connecting[1]], datatype))
             }
             else if(!sametype) {
@@ -88,61 +117,71 @@ function Inlet(x, y, instance, type, datatype, color = '#229FD7') {
             }
             connecting = -1;
         }
-    }); */
+    };
+
+}
+
+function getOffset( el ) {
+    var rect = el.getBoundingClientRect();
+    return {
+        left: rect.left-(rect.width/2) + window.pageXOffset,
+        top: rect.top-(rect.height/2) + window.pageYOffset,
+        width: rect.width || el.offsetWidth,
+        height: rect.height || el.offsetHeight
+    };
+}
+
+function getmousePos() {
+    return {
+        left: mouseX,
+        top: mouseY,
+        width: 1,
+        height: 1
+    };
+}
+
+function updateLine(off1, off2, htmlLine) {
+
+  // bottom right
+  var x1 = off1.left + off1.width;
+  var y1 = off1.top + off1.height;
+  // top right
+  var x2 = off2.left + off2.width;
+  var y2 = off2.top;
+  // distance
+  var length = Math.sqrt(((x2-x1) * (x2-x1)) + ((y2-y1) * (y2-y1)));
+  // center
+  var cx = ((x1 + x2) / 2) - (length / 2);
+  var cy = ((y1 + y2) / 2) - (1 / 2);
+  // angle
+  var angle = Math.atan2((y1-y2),(x1-x2))*(180/Math.PI);
+  // make hr
+  //var htmlLine = "<div style='padding:0px; margin:0px; height:" + 1 + "px; background-color:" + color + "; line-height:1px; position:absolute; left:" + cx + "px; top:" + cy + "px; width:" + length + "px; -moz-transform:rotate(" + angle + "deg); -webkit-transform:rotate(" + angle + "deg); -o-transform:rotate(" + angle + "deg); -ms-transform:rotate(" + angle + "deg); transform:rotate(" + angle + "deg);' />";
+
+  htmlLine.style.position = "absolute";
+  htmlLine.style.height = "1px";
+  htmlLine.style.width = length + "px";
+  htmlLine.style.padding = "0px";
+  htmlLine.style.margin = "0px";
+  htmlLine.style.border = '1px'
+  htmlLine.style.lineHeight = '1px'
+  htmlLine.style.transform = 'rotate(' + angle + 'deg)'
+  //htmlLine.style.zIndex = '-1'
+
+  //htmlline.style += '-webkit-transform:rotate(" + angle + "deg)';
+
+  htmlLine.style.background = 'black';
+  htmlLine.style.top =  cy + "px";
+  htmlLine.style.left = cx + "px";
 }
 
 // Object for connections
 function Connection(start, end, datatype = 'analog') { // Optional argument 'datatype' provides legacy support for all the patches we made before adding digital signals
 
-  function getOffset( el ) {
-      var rect = el.getBoundingClientRect();
-      return {
-          left: rect.left + window.pageXOffset,
-          top: rect.top + window.pageYOffset,
-          width: rect.width || el.offsetWidth,
-          height: rect.height || el.offsetHeight
-      };
-  }
-
-
-
+      let htmlLine = document.createElement("div");
       var off1 = getOffset(start[0].getinlets()[start[1]].getdiv());
       var off2 = getOffset(end[0].getinlets()[end[1]].getdiv());
-
-      // bottom right
-      var x1 = off1.left + off1.width;
-      var y1 = off1.top + off1.height;
-      // top right
-      var x2 = off2.left + off2.width;
-      var y2 = off2.top;
-      // distance
-      var length = Math.sqrt(((x2-x1) * (x2-x1)) + ((y2-y1) * (y2-y1)));
-      // center
-      var cx = ((x1 + x2) / 2) - (length / 2);
-      var cy = ((y1 + y2) / 2) - (1 / 2);
-      // angle
-      var angle = Math.atan2((y1-y2),(x1-x2))*(180/Math.PI);
-      // make hr
-      //var htmlLine = "<div style='padding:0px; margin:0px; height:" + 1 + "px; background-color:" + color + "; line-height:1px; position:absolute; left:" + cx + "px; top:" + cy + "px; width:" + length + "px; -moz-transform:rotate(" + angle + "deg); -webkit-transform:rotate(" + angle + "deg); -o-transform:rotate(" + angle + "deg); -ms-transform:rotate(" + angle + "deg); transform:rotate(" + angle + "deg);' />";
-      var htmlLine = document.createElement("div");
-
-      htmlLine.style.position = "absolute";
-      htmlLine.style.height = "1px";
-      htmlLine.style.width = length + "px";
-      htmlLine.style.padding = "0px";
-      htmlLine.style.margin = "0px";
-      htmlLine.style.border = '1px'
-      htmlLine.style.lineHeight = '1px'
-      htmlLine.style.transform = 'rotate(' + angle + 'deg)'
-
-      //htmlline.style += '-webkit-transform:rotate(" + angle + "deg)';
-
-      htmlLine.style.background = 'black';
-      htmlLine.style.top =  cy + "px";
-      htmlLine.style.left = cx + "px";
-
-      //
-      // alert(htmlLine);
+      updateLine(off1, off2, htmlLine);
       document.body.appendChild(htmlLine);
 
 
@@ -165,27 +204,7 @@ function Connection(start, end, datatype = 'analog') { // Optional argument 'dat
     this.update = function() {
       var off1 = getOffset(start[0].getinlets()[start[1]].getdiv());
       var off2 = getOffset(end[0].getinlets()[end[1]].getdiv());
-
-      // bottom right
-      var x1 = off1.left + off1.width;
-      var y1 = off1.top + off1.height;
-      // top right
-      var x2 = off2.left + off2.width;
-      var y2 = off2.top;
-      // distance
-      var length = Math.sqrt(((x2-x1) * (x2-x1)) + ((y2-y1) * (y2-y1)));
-      // center
-      var cx = ((x1 + x2) / 2) - (length / 2);
-      var cy = ((y1 + y2) / 2) - (1 / 2);
-      // angle
-      var angle = Math.atan2((y1-y2),(x1-x2))*(180/Math.PI);
-
-
-      htmlLine.style.width = length + "px";
-      htmlLine.style.transform = 'rotate(' + angle + 'deg)'
-      htmlLine.style.top =  cy + "px";
-      htmlLine.style.left = cx + "px";
-
+      updateLine(off1, off2, htmlLine);
     }
 
     // Draw the line

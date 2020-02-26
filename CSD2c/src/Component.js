@@ -1,9 +1,39 @@
 // COMPONENT FUNCTION
 // Represents 1 electrical component
 
+let boxesprox = []; // Where we store our components
+let connectionsprox = []; // Where we store our connections
+let connecting = -1; // Is any inlet currently in the connecting state?
+
+// Change array order (used to make sure ground is at 0)
+Array.prototype.move = function(from, to) {
+    this.splice(to, 0, this.splice(from, 1)[0]);
+};
+
+var arrayChangeHandler = {
+get:
+    function(target, property) {
+        // property is index in this case
+        return target[property];
+    },
+set:
+    function(target, property, value, receiver) {
+        target[property] = value;
+        if (property == 'length' && !initializing) {
+            // disabeled for now because it's too glitchy
+            //changed();
+
+        }
+        // you have to return true to accept the changes
+        return true;
+    }
+};
 
 
-function Component(name, xin = mouseX,  yin = mouseY-100) {
+var connections = new Proxy( connectionsprox, arrayChangeHandler );
+var boxes = new Proxy( boxesprox, arrayChangeHandler );
+
+function Component(name = 'resistor 200', xin = mouseX,  yin = mouseY-100) {
     let x, y, w, h;          // Location and size
     let inp;                 // letiable for input field
     let inputting = false;  // Check if we have an active input field
@@ -50,6 +80,7 @@ function Component(name, xin = mouseX,  yin = mouseY-100) {
     myCircle.style.cursor = 'default'
     myCircle.style.userSelect = 'false'
     myCircle.innerHTML = name;
+
     myCircle.onselectstart="return false;"
     myCircle.setAttribute('unselectable', 'on');
 
@@ -152,7 +183,7 @@ function Component(name, xin = mouseX,  yin = mouseY-100) {
               offset++;
           }
           else {
-              inlets[i].setposition(offsetx+(10*(i-offset))+20, offsety+h+h-4);
+              inlets[i].setposition(offsetx+(10*(i-offset))+20, offsety+h+h-2);
           }
           if(inlets[i].getposition()[0] > cnvwidth) {
               inlets[i].show(false);
@@ -166,12 +197,15 @@ function Component(name, xin = mouseX,  yin = mouseY-100) {
 
     // Open input field
     this.inputname = function(text) {
-        inp = createInput(text);
+        inp = document.createElement("INPUT");
         inputting = true;
         typing = true;
-        inp.size(w-6, h-7);
-        inp.position(x+10, y+23);
-        inp.style('background-color: #efefef; font-size:11px; font:sans-serif; text-align: center; border:none; outline:none;');
+        inp.style.height = w-6
+        inp.style.width = h-7
+        inp.style.top = x+10
+        inp.style.left = y+23
+
+        inp.style.cssText = 'background-color: #efefef; font-size:11px; font:sans-serif; text-align: center; border:none; outline:none;';
     }
 
     //Bunch of getters and setters to interact and get info from these boxes
@@ -360,14 +394,14 @@ function Component(name, xin = mouseX,  yin = mouseY-100) {
         }
         inlets = [];
 
-        for(let i = 0; i < int(types[type]['inlets']); i++) {
+        for(let i = 0; i < parseInt(types[type]['inlets']); i++) {
             let datatype = 'analog';
             if(types[type]['datatypes'] !== undefined) {
                 datatype = types[type]['datatypes'][i]
             }
             inlets.push(new Inlet(x+15+(10*i), y+17, [this, i], 'inlet', datatype, types[type]['colors'][i]));
         }
-        for(let i = 0; i < int(types[type]['outlets']); i++) {
+        for(let i = 0; i < parseInt(types[type]['outlets']); i++) {
             let datatype = 'analog';
             if(types[type]['datatypes'] !== undefined) {
                 datatype = types[type]['datatypes'][i+types[type]['inlets']]
@@ -381,7 +415,7 @@ function Component(name, xin = mouseX,  yin = mouseY-100) {
         if (inputting == true) {
             inputting = false;
             typing = false;
-            name = inp.value();
+            name = inp.value;
             inp.remove();
         }
         // Arguments

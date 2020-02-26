@@ -8,6 +8,10 @@ let onswitch;
 let sbarwidth = 300;
 let cnvwidth; // Width of our canvas without the sidebar
 
+let code = '';
+
+let tab = 1;
+
 function Sidebar() {
     let textformat;
     let hidden = 0;
@@ -45,7 +49,7 @@ function Sidebar() {
     modlabel.style.fontWeight = "bold";
 
   //  modlabel.style.cssText ="fontSize:5; fontFamily:monospace; font-weight: bold; position:fixed; left:x0px; top:5%".replace('x0', cnvwidth+51));
-    //modlabel.hide();
+    //modlabel.style.display = "none";
 
     //Console logviewer object created in console-viewer.js!
     logviewer.windowResize(sbarwidth-60, window.innerHeight-200);
@@ -66,13 +70,13 @@ function Sidebar() {
     function showTab(tab) {
         // Show/hide
         if (!tab && !hidden) {
-            buttons[0].elt.textContent = "<";
+            buttons[0].textContent = "<";
             hidden = 1;
             sbarwidth = 38;
             _this.windowresize();
         }
         else {
-            buttons[0].elt.textContent = ">";
+            buttons[0].textContent = ">";
             if(!tab) {
                 tab = 2;
             }
@@ -80,10 +84,11 @@ function Sidebar() {
             hidden = 0;
             _this.windowresize();
         }
-        let tabs = [[], [jackoptions, haliteoptions], [logviewer, modlabel], [medialib], [codebox]];
+        // , modlabel], [medialib , [logviewer]
+        let tabs = [[], [jackoptions, haliteoptions], [codebox], [medialib], [logviewer]];
         for (var i = 0; i < 5; i++) {
             if (i != tab) {
-                tabs[i].forEach((t) => t.hide());
+                tabs[i].forEach((t) =>  t.hide()); //t.hide());
             }
         }
         if (tab != 0) {
@@ -108,22 +113,27 @@ function Sidebar() {
 
     for (let i = 0; i < buttonpresets.length; i++) {
         buttons[i] = document.createElement("BUTTON", buttonpresets[i][0])
-                     buttons[i].size(22, 22);
-        buttons[i].style.cssText ="border-radius:100%; border:none; outline:none; font-size:7; text-align:left; color:white; background-color:#229FD7; position:fixed; right:x0px; top:x1%;".replace('x0', sbarwidth-34).replace('x1', buttonpresets[i][1]);
-        buttons[i].mousePressed(buttonpresets[i][2]);
+                     buttons[i].style.width = "22";
+                     buttons[i].style.height = "22";
+        buttons[i].style.cssText = "border-radius:100%; border:none; outline:none; font-size:7; text-align:left; color:white; background-color:#229FD7; position:fixed; right:x0px; top:x1%;".replace('x0', sbarwidth-34).replace('x1', buttonpresets[i][1]);
+        buttons[i].addEventListener("click", buttonpresets[i][2]);
+        document.body.appendChild(buttons[i])
     }
 
 
     this.windowresize = function() {
         cnvwidth = window.innerWidth-sbarwidth;
 
-        seperator1.style.cssText ="right:x0px; ".replace('x0', sbarwidth-40);
-        seperator1.size(0, window.innerHeight-35);
+        seperator1.style.cssText = "right:x0px; ".replace('x0', sbarwidth-40);
+        seperator1.style.width =  "0";
+        seperator1.style.height = window.innerHeight-35;
         seperator2.style.cssText ="right:x0px".replace('x0', sbarwidth-10);
-        seperator2.size(0, window.innerHeight-35);
-
+        seperator2.style.width = "0";
+        seperator2.style.height = window.innerHeight-35;
         for (let i = 0; i < buttons.length; i++) {
-            buttons[i].style.cssText ="right:x0px;".replace('x0', sbarwidth-34);
+          buttons[i].style.cssText = "border-radius:100%; border:none; outline:none; font-size:7; text-align:left; color:white; background-color:#229FD7; position:fixed; right:x0px; top:x1%;".replace('x0', sbarwidth-34).replace('x1', buttonpresets[i][1]);
+
+            //buttons[i].style.cssText ="right:x0px;".replace('x0', sbarwidth-34);
         }
 
         jackoptions.windowResize();
@@ -193,10 +203,11 @@ function jackOptions() {
     let driverlist = ['coreaudio', 'alsa', 'portaudio'];
     let driversel = document.createElement("SELECT");
     driversel.style.cssText ="font-size:7; position:fixed; right:11px; top:10%";
-    driversel.size(100, 20);
+    driversel.style.width = "100"
+    driversel.style.height = "20"
 
     for (let i = 0; i < driverlist.length; i++) {
-        driversel.option(driverlist[i])
+        //driversel.option(driverlist[i])
     }
 
 
@@ -204,13 +215,14 @@ function jackOptions() {
     srlabel.style.cssText ="fontSize:3; fontFamily:monospace; position:fixed; left:x0px; top:18.5%".replace('x0', cnvwidth+51);
 
     let samplesrates = [44100, 22050, 32000, 48000, 88200, 96000];
-    let sampleratesel = createSelect('44100');
+    let sampleratesel = document.createElement("SELECT");
     sampleratesel.style.cssText ="font-size:7; position:fixed; right:11px; top:18%";
-    sampleratesel.size(100, 20);
+    sampleratesel.style.width = "100"
+    sampleratesel.style.height = "20"
 
 
     for (let i = 0; i < samplesrates.length; i++) {
-        sampleratesel.option(samplesrates[i])
+        //sampleratesel.option(samplesrates[i])
     }
 
     let buflabel = document.createElement("div", 'Buffer size:');
@@ -219,33 +231,36 @@ function jackOptions() {
     let bufsizes = [4096, 256, 512, 1024, 2048];
     let buffersel = document.createElement("SELECT");
     buffersel.style.cssText = "font-size:7; position:fixed; right:11px; top:26%";
-    buffersel.size(100, 20);
+    buffersel.style.width = "100"
+    buffersel.style.height = "20"
 
     for (let i = 0; i < bufsizes.length; i++) {
-        buffersel.option(bufsizes[i])
+        //buffersel.option(bufsizes[i])
     }
 
-    let jackcommand = 'jackd' + ' -d'+driversel.value() + ' -r'+sampleratesel.value() + ' -p'+buffersel.value();
+    let jackcommand = 'jackd' + ' -d'+driversel.value + ' -r'+sampleratesel.value + ' -p'+buffersel.value;
 
 
     let inputlabel = document.createElement("div", 'Command:');
     inputlabel.style.cssText ="fontSize:3; fontFamily:monospace; position:fixed; left:x0px; top:35%".replace('x0', cnvwidth+51);
-    let inputcmd = createInput(jackcommand);
+    let inputcmd = document.createElement("INPUT");
     inputcmd.style.cssText ="font-size:7; position:fixed; right:11px; top:34%";
-    inputcmd.size(sbarwidth-150, 20);
+    inputcmd.style.width = sbarwidth-150;
+    inputcmd.style.height = "20";
 
     onswitch = document.createElement("BUTTON", 'OFF');
-    onswitch.size(48, 32);
+    onswitch.style.width = "48";
+    onswitch.style.height = "32";
     onswitch.style.cssText = "border:none; outline:none; font-size:7; color:white; background-color:#229FD7; position:fixed; left:x0px; top:42%".replace('x0', cnvwidth+(sbarwidth/2));
-    onswitch.mousePressed(() => {
+    onswitch.addEventListener("click", () => {
         if (jackstatus == 1) {
             jack.kill('SIGINT');
-            onswitch.elt.textContent = "OFF";
+            onswitch.textContent = "OFF";
         }
         else {
-            let splitcmd = inputcmd.value().split(' ');
+            let splitcmd = inputcmd.value.split(' ');
             jack = spawn(splitcmd[0], splitcmd.slice(1));
-            onswitch.elt.textContent = "ON";
+            onswitch.textContent = "ON";
             jack.stdout.on('data', function (data) {
                 console.log('Jack: ' + data);
             });
@@ -256,7 +271,7 @@ function jackOptions() {
 
             jack.on('close', function (code) {
                 jackstatus = 0;
-                onswitch.elt.textContent = 'OFF'
+                onswitch.textContent = 'OFF'
                                            console.log('Jack closed with code ' + code);
                 if (code) {
                     console.warn('Jack has crashed');
@@ -270,14 +285,14 @@ function jackOptions() {
     });
 
     this.update = function() {
-        jackcommand = 'jackd' + ' -d'+driversel.value() + ' -r'+sampleratesel.value() + ' -p'+buffersel.value();
+        jackcommand = 'jackd' + ' -d'+driversel.value + ' -r'+sampleratesel.value + ' -p'+buffersel.value;
         inputcmd.value(jackcommand);
 
     }
 
-    driversel.changed(this.update);
-    buffersel.changed(this.update);
-    sampleratesel.changed(this.update);
+    driversel.onChange = this.update;
+    buffersel.onChange = this.update;
+    sampleratesel.onChange = this.update;
 
     this.windowResize = function() {
         modlabel.style.left = cnvwidth+51 + "px";
@@ -296,29 +311,29 @@ function jackOptions() {
 
 
     this.show = function() {
-        modlabel.show()
-        onswitch.show();
-        inputcmd.show();
-        buffersel.show();
-        sampleratesel.show();
-        inputlabel.show();
-        buflabel.show();
-        srlabel.show();
-        driversel.show();
-        driverlabel.show();
+        modlabel.style.display = "block"
+        onswitch.style.display = "block";
+        inputcmd.style.display = "block";
+        buffersel.style.display = "block";
+        sampleratesel.style.display = "block";
+        inputlabel.style.display = "block";
+        buflabel.style.display = "block";
+        srlabel.style.display = "block";
+        driversel.style.display = "block";
+        driverlabel.style.display = "block";
     }
 
     this.hide = function() {
-        modlabel.hide()
-        onswitch.hide();
-        inputlabel.hide();
-        inputcmd.hide();
-        buffersel.hide();
-        sampleratesel.hide();
-        buflabel.hide();
-        srlabel.hide();
-        driversel.hide();
-        driverlabel.hide();
+        modlabel.style.display = "none"
+        onswitch.style.display = "none";
+        inputlabel.style.display = "none";
+        inputcmd.style.display = "none";
+        buffersel.style.display = "none";
+        sampleratesel.style.display = "none";
+        buflabel.style.display = "none";
+        srlabel.style.display = "none";
+        driversel.style.display = "none";
+        driverlabel.style.display = "none";
     }
 
     this.hide();
@@ -338,7 +353,7 @@ function mediaLibrary() {
     //modlabel.style.cssText ="fontSize:5; fontFamily:monospace; font-weight: bold; position:fixed; left:x0px; top:5%".replace('x0', cnvwidth+51));
 
 
-    let div = document.document.createElement('div');
+    let div = document.createElement('div');
     div.style.position = "fixed";
     div.style.font = "monospace";
     div.style.right = "0px";
@@ -351,7 +366,7 @@ function mediaLibrary() {
 
 
 
-    this.addItem = function(err, files) {  // THROWS ERROR ON COMPILATION!!!!!
+    this.addItem = function(err, files) {
         if (files != undefined) {
             for (let i = 0; i < files.length; i++) {
                 filebuttonlist[i] = new mediaButton(files[i])
@@ -387,16 +402,15 @@ function mediaLibrary() {
 
         };
         this.show = function() {
-            ;
-            middlebutton.show()
-            leftbutton.show()
-            rightbutton.show()
+            middlebutton.style.display = "block"
+            leftbutton.style.display = "block"
+            rightbutton.style.display = "block"
         }
 
         this.hide = function() {
-            middlebutton.hide();
-            leftbutton.hide()
-            rightbutton.hide()
+            middlebutton.style.display = "none";
+            leftbutton.style.display = "none"
+            rightbutton.style.display = "none"
         };
         this.windowResize = function() {
             img.style.left = "10px"
@@ -405,7 +419,7 @@ function mediaLibrary() {
             rightbutton.style.cssText ="right:x0px; height:32px; width:x1px".replace('x0', 0).replace('x1', 39);
 
         };
-        this.mousePressed = function() {
+        this.onclick = function() {
             boxes.push(new Component('input ./media/file 0.2'.replace('file', file), window.innerWidth/2, window.innerHeight/2-250));
         };
 
@@ -424,14 +438,14 @@ function mediaLibrary() {
 
 
         let leftbutton = document.createElement("BUTTON", '  ');
-        leftbutton.mousePressed(this.mousePressed);
+        //leftbutton.onclick = (this.onclick = );
         leftbutton.style.zIndex = "0";
 
         let middlebutton = document.createElement("BUTTON", file);;
-        middlebutton.mousePressed(this.mousePressed);
+        //middlebutton.onclick = (this.onclick = );
 
         let rightbutton = document.createElement("BUTTON", 'x');
-        rightbutton.mousePressed(this.deleteFile);
+        rightbutton.onclick = this.deleteFile;
 
 
         let img = new Image(10, 10);
@@ -440,9 +454,9 @@ function mediaLibrary() {
         img.style.left = '10px';
 
 
-        div.appendChild(rightbutton.elt);
-        div.appendChild(leftbutton.elt);
-        div.appendChild(middlebutton.elt);
+        div.appendChild(rightbutton);
+        div.appendChild(leftbutton);
+        div.appendChild(middlebutton);
         div.appendChild(img);
 
         this.hide();
@@ -455,18 +469,18 @@ function mediaLibrary() {
 
     this.show = function() {
         for (let i = 0; i < filebuttonlist.length; i++) {
-            filebuttonlist[i].show()
+            filebuttonlist[i].style.display = "block"
         }
         div.style.display = ""
-                            modlabel.show()
+                            modlabel.style.display = "block"
                             hidden = 0;
     }
     this.hide = function() {
         for (let i = 0; i < filebuttonlist.length; i++) {
-            filebuttonlist[i].hide()
+            filebuttonlist[i].style.display = "none"
         }
         div.style.display = "none"
-                            modlabel.hide()
+                            modlabel.style.display = "none"
                             hidden = 1;
     }
     this.windowresize = function() {
@@ -498,7 +512,8 @@ function haliteOptions() {
     let samplerates = [44100, 22050, 32000, 48000, 88200, 96000];
     let srenginesel = document.createElement("SELECT");
     srenginesel.style.cssText = "font-size:7; position:fixed; right:11px; top:60%";
-    srenginesel.size(100, 20);
+    srenginesel.style.width = "100"
+    srenginesel.style.height = "20"
 
 
     let sroutputlabel = document.createElement("div", 'File export sample rate:');
@@ -507,11 +522,12 @@ function haliteOptions() {
 
     let sroutputsel = document.createElement("SELECT");
     sroutputsel.style.cssText = "font-size:7; position:fixed; right:11px; top:68%";
-    sroutputsel.size(100, 20);
+    sroutputsel.style.width = "100"
+    sroutputsel.style.height = "20"
 
     for (let i = 0; i < samplerates.length; i++) {
-        srenginesel.option(samplerates[i]);
-        sroutputsel.option(samplerates[i]);
+        //srenginesel.option(samplerates[i]);
+        //sroutputsel.option(samplerates[i]);
     }
 
     let depths = [24, 8, 16, 32];
@@ -521,11 +537,12 @@ function haliteOptions() {
 
     let depthsel = document.createElement("SELECT");
     depthsel.style.cssText ="font-size:7; position:fixed; right:11px; top:76%";
-    depthsel.size(100, 20);
+    depthsel.style.width = "100"
+    depthsel.style.height = "20"
 
 
     for (let i = 0; i < depths.length; i++) {
-        depthsel.option(depths[i]);
+        //depthsel.option(depths[i]);
     }
 
     let formats = ['WAV', 'AIFF'];
@@ -535,24 +552,25 @@ function haliteOptions() {
 
     let formatsel = document.createElement("SELECT");
     formatsel.style.cssText ="font-size:7; position:fixed; right:11px; top:84%";
-    formatsel.size(100, 20);
+    formatsel.style.width = "100"
+    formatsel.style.height = "20"
 
     for (let i = 0; i < formats.length; i++) {
-        formatsel.option(formats[i]);
+        //formatsel.option(formats[i]);
     }
 
 
     this.update = function() {
-        halsettings[0] = srenginesel.value()
-                         halsettings[1] = sroutputsel.value()
-                                          halsettings[2] = depthsel.value()
-                                                  halsettings[3] = formatsel.value()
+        halsettings[0] = srenginesel.value
+                         halsettings[1] = sroutputsel.value
+                                          halsettings[2] = depthsel.value
+                                                  halsettings[3] = formatsel.value
     }
 
-    depthsel.changed(this.update);
-    formatsel.changed(this.update);
-    sroutputsel.changed(this.update);
-    srenginesel.changed(this.update);
+    depthsel.onChange = this.update;
+    formatsel.onChange = this.update;
+    sroutputsel.onChange = this.update;
+    srenginesel.onChange = this.update;
 
 
     this.windowResize = function() {
@@ -569,27 +587,27 @@ function haliteOptions() {
     }
 
     this.show = function()  {
-        modlabel.show()
-        srenginesel.show()
-        srenginelabel.show()
-        sroutputsel.show()
-        sroutputlabel.show()
-        depthsel.show()
-        depthlabel.show()
-        formatsel.show()
-        formatlabel.show()
+        modlabel.style.display = "block"
+        srenginesel.style.display = "block"
+        srenginelabel.style.display = "block"
+        sroutputsel.style.display = "block"
+        sroutputlabel.style.display = "block"
+        depthsel.style.display = "block"
+        depthlabel.style.display = "block"
+        formatsel.style.display = "block"
+        formatlabel.style.display = "block"
     }
 
     this.hide = function()  {
-        modlabel.hide()
-        srenginesel.hide()
-        srenginelabel.hide()
-        sroutputsel.hide()
-        sroutputlabel.hide()
-        depthsel.hide()
-        depthlabel.hide()
-        formatsel.hide()
-        formatlabel.hide()
+        modlabel.style.display = "none"
+        srenginesel.style.display = "none"
+        srenginelabel.style.display = "none"
+        sroutputsel.style.display = "none"
+        sroutputlabel.style.display = "none"
+        depthsel.style.display = "none"
+        depthlabel.style.display = "none"
+        formatsel.style.display = "none"
+        formatlabel.style.display = "none"
     }
 
     this.hide();
@@ -604,42 +622,47 @@ function codeBox() {
 
 
     let codebox = document.createElement('textarea', code);
-    codebox.elt.style.position = "fixed";
-    codebox.size(sbarwidth-70, window.innerHeight-149);
-    codebox.elt.style.top = "60px";
-    codebox.elt.style.right = "10px";
-    codebox.elt.style.resize = "none";
-    codebox.elt.style.display = "none";
+    codebox.style.position = "fixed";
+    codebox.style.width = sbarwidth-70
+    codebox.style.height =  window.innerHeight-149;
+    codebox.style.top = "60px";
+    codebox.style.right = "10px";
+    codebox.style.resize = "none";
+    codebox.style.display = "none";
 
     let coderefresh = document.createElement("BUTTON", 'Update code');
-    coderefresh.size(48, 32);
+    coderefresh.style.width = "48";
+    coderefresh.style.height = "32";
     coderefresh.style.cssText ="border:none; outline:none; font-size:7; color:white; background-color:#229FD7; position:fixed; width:60px; left:x0px; top:90%".replace('x0', cnvwidth+(sbarwidth/2)-50);
-    coderefresh.mousePressed(() => {
+    coderefresh.addEventListener("click", () => {
         precompile(0);
     });
 
     let coderun = document.createElement("BUTTON", 'Run code realtime');
-    coderun.size(48, 32);
+    coderun.style.width =  "48";
+    coderun.style.height = "32";
     coderun.style.cssText ="border:none; outline:none; font-size:7; color:white; background-color:#229FD7; position:fixed; width:60px; left:x0px; top:90%".replace('x0', cnvwidth+(sbarwidth/2)+0);
-    coderun.mousePressed(() => {
-        fs.writeFileSync("./precompile.hcl", codebox.value());
+    coderun.addEventListener("click", () => {
+        fs.writeFileSync("./precompile.hcl", codebox.value);
         startHalite(1);
     });
 
     let rendercode = document.createElement("BUTTON", 'Render code');
-    rendercode.size(48, 32);
+    rendercode.style.width = "48"
+    rendercode.style.height = "32";
     rendercode.style.cssText ="border:none; outline:none; font-size:7; color:white; background-color:#229FD7; position:fixed; width:60px; left:x0px; top:90%".replace('x0', cnvwidth+(sbarwidth/2)+50);
-    rendercode.mousePressed(() => {
-        fs.writeFileSync("./precompile.hcl", codebox.value());
+    rendercode.addEventListener("click", () => {
+        fs.writeFileSync("./precompile.hcl", codebox.value);
         startHalite(0);
     });
 
     this.value = function(val) {
-        codebox.value(val);
+        codebox.innerHTML = val;
     }
 
     this.windowResize = function() {
-        codebox.size(sbarwidth-70, window.innerHeight-149);
+        codebox.style.width = sbarwidth-70;
+        codebox.style.height = window.innerHeight-149;
         rendercode.style.cssText ="left:x0px;".replace('x0', cnvwidth+(sbarwidth/2)+70);
         coderun.style.cssText ="left:x0px;".replace('x0', cnvwidth+(sbarwidth/2)+0);
         coderefresh.style.cssText ="left:x0px;".replace('x0', cnvwidth+(sbarwidth/2)-70);
@@ -647,20 +670,20 @@ function codeBox() {
     }
 
     this.show = function()  {
-        codebox.elt.style.display = "";
-        rendercode.show();
-        coderun.show();
-        modlabel.show()
-        coderefresh.show();
+        codebox.style.display = "block";
+        rendercode.style.display = "block";
+        coderun.style.display = "block";
+        modlabel.style.display = "block"
+        coderefresh.style.display = "block";
     }
 
 
     this.hide = function()  {
-        codebox.elt.style.display = "none";
-        rendercode.hide();
-        coderun.hide();
-        coderefresh.hide();
-        modlabel.hide()
+        codebox.style.display = "none";
+        rendercode.style.display = "none";
+        coderun.style.display = "none";
+        coderefresh.style.display = "none";
+        modlabel.style.display = "none"
     }
 
     this.hide();

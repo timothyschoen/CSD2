@@ -147,33 +147,10 @@ let types = {
 let preset = ["ground", "output 0.3", 'input "./samples/sample-44k.wav" 0.2'];
 
 
-let boxesprox = []; // Where we store our components
-let connectionsprox = []; // Where we store our connections
-let connecting = -1; // Is any inlet currently in the connecting state?
 
 
 
-var arrayChangeHandler = {
-get:
-    function(target, property) {
-        // property is index in this case
-        return target[property];
-    },
-set:
-    function(target, property, value, receiver) {
-        target[property] = value;
-        if (property == 'length' && !initializing) {
-            // disabeled for now because it's too glitchy
-            //changed();
 
-        }
-        // you have to return true to accept the changes
-        return true;
-    }
-};
-
-var connections = new Proxy( connectionsprox, arrayChangeHandler );
-var boxes = new Proxy( boxesprox, arrayChangeHandler );
 
 let halite; // letiable for halite process
 
@@ -184,7 +161,7 @@ let sbar = new Sidebar; // Sidebar (see sidebar.js)
 
 
 
-let code = ''; // letiable to store code to use for exporting and displaying
+//let code = ''; // letiable to store code to use for exporting and displaying
 
 let draginstance = -1; // Is any component being dragged? -1 means no, otherwise it contains the index number
 
@@ -224,6 +201,7 @@ window.onbeforeunload = function() {
 process.on('SIGINT', window.onbeforeunload); // catch ctrl-c
 process.on('SIGTERM', window.onbeforeunload); // catch kill
 
+/*
 function preload() {
     //Fix for the indented closebutton on macOs, needed to make window draggable
     let windowTopBar = document.createElement('div');
@@ -233,7 +211,7 @@ function preload() {
     windowTopBar.style.top = windowTopBar.style.left = 0;
     windowTopBar.style.webkitAppRegion = "drag";
     document.body.appendChild(windowTopBar);
-}
+} */
 
 // Dragging and dropping files
 document.ondragover = document.ondrop = (ev) => {
@@ -296,17 +274,25 @@ let buttons = [];
     // set up main buttons at the bottom
     // I had to set up so many buttons throughout this program that using loops saves me hundreds of lines
     for (let i = 0; i < 3; i++) {
-        buttons[i] = createButton(buttonpresets[i][0])
-                     buttons[i].size(48, 48);
-        buttons[i].style("border-radius:100%; border:none; outline:none; font-size:15; color:white; background-color:#229FD7; position:fixed;  bottom:60px;  left:x0px;".replace("x0", (cnvwidth/2)+buttonpresets[i][1]));
-        buttons[i].mousePressed(buttonpresets[i][2]);
+        buttons[i] = document.createElement("BUTTON");
+        buttons[i].innerHTML = buttonpresets[i][0];
+        buttons[i].style.height =  "48";
+        buttons[i].style.width = "48";
+        buttons[i].style.cssText = "border-radius:100%; border:none; outline:none; font-size:15; color:white; background-color:#229FD7; position:fixed;  bottom:60px;  left:x0px;".replace("x0", (cnvwidth/2)+buttonpresets[i][1]);
+        buttons[i].addEventListener("click", buttonpresets[i][2]);
+        document.body.appendChild(buttons[i])
+
     }
     // Buttons at the top
     for (let i = 3; i < buttonpresets.length; i++) {
-        buttons[i] = createButton(buttonpresets[i][0])
-                     buttons[i].size(32, 32);
-        buttons[i].style("border-radius:100%; border:none; outline:none; font-size:15; color:white; background-color:#229FD7; position:fixed; top:10px; left:x0px; ".replace("x0", buttonpresets[i][1]));
-        buttons[i].mousePressed(buttonpresets[i][2]);
+        buttons[i] = document.createElement("BUTTON");
+        buttons[i].innerHTML = buttonpresets[i][0];
+        buttons[i].style.height =  "32";
+        buttons[i].style.width = "32";
+        buttons[i].style.cssText = "border-radius:100%; border:none; outline:none; font-size:15; color:white; background-color:#229FD7; position:fixed; top:10px; left:x0px; ".replace("x0", buttonpresets[i][1]);
+        buttons[i].addEventListener("click", buttonpresets[i][2]);
+        console.log(buttonpresets[i][2]);
+        document.body.appendChild(buttons[i])
     }
 
 
@@ -406,7 +392,7 @@ function precompile(save = 1) {
         let boxargs = boxes[i].getargs();
         let optargs = boxes[i].getoptargs();
         let itercode = types[boxtype]['code'];
-        let amtinlets = int(types[boxtype]['inlets']) + int(types[boxtype]['outlets']);
+        let amtinlets = parseInt(types[boxtype]['inlets']) + parseInt(types[boxtype]['outlets']);
         let inletconns = Array(amtinlets).fill([]);
         for(let x = 0; x < amtinlets; x++) {
             let target = JSON.stringify([i, x]);
@@ -464,7 +450,7 @@ function startHalite(realtime) {
 
     if(realtime && !realtime_playing && sbar.getJackStatus()) {
         haliteappendix = ['-r'];
-        buttons[1].style("color:red;");
+        buttons[1].style.color = "red";
     }
     else if (!realtime) {
         // If we are not running in realtime, get a path to save the wav/aif file
@@ -490,7 +476,7 @@ extensions: ['wav', 'aif']
         });
 
         halite.on('close', function (code) {
-            buttons[1].style("color:white;");
+            buttons[1].style.color = "white"
             console.log('Halite closed with code ' + code);
             realtime_playing = false;
         });
@@ -499,7 +485,7 @@ extensions: ['wav', 'aif']
 
     }
     else if (realtime_playing) {
-        buttons[1].style("color:white;");
+        buttons[1].style.color = "white";
         // hacky... but it works for now
         halite.kill('SIGINT')
         realtime_playing = false;
@@ -678,11 +664,6 @@ function unredo(step) {
 
 
 // Utility functions
-
-// Change array order (used to make sure ground is at 0)
-Array.prototype.move = function(from, to) {
-    this.splice(to, 0, this.splice(from, 1)[0]);
-};
 
 // Intersection of rectangles
 function intersect(aleft, aright, atop, abottom, bleft, bright, btop, bbottom) {
