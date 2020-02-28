@@ -2,6 +2,13 @@ let dialog = require('electron').remote.dialog;
 let fs = require("fs");
 const { spawn } = require('child_process');
 
+document.body.style.backgroundColor = "#505050";
+document.head.style.height = "1500px";
+
+new DragSelect({
+  selectables: document.getElementsByClassName('selectable-nodes')
+});
+
 // All our objects, plus the data that we need to convert it to halite
 let types = {
     // Halite standard components
@@ -146,12 +153,6 @@ let types = {
 
 let preset = ["ground", "output 0.3", 'input "./samples/sample-44k.wav" 0.2'];
 
-
-
-
-
-
-
 let halite; // letiable for halite process
 
 let realtime_playing = false; // Checks if we are playing in realtime
@@ -201,17 +202,6 @@ window.onbeforeunload = function() {
 process.on('SIGINT', window.onbeforeunload); // catch ctrl-c
 process.on('SIGTERM', window.onbeforeunload); // catch kill
 
-/*
-function preload() {
-    //Fix for the indented closebutton on macOs, needed to make window draggable
-    let windowTopBar = document.createElement('div');
-    windowTopBar.style.width = "100%";
-    windowTopBar.style.height = "20px";
-    windowTopBar.style.position = "fixed";
-    windowTopBar.style.top = windowTopBar.style.left = 0;
-    windowTopBar.style.webkitAppRegion = "drag";
-    document.body.appendChild(windowTopBar);
-} */
 
 // Dragging and dropping files
 document.ondragover = document.ondrop = (ev) => {
@@ -275,99 +265,17 @@ let buttons = [];
     // I had to set up so many buttons throughout this program that using loops saves me hundreds of lines
     for (let i = 0; i < 3; i++) {
         buttons[i] = document.createElement("BUTTON");
+
+
         buttons[i].innerHTML = buttonpresets[i][0];
-        buttons[i].style.height =  "48";
-        buttons[i].style.width = "48";
-        buttons[i].style.cssText = "border-radius:100%; border:none; outline:none; font-size:15; color:white; background-color:#229FD7; position:fixed;  bottom:60px;  left:x0px;".replace("x0", (cnvwidth/2)+buttonpresets[i][1]);
+        buttons[i].style.cssText = "border-radius:100%; border:none; outline:none; font-size:15; color:white; background-color:#303030; position:fixed;  bottom:60px;  left:x0px;".replace("x0", (cnvwidth/2)+buttonpresets[i][1]);
+        buttons[i].style.height =  "48px";
+        buttons[i].style.width = "48px";
+        buttons[i].style.zIndez = "5";
         buttons[i].addEventListener("click", buttonpresets[i][2]);
         document.body.appendChild(buttons[i])
 
     }
-    // Buttons at the top
-    for (let i = 3; i < buttonpresets.length; i++) {
-        buttons[i] = document.createElement("BUTTON");
-        buttons[i].innerHTML = buttonpresets[i][0];
-        buttons[i].style.height =  "32";
-        buttons[i].style.width = "32";
-        buttons[i].style.cssText = "border-radius:100%; border:none; outline:none; font-size:15; color:white; background-color:#229FD7; position:fixed; top:10px; left:x0px; ".replace("x0", buttonpresets[i][1]);
-        buttons[i].addEventListener("click", buttonpresets[i][2]);
-        console.log(buttonpresets[i][2]);
-        document.body.appendChild(buttons[i])
-    }
-
-
-/*
-function draw() {
-
-    background(255,255,255);
-
-    noStroke();
-
-    if(width < window.innerWidth) {
-        resizeCanvas(window.innerWidth, window.innerHeight);
-    }
-
-    //sbar.draw()
-
-
-    // TODO maybe make a mousedown function so we don't need to do this at every draw?
-    /*
-    if(mouseIsPressed && draginstance == -1 && !selecting) {
-        selecting = true;
-        selectX = mouseX;
-        selectY = mouseY;
-    }
-    else if(!mouseIsPressed && selecting) {
-        selecting = false;
-    }
-
-    // Making selections with a selection box
-    if (selecting) {
-        stroke(30);
-        fill(60, 60, 60, 40);
-        selwidth = mouseX-selectX;
-        selheight = mouseY-selectY
-                    let selrect = rect(selectX, selectY, selwidth, selheight);
-
-        for (let i = 0; i < boxes.length; i++) {
-            // Get size and position of all the components
-            // Might be inefficient??
-            let boxpos = boxes[i].getposition();
-            let boxsize = boxes[i].getsize();
-
-            // Selecting with a selection box
-            if (intersect(selectX, selectX+selwidth, selectY, selectY+selheight, boxpos[0], boxpos[0]+boxsize[0], boxpos[1], boxpos[1]+boxsize[1])) {
-                boxes[i].select()
-            }
-            else {
-                boxes[i].deselect()
-            }
-
-
-        }
-    }
-
-    (function($){
-    $.fn.disableSelection = function() {
-        return this
-        .attr('unselectable', 'on')
-        .css('user-select', 'none')
-        .on('selectstart dragstart', false);
-    };
-})(jQuery);
-
-
-
-    //Draw a line to the mouse while making the connection
-    if(connecting != -1) {
-        let linex = connecting[0].getinlets()[connecting[1]].getposition()[0];
-        let liney = connecting[0].getinlets()[connecting[1]].getposition()[1];
-        stroke(0)
-        line(linex, liney, mouseX, mouseY);
-    }
-    sbar.draw2();
-} */
-
 
 
 // Convert our line-based network into an electrical nodes network that Halite can interpret
@@ -548,7 +456,7 @@ function openSavedFile(path) {
 // Function for the 'load' button
 // Writes the path of the save to localStorage
 // Then we refresh to load it
-function loadfile(path) {
+function loadfile(e, path) {
     if (path == undefined) {
         var path = dialog.showOpenDialog({ properties: ['openFile', 'multiSelections'] });
     }
@@ -558,6 +466,7 @@ function loadfile(path) {
 }
 
 // Process keyboard commands and shortcuts
+
 document.addEventListener("keydown", function(event) {
     if(!typing) { //ignore shortcuts when typing
         switch(keyCode)
@@ -619,7 +528,8 @@ function windowResized() {
     resizeCanvas(window.innerWidth, window.innerHeight);
     sbar.windowresize();
     for (let i = 0; i < 3; i++) {
-        buttons[i].style("left:x0px;".replace("x0", (cnvwidth/2)+buttonpresets[i][1]));
+
+        buttons[i].style.cssText = "left:x0px;".replace("x0", (cnvwidth/2)+buttonpresets[i][1]);
     }
 
 }

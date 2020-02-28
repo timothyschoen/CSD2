@@ -2,11 +2,11 @@
 // Might split out some components into other files as well...
 
 // Seperator lines
-let seperator1, seperator2;
+let bar;
 
 let onswitch;
-let sbarwidth = 300;
-let cnvwidth; // Width of our canvas without the sidebar
+sbarwidth = 350;
+let cnvwidth = window.innerWidth-300; // Width of our canvas without the sidebar
 
 let code = '';
 
@@ -18,25 +18,27 @@ function Sidebar() {
     let sbaroffset, sbardragging; // variables for our dragging feature
     let _this = this;
 
-    // Do this in html because it's lighter and responds to resizes better
-    seperator1 = document.createElement('hr');
-    seperator1.style.position = "fixed";
-    seperator1.style.height = "0px";
-    seperator1.style.width = window.innerHeight-35 + "px";
-    seperator1.style.background = "#FFFFFf";
-    seperator1.style.top = "10px";
-    seperator1.style.right = sbarwidth-40 + "px";
+    let bg = document.createElement("div");
+    bg.style.position = "fixed";
+    bg.style.width = sbarwidth-20 + 'px';
+    bg.style.height = window.innerHeight + "px";
+    bg.style.background = "#444";
+    bg.style.top = "0px";
+    bg.style.right = "0px";
+    bg.style.zIndex = "0";
+    document.body.appendChild(bg);
 
+    let bar = document.createElement("div");
+    bar.style.position = "fixed";
+    bar.style.width = "30px";
+    bar.style.height = window.innerHeight + "px";
+    bar.style.background = "#333";
+    bar.style.top = "0px";
+    bar.style.right = sbarwidth-40 + "px";
+    bar.style.zIndex = "0";
+    bg.appendChild(bar);
 
-
-    seperator2 = document.createElement('hr');
-    seperator1.style.position = "fixed";
-    seperator1.style.height = "0px";
-    seperator1.style.width = window.innerHeight-35 + "px";
-    seperator1.style.background = "#FFFFFF";
-    seperator1.style.top = "10px";
-    seperator1.style.right = sbarwidth-10 + "px";
-
+    dragElement(bar, this);
 
     // label for the console
     let modlabel = document.createElement("div");
@@ -47,8 +49,9 @@ function Sidebar() {
     modlabel.style.fontSize = "5";
     modlabel.style.fontFamily = "monospace";
     modlabel.style.fontWeight = "bold";
+    document.body.appendChild(modlabel);
 
-  //  modlabel.style.cssText ="fontSize:5; fontFamily:monospace; font-weight: bold; position:fixed; left:x0px; top:5%".replace('x0', cnvwidth+51));
+  //  modlabel.style.cssText ="fontSize:5; font-family:monospace; font-weight: bold; position:fixed; left:x0px; top:5%".replace('x0', cnvwidth+51));
     //modlabel.style.display = "none";
 
     //Console logviewer object created in console-viewer.js!
@@ -73,6 +76,7 @@ function Sidebar() {
             buttons[0].textContent = "<";
             hidden = 1;
             sbarwidth = 38;
+            cnvwidth = window.innerWidth-sbarwidth
             _this.windowresize();
         }
         else {
@@ -81,10 +85,10 @@ function Sidebar() {
                 tab = 2;
             }
             sbarwidth = 350;
+            cnvwidth = window.innerWidth-sbarwidth
             hidden = 0;
             _this.windowresize();
         }
-        // , modlabel], [medialib , [logviewer]
         let tabs = [[], [jackoptions, haliteoptions], [codebox], [medialib], [logviewer]];
         for (var i = 0; i < 5; i++) {
             if (i != tab) {
@@ -94,45 +98,50 @@ function Sidebar() {
         if (tab != 0) {
             tabs[tab].forEach((t) => t.show());
         }
+
+        //this.windowresize();
     }
 
     let buttonpresets = [['>', 4, function() {
         showTab(0)
-    }], ['J', 43, function() {
+    }], ['J', 44, function() {
         showTab(1)
     }],
     ['C', 50, function() {
              showTab(2)
-    }], ['E', 57, function() {
+    }], ['E', 56, function() {
         showTab(4)
     }],
-    ['M', 64, function() {
+    ['M', 62, function() {
              showTab(3)
          }]];
     let buttons = [];
 
     for (let i = 0; i < buttonpresets.length; i++) {
-        buttons[i] = document.createElement("BUTTON", buttonpresets[i][0])
-                     buttons[i].style.width = "22";
-                     buttons[i].style.height = "22";
-        buttons[i].style.cssText = "border-radius:100%; border:none; outline:none; font-size:7; text-align:left; color:white; background-color:#229FD7; position:fixed; right:x0px; top:x1%;".replace('x0', sbarwidth-34).replace('x1', buttonpresets[i][1]);
+        buttons[i] = document.createElement("BUTTON");
+        buttons[i].innerHTML = buttonpresets[i][0];
+        buttons[i].style.cssText = "border:none; outline:none; font-size:7; text-align:center; color:white; background-color:#202020; position:absolute; right:0px; top:x1%;".replace('x0', sbarwidth-38).replace('x1', buttonpresets[i][1]);
+        buttons[i].style.width = "28px";
+        buttons[i].style.height = "27px";
         buttons[i].addEventListener("click", buttonpresets[i][2]);
-        document.body.appendChild(buttons[i])
+        bar.appendChild(buttons[i])
     }
 
 
     this.windowresize = function() {
-        cnvwidth = window.innerWidth-sbarwidth;
 
-        seperator1.style.cssText = "right:x0px; ".replace('x0', sbarwidth-40);
-        seperator1.style.width =  "0";
-        seperator1.style.height = window.innerHeight-35;
-        seperator2.style.cssText ="right:x0px".replace('x0', sbarwidth-10);
-        seperator2.style.width = "0";
-        seperator2.style.height = window.innerHeight-35;
+        bar.style.left = cnvwidth + "px";
+        bar.style.height = window.innerHeight + "px";
+
+        bg.style.right = "0px";
+        bg.style.height = window.innerHeight + "px";
+        bg.style.width = sbarwidth-20 + "px";
+
         for (let i = 0; i < buttons.length; i++) {
-          buttons[i].style.cssText = "border-radius:100%; border:none; outline:none; font-size:7; text-align:left; color:white; background-color:#229FD7; position:fixed; right:x0px; top:x1%;".replace('x0', sbarwidth-34).replace('x1', buttonpresets[i][1]);
-
+          buttons[i].style.top = buttonpresets[i][1] + "%";
+          //buttons[i].style.right =  sbarwidth-38 + "px"
+          buttons[i].style.width = "28px";
+          buttons[i].style.height = "27px";
             //buttons[i].style.cssText ="right:x0px;".replace('x0', sbarwidth-34);
         }
 
@@ -156,111 +165,104 @@ function Sidebar() {
     this.getJackStatus = function() {
         return jackstatus;
     }
-
-    this.draw = function() {
-        if (mouseX > cnvwidth && mouseX < cnvwidth + 30 && draginstance == -1) {
-            if(mouseIsPressed) {
-                sbaroffset = cnvwidth - mouseX;
-                sbardragging = true;
-            }
-            else if (sbardragging || draginstance != -1) {
-                sbardragging = false;
-            }
-        }
-
-        if (sbardragging && draginstance == -1) {
-            sbarwidth = window.innerWidth - (mouseX + sbaroffset);
-            textformat = new RegExp("(.{" + int((sbarwidth/9)-3).toString() + "})", "g");
-            if(sbarwidth < 250) {
-                sbarwidth = 250
-            }
-            windowResized();
-
-        }
-
-    }
-    this.draw2 = function() {
-        let xscrollOffset = window.pageXOffset;
-        let yscrollOffset = window.pageYOffset*2;
-        fill(255);
-        noStroke()
-        rect(cnvwidth+xscrollOffset, yscrollOffset, sbarwidth, height);
+  }
 
 
-    }
-}
 
 function jackOptions() {
     let jack;
 
     let modlabel = document.createElement("div", 'Jack Settings:');
-    modlabel.style.cssText = "fontSize:5; fontFamily:monospace; font-weight: bold; position:fixed; left:x0px; top:5%".replace('x0', cnvwidth+51);
+    modlabel.style.cssText = "fontSize:5; font-family:monospace; font-weight: bold; position:fixed; left:x0px; top:5%".replace('x0', cnvwidth+51);
+    document.body.appendChild(modlabel);
 
-
-    let driverlabel = document.createElement("div", 'Driver:');
-    driverlabel.style.cssText ="fontSize:3; fontFamily:monospace; position:fixed; left:x0px; top:10.5%".replace('x0', cnvwidth+51)
+    let driverlabel = document.createElement("div");
+    driverlabel.innerHTML = 'Driver:';
+    driverlabel.style.cssText ="fontSize:3; font-family:monospace; position:fixed; left:x0px; top:10.5%".replace('x0', cnvwidth+51)
+    document.body.appendChild(driverlabel);
 
     let driverlist = ['coreaudio', 'alsa', 'portaudio'];
     let driversel = document.createElement("SELECT");
-    driversel.style.cssText ="font-size:7; position:fixed; right:11px; top:10%";
-    driversel.style.width = "100"
-    driversel.style.height = "20"
+    driversel.style.cssText = "font-size:7; position:fixed; right:11px; top:10%";
+    driversel.style.width = "100px"
+    driversel.style.height = "20px"
+    document.body.appendChild(driversel);
 
     for (let i = 0; i < driverlist.length; i++) {
-        //driversel.option(driverlist[i])
+      let opt = document.createElement('option');
+      opt.appendChild( document.createTextNode(driverlist[i]));
+      opt.value = driverlist[i];
+      driversel.appendChild(opt);
     }
 
 
-    let srlabel = document.createElement("div", 'Sample rate:');
-    srlabel.style.cssText ="fontSize:3; fontFamily:monospace; position:fixed; left:x0px; top:18.5%".replace('x0', cnvwidth+51);
+    let srlabel = document.createElement("div");
+    srlabel.innerHTML = 'Sample rate:';
+    srlabel.style.cssText ="fontSize:3; font-family:monospace; position:fixed; left:x0px; top:18.5%".replace('x0', cnvwidth+51);
+    document.body.appendChild(srlabel);
 
     let samplesrates = [44100, 22050, 32000, 48000, 88200, 96000];
     let sampleratesel = document.createElement("SELECT");
     sampleratesel.style.cssText ="font-size:7; position:fixed; right:11px; top:18%";
-    sampleratesel.style.width = "100"
-    sampleratesel.style.height = "20"
+    sampleratesel.style.width = "100px"
+    sampleratesel.style.height = "20px"
+    document.body.appendChild(sampleratesel);
 
 
     for (let i = 0; i < samplesrates.length; i++) {
-        //sampleratesel.option(samplesrates[i])
+      let opt = document.createElement('option');
+      opt.appendChild( document.createTextNode(samplesrates[i]));
+      opt.value = samplesrates[i];
+      sampleratesel.appendChild(opt);
     }
 
-    let buflabel = document.createElement("div", 'Buffer size:');
-    buflabel.style.cssText ="fontSize:3; fontFamily:monospace; position:fixed; left:x0px; top:26.5%".replace('x0', cnvwidth+51);
+    let buflabel = document.createElement("div");
+    buflabel.innerHTML = 'Buffer size:';
+    buflabel.style.cssText ="fontSize:3; font-family:monospace; position:fixed; left:x0px; top:26.5%".replace('x0', cnvwidth+51);
+    document.body.appendChild(buflabel);
 
     let bufsizes = [4096, 256, 512, 1024, 2048];
     let buffersel = document.createElement("SELECT");
     buffersel.style.cssText = "font-size:7; position:fixed; right:11px; top:26%";
-    buffersel.style.width = "100"
-    buffersel.style.height = "20"
+    buffersel.style.width = "100px"
+    buffersel.style.height = "20px"
+    document.body.appendChild(buffersel);
 
     for (let i = 0; i < bufsizes.length; i++) {
-        //buffersel.option(bufsizes[i])
+      let opt = document.createElement('option');
+      opt.appendChild( document.createTextNode(bufsizes[i]));
+      opt.value = bufsizes[i];
+      buffersel.appendChild(opt);
     }
 
     let jackcommand = 'jackd' + ' -d'+driversel.value + ' -r'+sampleratesel.value + ' -p'+buffersel.value;
 
 
-    let inputlabel = document.createElement("div", 'Command:');
-    inputlabel.style.cssText ="fontSize:3; fontFamily:monospace; position:fixed; left:x0px; top:35%".replace('x0', cnvwidth+51);
+    let inputlabel = document.createElement("div");
+    inputlabel.innerHTML =  'Command:';
+    inputlabel.style.cssText ="fontSize:3; font-family:monospace; position:fixed; left:x0px; top:35%".replace('x0', cnvwidth+51);
+    document.body.appendChild(inputlabel);
+
     let inputcmd = document.createElement("INPUT");
     inputcmd.style.cssText ="font-size:7; position:fixed; right:11px; top:34%";
-    inputcmd.style.width = sbarwidth-150;
-    inputcmd.style.height = "20";
+    inputcmd.style.width = sbarwidth-150 + "px";
+    inputcmd.style.height = "20px";
+    document.body.appendChild(inputcmd);
 
-    onswitch = document.createElement("BUTTON", 'OFF');
-    onswitch.style.width = "48";
-    onswitch.style.height = "32";
-    onswitch.style.cssText = "border:none; outline:none; font-size:7; color:white; background-color:#229FD7; position:fixed; left:x0px; top:42%".replace('x0', cnvwidth+(sbarwidth/2));
+    onswitch = document.createElement("BUTTON");
+    onswitch.style.cssText = "border:none; outline:none; font-size:7; color:white; background-color:#303030; position:fixed; left:x0px; top:42%".replace('x0', cnvwidth+(sbarwidth/2));
+    onswitch.style.width = "48px";
+    onswitch.style.height = "32px";
+    onswitch.innerHTML = "OFF";
     onswitch.addEventListener("click", () => {
         if (jackstatus == 1) {
             jack.kill('SIGINT');
-            onswitch.textContent = "OFF";
+            onswitch.innerHTML = "OFF";
         }
         else {
             let splitcmd = inputcmd.value.split(' ');
             jack = spawn(splitcmd[0], splitcmd.slice(1));
-            onswitch.textContent = "ON";
+            onswitch.innerHTML = "ON";
             jack.stdout.on('data', function (data) {
                 console.log('Jack: ' + data);
             });
@@ -271,7 +273,7 @@ function jackOptions() {
 
             jack.on('close', function (code) {
                 jackstatus = 0;
-                onswitch.textContent = 'OFF'
+                onswitch.innerHTML = 'OFF'
                                            console.log('Jack closed with code ' + code);
                 if (code) {
                     console.warn('Jack has crashed');
@@ -283,29 +285,32 @@ function jackOptions() {
         }
         jackstatus = !jackstatus;
     });
+    document.body.appendChild(onswitch);
 
     this.update = function() {
         jackcommand = 'jackd' + ' -d'+driversel.value + ' -r'+sampleratesel.value + ' -p'+buffersel.value;
-        inputcmd.value(jackcommand);
+        inputcmd.value = jackcommand;
+        inputcmd.innerHTML = jackcommand;
 
     }
 
-    driversel.onChange = this.update;
-    buffersel.onChange = this.update;
-    sampleratesel.onChange = this.update;
+    driversel.onchange = this.update;
+    buffersel.onchange = this.update;
+    sampleratesel.onchange = this.update;
 
     this.windowResize = function() {
-        modlabel.style.left = cnvwidth+51 + "px";
-        onswitch.style.cssText ="left:x0px;".replace('x0', cnvwidth+(sbarwidth/2));
-        inputcmd.style.cssText ="width:x0px;".replace('x0', sbarwidth-180);
-        inputlabel.style.cssText ="left:x0px;".replace('x0', cnvwidth+51);
 
-        driversel.style.cssText ="width:x0px;".replace('x0', sbarwidth-180);
-        sampleratesel.style.cssText ="width:x0px;".replace('x0', sbarwidth-180);
-        srlabel.style.cssText ="left:x0px;".replace('x0', cnvwidth+51);
-        driverlabel.style.cssText ="left:x0px;".replace('x0', cnvwidth+51);
-        buflabel.style.cssText ="left:x0px;".replace('x0', cnvwidth+51);
-        buffersel.style.cssText ="width:x0px;".replace('x0', sbarwidth-180);
+        modlabel.style.left = cnvwidth+51 + "px";
+        onswitch.style.left = cnvwidth+(sbarwidth/2) + "px";
+        inputcmd.style.width  = sbarwidth-180 + "px";
+        inputlabel.style.left = cnvwidth+51 + "px";
+
+        driversel.style.width = sbarwidth-180 + "px";
+        sampleratesel.style.width = sbarwidth-180 + "px";
+        srlabel.style.left = cnvwidth+51 + "px";
+        driverlabel.style.left = cnvwidth+51 + "px"
+        buflabel.style.left = cnvwidth+51 + "px";
+        buffersel.style.width = sbarwidth-180 + "px";
     }
 
 
@@ -349,8 +354,9 @@ function mediaLibrary() {
 
     let __this = this;
 
-    let modlabel = document.createElement("div", 'Media Library:');
-    //modlabel.style.cssText ="fontSize:5; fontFamily:monospace; font-weight: bold; position:fixed; left:x0px; top:5%".replace('x0', cnvwidth+51));
+    let modlabel = document.createElement("div");
+    modlabel.innerHTML = 'Media Library:';
+    //modlabel.style.cssText ="fontSize:5; font-family:monospace; font-weight: bold; position:fixed; left:x0px; top:5%".replace('x0', cnvwidth+51));
 
 
     let div = document.createElement('div');
@@ -358,10 +364,10 @@ function mediaLibrary() {
     div.style.font = "monospace";
     div.style.right = "0px";
     div.style.top = "55px";
-    div.style.height = (window.innerHeight-70).toString()+'px'
-                       div.style.width = (sbarwidth-39).toString()+'px'
+    div.style.height = (window.innerHeight-70) +'px'
+                       div.style.width = sbarwidth-30 +'px'
                                          div.style.overflow = "auto";
-    div.style.background = "white";
+    div.style.background = "#444";
 
 
 
@@ -394,12 +400,12 @@ function mediaLibrary() {
         this.style = function() {
             let top = filebuttonlist.indexOf(_this)
 
-                      img.style.top = (11+(32*top)).toString() + "px";
+            img.style.top = (11+(32*top)) + "px";
             img.style.right = "50px"
-            middlebutton.style.cssText ="border:none; outline:none; font-size:7; text-align:left; color:white; background-color:x3; position:absolute; left:x0px; top:x2px; width:x1px; height:32px;".replace('x0', 30).replace('x1', sbarwidth-100).replace('x2', top*32).replace('x3', ['#229FD7', '#0094d6'][top%2]);
-            leftbutton.style.cssText ="border:none; outline:none; font-size:7; text-align:left; color:white; background-color:x3; position:absolute; left:x0px; top:x2px; width:x1px; height:32px;".replace('x0', 0).replace('x1', 30).replace('x2', top*32).replace('x3', ['#229FD7', '#0094d6'][top%2]);
-            rightbutton.style.cssText ="border:none; outline:none; font-size:7; text-align:center; color:white; background-color:x3; position:absolute; right:x0px; top:x2px; width:x1px; height:32px;".replace('x0', 0).replace('x1', 39).replace('x2', top*32).replace('x3', ['#229FD7', '#0094d6'][top%2]);
-
+            middlebutton.style.cssText ="border:none; outline:none; font-size:7; text-align:left; color:white; background-color:x3; position:absolute; left:32px; top:x2px; width:x1px; height:32px;".replace('x0', 30).replace('x1', sbarwidth-95).replace('x2', top*32).replace('x3', ['#303030', '#0094d6'][top%2]);
+            middlebutton.innerHTML = file;
+            leftbutton.style.cssText ="border:none; outline:none; font-size:7; text-align:left; color:white; background-color:x3; position:absolute; left:0px; top:x2px; width:32px; height:32px;".replace('x1', 30).replace('x2', top*32).replace('x3', ['#303030', '#0094d6'][top%2]);
+            rightbutton.style.cssText ="border:none; outline:none; font-size:7; text-align:center; color:white; background-color:x3; position:absolute; right:0px; top:x2px; width:x1px; height:32px;".replace('x1', 39).replace('x2', top*32).replace('x3', ['#303030', '#0094d6'][top%2]);
         };
         this.show = function() {
             middlebutton.style.display = "block"
@@ -414,9 +420,8 @@ function mediaLibrary() {
         };
         this.windowResize = function() {
             img.style.left = "10px"
-                             middlebutton.style.cssText ="left:x0px; width:x1px; height:32px".replace('x0', 30).replace('x1', sbarwidth-100);
-            leftbutton.style.cssText ="left:x0px; height:32px; width:x1px".replace('x0', 0).replace('x1', 30);
-            rightbutton.style.cssText ="right:x0px; height:32px; width:x1px".replace('x0', 0).replace('x1', 39);
+            middlebutton.style.width = sbarwidth-100 + "px";
+
 
         };
         this.onclick = function() {
@@ -438,14 +443,15 @@ function mediaLibrary() {
 
 
         let leftbutton = document.createElement("BUTTON", '  ');
-        //leftbutton.onclick = (this.onclick = );
+        leftbutton.onclick = this.onclick;
         leftbutton.style.zIndex = "0";
 
         let middlebutton = document.createElement("BUTTON", file);;
-        //middlebutton.onclick = (this.onclick = );
+        middlebutton.onclick = this.onclick;
 
-        let rightbutton = document.createElement("BUTTON", 'x');
+        let rightbutton = document.createElement("BUTTON");
         rightbutton.onclick = this.deleteFile;
+        rightbutton.innerHTML = 'x';
 
 
         let img = new Image(10, 10);
@@ -461,9 +467,8 @@ function mediaLibrary() {
 
         this.hide();
 
-
-    }
     document.body.appendChild(div);
+  }
 
 
 
@@ -487,9 +492,9 @@ function mediaLibrary() {
         for (let i = 0; i < filebuttonlist.length; i++) {
             filebuttonlist[i].windowResize();
         }
-        //modlabel.style.cssText ="left:x0px;".replace('x0', cnvwidth+51));
+        modlabel.style.left = cnvwidth+51 + "px";
         div.style.height = (window.innerHeight-70).toString()+'px'
-                           div.style.width = (sbarwidth-39).toString()+'px'
+                           div.style.width = sbarwidth-30 +'px'
                                              div.scrollTop = div.scrollHeight+200;
 
 
@@ -499,64 +504,88 @@ function mediaLibrary() {
     this.update();
     this.hide()
 
-
 }
 
 function haliteOptions() {
-    let modlabel = document.createElement("div", 'Halite Settings:');
-    //modlabel.style.cssText ="fontSize:5; fontFamily:monospace; font-weight: bold; position:fixed; left:x0px; top:53%".replace('x0', cnvwidth+51));
+    let modlabel = document.createElement("div");
+    modlabel.innerHTML = 'Halite Settings:';
+    document.body.appendChild(modlabel);
+    //modlabel.style.cssText ="fontSize:5; font-family:monospace; font-weight: bold; position:fixed; left:x0px; top:53%".replace('x0', cnvwidth+51));
 
-    let srenginelabel = document.createElement("div", 'Halite engine sample rate:');
-    srenginelabel.style.cssText ="fontSize:3; fontFamily:monospace; position:fixed; left:x0px; top:60.5%".replace('x0', cnvwidth+51)
+    let srenginelabel = document.createElement("div");
+    srenginelabel.innerHTML = 'Halite engine sample rate:';
+    srenginelabel.style.cssText ="fontSize:3; font-family:monospace; position:fixed; left:x0px; top:60.5%".replace('x0', cnvwidth+51);
+    document.body.appendChild(srenginelabel);
 
     let samplerates = [44100, 22050, 32000, 48000, 88200, 96000];
     let srenginesel = document.createElement("SELECT");
     srenginesel.style.cssText = "font-size:7; position:fixed; right:11px; top:60%";
-    srenginesel.style.width = "100"
-    srenginesel.style.height = "20"
+    srenginesel.style.width = "100px"
+    srenginesel.style.height = "20px"
+    document.body.appendChild(srenginesel);
 
 
-    let sroutputlabel = document.createElement("div", 'File export sample rate:');
-    sroutputlabel.style.cssText ="fontSize:3; fontFamily:monospace; position:fixed; left:x0px; top:68.5%".replace('x0', cnvwidth+51);
-
+    let sroutputlabel = document.createElement("div");
+    sroutputlabel.style.cssText ="fontSize:3; font-family:monospace; position:fixed; left:x0px; top:68.5%".replace('x0', cnvwidth+51);
+    sroutputlabel.innerHTML =  'File export sample rate:';
+    document.body.appendChild(sroutputlabel);
 
     let sroutputsel = document.createElement("SELECT");
     sroutputsel.style.cssText = "font-size:7; position:fixed; right:11px; top:68%";
-    sroutputsel.style.width = "100"
-    sroutputsel.style.height = "20"
+    sroutputsel.style.width = "100px"
+    sroutputsel.style.height = "20px"
+    document.body.appendChild(sroutputsel);
 
     for (let i = 0; i < samplerates.length; i++) {
-        //srenginesel.option(samplerates[i]);
-        //sroutputsel.option(samplerates[i]);
+      let opt = document.createElement('option');
+      opt.appendChild( document.createTextNode(samplerates[i]));
+      opt.value = samplerates[i];
+
+      let opt2 = document.createElement('option');
+      opt2.appendChild( document.createTextNode(samplerates[i]));
+      opt2.value = samplerates[i];
+      srenginesel.appendChild(opt);
+      sroutputsel.appendChild(opt2);
     }
 
     let depths = [24, 8, 16, 32];
 
-    let depthlabel = document.createElement("div", 'File export bit depth:');
-    depthlabel.style.cssText ="fontSize:3; fontFamily:monospace; position:fixed; left:x0px; top:76.5%".replace('x0', cnvwidth+51);
+    let depthlabel = document.createElement("div");
+    depthlabel.style.cssText ="fontSize:3; font-family:monospace; position:fixed; left:x0px; top:76.5%".replace('x0', cnvwidth+51);
+    depthlabel.innerHTML = 'File export bit depth:';
+    document.body.appendChild(depthlabel);
 
     let depthsel = document.createElement("SELECT");
     depthsel.style.cssText ="font-size:7; position:fixed; right:11px; top:76%";
-    depthsel.style.width = "100"
-    depthsel.style.height = "20"
-
+    depthsel.style.width = "100px"
+    depthsel.style.height = "20px"
+    document.body.appendChild(depthsel);
 
     for (let i = 0; i < depths.length; i++) {
-        //depthsel.option(depths[i]);
+      let opt = document.createElement('option');
+      opt.appendChild( document.createTextNode(depths[i]));
+      opt.value = depths[i];
+      depthsel.appendChild(opt);
     }
 
     let formats = ['WAV', 'AIFF'];
 
-    let formatlabel = document.createElement("div", 'Export format:');
-    formatlabel.style.cssText ="fontSize:3; fontFamily:monospace; position:fixed; left:x0px; top:84.5%".replace('x0', cnvwidth+51);
+    let formatlabel = document.createElement("div");
+    formatlabel.style.cssText ="fontSize:3; font-family:monospace; position:fixed; left:x0px; top:84.5%".replace('x0', cnvwidth+51);
+    formatlabel.innerHTML = 'Export format:';
+    document.body.appendChild(formatlabel);
 
     let formatsel = document.createElement("SELECT");
     formatsel.style.cssText ="font-size:7; position:fixed; right:11px; top:84%";
-    formatsel.style.width = "100"
-    formatsel.style.height = "20"
+    formatsel.style.width = "100px";
+    formatsel.style.height = "20px";
+    document.body.appendChild(formatsel);
 
     for (let i = 0; i < formats.length; i++) {
-        //formatsel.option(formats[i]);
+      let opt = document.createElement('option');
+      opt.appendChild( document.createTextNode(formats[i]));
+      opt.value = formats[i];
+      formatsel.appendChild(opt);
     }
 
 
@@ -567,22 +596,25 @@ function haliteOptions() {
                                                   halsettings[3] = formatsel.value
     }
 
-    depthsel.onChange = this.update;
-    formatsel.onChange = this.update;
-    sroutputsel.onChange = this.update;
-    srenginesel.onChange = this.update;
+    depthsel.onchange = this.update;
+    formatsel.onchange = this.update;
+    sroutputsel.onchange = this.update;
+    srenginesel.onchange = this.update;
 
 
     this.windowResize = function() {
-        modlabel.style.cssText = "left:x0px;".replace('x0', cnvwidth+51);
-        srenginesel.style.cssText = "width:x0px;".replace('x0', sbarwidth-280);
-        srenginelabel.style.cssText = "left:x0px;".replace('x0', cnvwidth+51);
-        sroutputsel.style.cssText = "width:x0px;".replace('x0', sbarwidth-280);
-        sroutputlabel.style.cssText = "left:x0px;".replace('x0', cnvwidth+51);
-        depthsel.style.cssText = "width:x0px;".replace('x0', sbarwidth-280);
-        depthlabel.style.cssText = "left:x0px;".replace('x0', cnvwidth+51);
-        formatsel.style.cssText = "width:x0px;".replace('x0', sbarwidth-280);
-        formatlabel.style.cssText = "left:x0px;".replace('x0', cnvwidth+51);
+
+
+
+        modlabel.style.left = cnvwidth+51 + "px";
+        srenginesel.style.width = sbarwidth-280 + "px";
+        srenginelabel.style.left = cnvwidth+51+ "px";
+        sroutputsel.style.width = sbarwidth-280 + "px";
+        sroutputlabel.style.left = cnvwidth+51 + "px";
+        depthsel.style.width = sbarwidth-280 + "px";
+        depthlabel.style.left = cnvwidth+51 + "px";
+        formatsel.style.width = sbarwidth-280 + "px";
+        formatlabel.style.left = cnvwidth+51 + "px";
 
     }
 
@@ -618,55 +650,62 @@ function haliteOptions() {
 function codeBox() {
 
     let modlabel = document.createElement("div", 'Code editor:');
-    modlabel.style.cssText ="fontSize:5; fontFamily:monospace; font-weight: bold; position:fixed; left:x0px; top:5%".replace('x0', cnvwidth+51);
+    modlabel.style.cssText ="fontSize:5; font-family:monospace; font-weight: bold; position:fixed; left:x0px; top:5%".replace('x0', cnvwidth+51);
 
 
     let codebox = document.createElement('textarea', code);
     codebox.style.position = "fixed";
-    codebox.style.width = sbarwidth-70
-    codebox.style.height =  window.innerHeight-149;
+    codebox.style.width = sbarwidth-10 + "px";
+    codebox.style.height =  window.innerHeight-149 + "px";
     codebox.style.top = "60px";
     codebox.style.right = "10px";
     codebox.style.resize = "none";
     codebox.style.display = "none";
+    document.body.appendChild(codebox);
 
-    let coderefresh = document.createElement("BUTTON", 'Update code');
-    coderefresh.style.width = "48";
-    coderefresh.style.height = "32";
-    coderefresh.style.cssText ="border:none; outline:none; font-size:7; color:white; background-color:#229FD7; position:fixed; width:60px; left:x0px; top:90%".replace('x0', cnvwidth+(sbarwidth/2)-50);
+    let coderefresh = document.createElement("BUTTON");
+    coderefresh.style.cssText ="border:none; outline:none; font-size:7; color:white; background-color:#303030; position:fixed; width:60px; left:x0px; top:90%".replace('x0', cnvwidth+(sbarwidth/2)-50);
+    coderefresh.style.width = "52px";
+    coderefresh.style.height = "32px";
+    coderefresh.innerHTML = 'Update code'
     coderefresh.addEventListener("click", () => {
         precompile(0);
     });
+    document.body.appendChild(coderefresh);
 
-    let coderun = document.createElement("BUTTON", 'Run code realtime');
-    coderun.style.width =  "48";
-    coderun.style.height = "32";
-    coderun.style.cssText ="border:none; outline:none; font-size:7; color:white; background-color:#229FD7; position:fixed; width:60px; left:x0px; top:90%".replace('x0', cnvwidth+(sbarwidth/2)+0);
+    let coderun = document.createElement("BUTTON");
+    coderun.style.cssText = "border:none; outline:none; font-size:7; color:white; background-color:#303030; position:fixed; width:60px; left:x0px; top:90%".replace('x0', cnvwidth+(sbarwidth/2)+0);
+    coderun.style.width =  "52px";
+    coderun.style.height = "32px";
+    coderun.innerHTML = 'Run realtime';
     coderun.addEventListener("click", () => {
         fs.writeFileSync("./precompile.hcl", codebox.value);
         startHalite(1);
     });
+    document.body.appendChild(coderun);
 
-    let rendercode = document.createElement("BUTTON", 'Render code');
-    rendercode.style.width = "48"
-    rendercode.style.height = "32";
-    rendercode.style.cssText ="border:none; outline:none; font-size:7; color:white; background-color:#229FD7; position:fixed; width:60px; left:x0px; top:90%".replace('x0', cnvwidth+(sbarwidth/2)+50);
+    let rendercode = document.createElement("BUTTON");
+    rendercode.style.cssText ="border:none; outline:none; font-size:7; color:white; background-color:#303030; position:fixed; width:60px; left:x0px; top:90%".replace('x0', cnvwidth+(sbarwidth/2)+50);
+    rendercode.style.width = "52px"
+    rendercode.style.height = "32px";
+      rendercode.innerHTML = 'Render to file';
     rendercode.addEventListener("click", () => {
         fs.writeFileSync("./precompile.hcl", codebox.value);
         startHalite(0);
     });
+    document.body.appendChild(rendercode);
 
     this.value = function(val) {
         codebox.innerHTML = val;
     }
 
     this.windowResize = function() {
-        codebox.style.width = sbarwidth-70;
-        codebox.style.height = window.innerHeight-149;
-        rendercode.style.cssText ="left:x0px;".replace('x0', cnvwidth+(sbarwidth/2)+70);
-        coderun.style.cssText ="left:x0px;".replace('x0', cnvwidth+(sbarwidth/2)+0);
-        coderefresh.style.cssText ="left:x0px;".replace('x0', cnvwidth+(sbarwidth/2)-70);
-        modlabel.style.cssText ="left:x0px;".replace('x0', cnvwidth+51);
+        codebox.style.width = sbarwidth-70 + "px";
+        codebox.style.height = window.innerHeight-149 + "px";;
+        rendercode.style.left = (cnvwidth+(sbarwidth/2)+70) + "px"
+        coderun.style.left = cnvwidth+(sbarwidth/2)+0 + "px";
+        coderefresh.style.left = cnvwidth+(sbarwidth/2)-70 + "px";
+        modlabel.style.left = cnvwidth+51 + "px";
     }
 
     this.show = function()  {

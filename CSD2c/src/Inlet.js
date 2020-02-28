@@ -1,4 +1,66 @@
 
+
+let sbarwidth;
+
+function dragElement(elmnt, sidebar) {
+  var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+  if (document.getElementById(elmnt.id + "header")) {
+    // if present, the header is where you move the DIV from:
+    document.getElementById(elmnt.id + "header").onmousedown = dragMouseDown;
+  } else {
+    // otherwise, move the DIV from anywhere inside the DIV:
+    elmnt.onmousedown = dragMouseDown;
+  }
+
+  function dragMouseDown(e) {
+    e = e || window.event;
+    e.preventDefault();
+    // get the mouse cursor position at startup:
+    pos3 = e.clientX;
+    pos4 = e.clientY;
+    document.onmouseup = closeDragElement;
+    // call a function whenever the cursor moves:
+    document.onmousemove = elementDrag;
+  }
+
+  function elementDrag(e) {
+    e = e || window.event;
+    e.preventDefault();
+    // calculate the new cursor position:
+    pos1 = pos3 - e.clientX;
+    pos2 = pos4 - e.clientY;
+    pos3 = e.clientX;
+    pos4 = e.clientY;
+    // set the element's new position:
+    //elmnt.style.right = "0px";
+
+    if(sidebar == undefined) {
+    elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+    elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+    for (var i = 0; i < connections.length; i++) {
+      connections[i].update();
+    }
+    }
+    else {
+      cnvwidth = elmnt.offsetLeft - pos1;
+      elmnt.style.left = cnvwidth + "px";
+      sbarwidth = window.innerWidth - cnvwidth;
+      sidebar.windowresize();
+    }
+
+  }
+
+  function closeDragElement() {
+    // stop moving when mouse button is released:
+    document.onmouseup = null;
+    document.onmousemove = null;
+  }
+}
+
+
+
+
+
 let mouseX = 0;
 let mouseY = 0;
 
@@ -23,10 +85,6 @@ function Inlet(x, y, instance, type, datatype, color = '#229FD7') {
              // This is the actual inlet
 
     var inletbutton = document.createElement("BUTTON");
-             //let inletbutton = createButton("");
-    //inletbutton.size(8, 8);
-
-
     if(datatype == 'digital') {
         color = '#fcba03';
     }
@@ -38,6 +96,7 @@ function Inlet(x, y, instance, type, datatype, color = '#229FD7') {
     inletbutton.style.margin = "0";
     inletbutton.style.borderRadius = '100%'
     inletbutton.style.border = '0px'
+    inletbutton.style.zIndex = "-1";
 
     inletbutton.style.background = color;
     inletbutton.style.top =  y + "px";
@@ -47,14 +106,14 @@ function Inlet(x, y, instance, type, datatype, color = '#229FD7') {
 
     //inletbutton.position(x, y);
 
-    document.body.appendChild(inletbutton);
+    instance[0].getdiv().appendChild(inletbutton);
 
     // basic getters and setters
     this.setposition = function(x, y) {
         this.x = x;
         this.y = y;
-        inletbutton.style.top =  y + "px";
-        inletbutton.style.left = x + "px";
+        //inletbutton.style.top =  y + "px";
+        //inletbutton.style.left = x + "px";
     }
     this.gettype = function() {
         return type;
@@ -106,6 +165,11 @@ function Inlet(x, y, instance, type, datatype, color = '#229FD7') {
             document.body.appendChild(htmlLine);
 
         }
+        else if (connecting == instance) {
+          connectingline(true);
+          connectingline = undefined;
+          connecting = -1;
+        }
         else {
             let sametype = instance[0].getinlets()[instance[1]].getdatatype() == connecting[0].getinlets()[connecting[1]].getdatatype();
             if(connecting[0] != instance[0] && sametype) {
@@ -113,8 +177,10 @@ function Inlet(x, y, instance, type, datatype, color = '#229FD7') {
                 connections.push(new Connection([instance[0],instance[1]], [connecting[0],connecting[1]], datatype))
             }
             else if(!sametype) {
+                connectingline(true)
                 console.warn("Cannot connect a digital inlet to an analog inlet!!");
             }
+            connectingline = undefined;
             connecting = -1;
         }
     };
@@ -124,8 +190,8 @@ function Inlet(x, y, instance, type, datatype, color = '#229FD7') {
 function getOffset( el ) {
     var rect = el.getBoundingClientRect();
     return {
-        left: rect.left-(rect.width/2) + window.pageXOffset,
-        top: rect.top-(rect.height/2) + window.pageYOffset,
+        left: rect.left + window.pageXOffset,
+        top: rect.top + window.pageYOffset,
         width: rect.width || el.offsetWidth,
         height: rect.height || el.offsetHeight
     };
@@ -133,10 +199,10 @@ function getOffset( el ) {
 
 function getmousePos() {
     return {
-        left: mouseX,
-        top: mouseY,
-        width: 1,
-        height: 1
+        left: mouseX+5,
+        top: mouseY+4,
+        width: -1,
+        height: -1
     };
 }
 
@@ -147,12 +213,12 @@ function updateLine(off1, off2, htmlLine) {
   var y1 = off1.top + off1.height;
   // top right
   var x2 = off2.left + off2.width;
-  var y2 = off2.top;
+  var y2 = off2.top + off2.height;
   // distance
   var length = Math.sqrt(((x2-x1) * (x2-x1)) + ((y2-y1) * (y2-y1)));
   // center
-  var cx = ((x1 + x2) / 2) - (length / 2);
-  var cy = ((y1 + y2) / 2) - (1 / 2);
+  var cx = ((x1 + x2) / 2) - (length / 2)-4;
+  var cy = ((y1 + y2) / 2) - (1 / 2)-4;
   // angle
   var angle = Math.atan2((y1-y2),(x1-x2))*(180/Math.PI);
   // make hr
@@ -163,14 +229,18 @@ function updateLine(off1, off2, htmlLine) {
   htmlLine.style.width = length + "px";
   htmlLine.style.padding = "0px";
   htmlLine.style.margin = "0px";
-  htmlLine.style.border = '1px'
-  htmlLine.style.lineHeight = '1px'
+  htmlLine.style.borderStyle = "solid";
+  htmlLine.style.borderWidth = "2px";
+  htmlLine.style.color = 'transparent';
+  htmlLine.style.borderColor = "#505050";
+  htmlLine.style.borderRadius = "10%";
+  htmlLine.style.lineHeight = '2px'
   htmlLine.style.transform = 'rotate(' + angle + 'deg)'
-  //htmlLine.style.zIndex = '-1'
+  htmlLine.style.zIndex = '-3'
 
   //htmlline.style += '-webkit-transform:rotate(" + angle + "deg)';
 
-  htmlLine.style.background = 'black';
+  htmlLine.style.background = '#DCDCDC';
   htmlLine.style.top =  cy + "px";
   htmlLine.style.left = cx + "px";
 }
@@ -179,9 +249,26 @@ function updateLine(off1, off2, htmlLine) {
 function Connection(start, end, datatype = 'analog') { // Optional argument 'datatype' provides legacy support for all the patches we made before adding digital signals
 
       let htmlLine = document.createElement("div");
-      var off1 = getOffset(start[0].getinlets()[start[1]].getdiv());
-      var off2 = getOffset(end[0].getinlets()[end[1]].getdiv());
+      let off1 = getOffset(start[0].getinlets()[start[1]].getdiv());
+      let off2 = getOffset(end[0].getinlets()[end[1]].getdiv());
       updateLine(off1, off2, htmlLine);
+
+      htmlLine.addEventListener('mouseenter', function()
+      {
+        htmlLine.style.backgroundColor = "blue";
+      });
+
+      htmlLine.addEventListener('contextmenu', ((ev) => {
+      ev.preventDefault();
+      this.remove();
+      return false;
+    }), false);
+
+      htmlLine.addEventListener('mouseleave', function()
+      {
+        htmlLine.style.backgroundColor = "#DCDCDC";
+      });
+
       document.body.appendChild(htmlLine);
 
 
@@ -195,6 +282,7 @@ function Connection(start, end, datatype = 'analog') { // Optional argument 'dat
 
     this.remove = function() {
         connections.splice(connections.indexOf(this), 1);
+        htmlLine.parentNode.removeChild(htmlLine);
     }
 
     this.gettype = function() {
@@ -202,83 +290,9 @@ function Connection(start, end, datatype = 'analog') { // Optional argument 'dat
     }
 
     this.update = function() {
-      var off1 = getOffset(start[0].getinlets()[start[1]].getdiv());
-      var off2 = getOffset(end[0].getinlets()[end[1]].getdiv());
+      off1 = getOffset(start[0].getinlets()[start[1]].getdiv());
+      off2 = getOffset(end[0].getinlets()[end[1]].getdiv());
       updateLine(off1, off2, htmlLine);
     }
 
-    // Draw the line
-    this.draw = function() {
-        // Get inlet positions (TODO: just use index.x and index.y)
-        let inlet1 = start[0].getinlets()[start[1]].getposition();
-        let inlet2 = end[0].getinlets()[end[1]].getposition();
-
-        // Get x,y of start and end of line
-        let line1x = inlet1[0];
-        let line1y = inlet1[1];
-        let line2x = inlet2[0];
-        let line2y = inlet2[1];
-
-
-
-        // Distance of mouse to line, so we can highlight it when our mouse is close
-        if (pDistance(mouseX, mouseY, line1x, line1y, line2x, line2y) < 10) {
-            stroke("#229FD7"); // set selected color
-            // If our mouse is close and we right click, delete this connection
-            if(mouseIsPressed) {
-                if (mouseButton === RIGHT) {
-                    this.remove();
-                }
-            }
-        }
-        else {
-            if(datatype == 'analog') {
-                stroke(0);
-            }
-            else {
-                stroke(130);
-            }
-        }
-        // Draw it!
-        //line(line1x, line1y, line2x,line2y);
-    }
-}
-
-
-
-
-// Calculate distance to line
-// For highlighing and deleting lines near your cursor
-
-function pDistance(x, y, x1, y1, x2, y2) {
-
-    let A = x - x1;
-    let B = y - y1;
-    let C = x2 - x1;
-    let D = y2 - y1;
-
-    let dot = A * C + B * D;
-    let len_sq = C * C + D * D;
-    let param = -1;
-    if (len_sq != 0) //in case of 0 length line
-        param = dot / len_sq;
-
-    let xx, yy;
-
-    if (param < 0) {
-        xx = x1;
-        yy = y1;
-    }
-    else if (param > 1) {
-        xx = x2;
-        yy = y2;
-    }
-    else {
-        xx = x1 + param * C;
-        yy = y1 + param * D;
-    }
-
-    let dx = x - xx;
-    let dy = y - yy;
-    return Math.sqrt(dx * dx + dy * dy);
 }

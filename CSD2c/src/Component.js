@@ -43,6 +43,7 @@ function Component(name = 'resistor 200', xin = mouseX,  yin = mouseY-100) {
     let optargs = [];       // Optional arguments
     let type = name;        // Name of our component ('resistor' in 'resistor 200')
     let selected = false;   // Is our component selected?
+    let _this = this;
 
     let instance = this;
     let offsetX, offsetY;
@@ -59,7 +60,6 @@ function Component(name = 'resistor 200', xin = mouseX,  yin = mouseY-100) {
     h = 20;
 
     var myCircle = document.createElement("div");
-    var textblocker = document.createElement("div");
 
     //myCircle.style.width = "100px";
     myCircle.style.position = "absolute";
@@ -68,29 +68,28 @@ function Component(name = 'resistor 200', xin = mouseX,  yin = mouseY-100) {
     myCircle.style.paddingTop = "2px";
     myCircle.style.paddingBottom = "0px";
     myCircle.style.paddingRight = "12px";
-    myCircle.style.background = "#afafaf";
+    myCircle.style.background = "#424242";
     myCircle.style.top =  y+h + "px";
     myCircle.style.left = x + "px";
-    myCircle.style.color = "black";
-    myCircle.style.border = "1px solid black"
+    myCircle.style.color = "#DCDCDC";
+    myCircle.style.border = "1px solid #DCDCDC"
     myCircle.style.fontFamily = "sans-serif";
     myCircle.style.fontSize = "12px";
     myCircle.style.fontAlign = "center";
-    myCircle.style.unselectable = 'on'
-    myCircle.style.cursor = 'default'
-    myCircle.style.userSelect = 'false'
+    myCircle.style.zIndex = '-2'
     myCircle.innerHTML = name;
 
-    myCircle.onselectstart="return false;"
-    myCircle.setAttribute('unselectable', 'on');
+    myCircle.addEventListener('contextmenu', ((ev) => {
+    ev.preventDefault();
+    this.delete();
+    return false;
+  }), false);
 
-    textblocker.style = myCircle.style;
-    textblocker.innerHTML = 'name';
-
-
-    textblocker.style.top =  y+h + "px";
-    textblocker.style.left = x + "px";
-    textblocker.style.opacity = "0";
+  myCircle.addEventListener('dblclick', ((ev) => {
+  ev.preventDefault();
+  this.inputname(name);
+  return false;
+}), false);
 
 
     document.body.appendChild(myCircle);
@@ -106,106 +105,25 @@ function Component(name = 'resistor 200', xin = mouseX,  yin = mouseY-100) {
     var xOffset = 0;
     var yOffset = 0;
 
-    container.addEventListener("touchstart", dragStart, false);
-    container.addEventListener("touchend", dragEnd, false);
-    container.addEventListener("touchmove", drag, false);
-
-    container.addEventListener("mousedown", dragStart, false);
-    container.addEventListener("mouseup", dragEnd, false);
-    container.addEventListener("mousemove", drag, false);
-
-    function dragStart(e) {
-      if (e.type === "touchstart") {
-        initialX = e.touches[0].clientX - xOffset;
-        initialY = e.touches[0].clientY - yOffset;
-      } else {
-        initialX = e.clientX - xOffset;
-        initialY = e.clientY - yOffset;
-      }
-
-      if (e.target === dragItem) {
-        active = true;
-      }
-    }
-
-    function dragEnd(e) {
-      initialX = currentX;
-      initialY = currentY;
-
-      active = false;
-    }
-
-    function drag(e) {
-      if (active) {
-
-        e.preventDefault();
-
-        if (e.type === "touchmove") {
-          currentX = e.touches[0].clientX - initialX;
-          currentY = e.touches[0].clientY - initialY;
-        } else {
-          currentX = e.clientX - initialX;
-          currentY = e.clientY - initialY;
-        }
-
-        xOffset = currentX;
-        yOffset = currentY;
-
-        x = e.clientX
-        y = e.clientY
-
-        setTranslate(currentX, currentY, dragItem);
-      }
-    }
-
-    function setTranslate(xPos, yPos, el) {
-
-      dragging = true;
-      selecting = false;
-      // Make it public that this component is being dragged
-      draginstance = boxes.indexOf(this)
-      el.style.transform = "translate3d(" + xPos + "px, " + yPos + "px, 0)";
-      var bodyRect = document.body.getBoundingClientRect(),
-          elemRect = myCircle.getBoundingClientRect(),
-          offsety   = elemRect.top - bodyRect.top,
-          offsetx   = elemRect.left - bodyRect.left;
-
-      let offset = 0;
-
-      for (var i = 0; i < connections.length; i++) {
-        connections[i].update();
-      }
+    dragElement(myCircle);
 
 
-      for(let i = 0; i < inlets.length; i++) {
-          if(inlets[i].gettype() == 'inlet') {
-              inlets[i].setposition(offsetx+(10*offset)+20, offsety+h-3)
-              offset++;
-          }
-          else {
-              inlets[i].setposition(offsetx+(10*(i-offset))+20, offsety+h+h-2);
-          }
-          if(inlets[i].getposition()[0] > cnvwidth) {
-              inlets[i].show(false);
-          }
-          else {
-              inlets[i].show(true);
-          }
-        }
-
-    }
 
     // Open input field
     this.inputname = function(text) {
         inp = document.createElement("INPUT");
+        inp.value = text;
         inputting = true;
         typing = true;
-        inp.style.height = w-6
-        inp.style.width = h-7
-        inp.style.top = x+10
-        inp.style.left = y+23
-
+        var bound = myCircle.getBoundingClientRect();
         inp.style.cssText = 'background-color: #efefef; font-size:11px; font:sans-serif; text-align: center; border:none; outline:none;';
+        inp.style.height = myCircle.clientHeight + 'px';
+        inp.style.width = myCircle.clientWidth + 'px';
+        inp.style.top = bound.top + 'px'
+        inp.style.left = bound.left + 'px'
+        inp.style.position = 'absolute';
+        inp.addEventListener("focusout", this.closeinput);
+        document.body.appendChild(inp);
     }
 
     //Bunch of getters and setters to interact and get info from these boxes
@@ -220,6 +138,10 @@ function Component(name = 'resistor 200', xin = mouseX,  yin = mouseY-100) {
 
     this.gettype = function() {
         return type;
+    }
+
+    this.getdiv = function() {
+        return myCircle;
     }
 
     this.getargs = function() {
@@ -280,115 +202,10 @@ function Component(name = 'resistor 200', xin = mouseX,  yin = mouseY-100) {
         }
     }
 
-    this.draw = function() {
-        stroke(0);
-
-        // Dragging functionality (TODO: make more efficient)
-        // Is the mouse over the box?
-        if(intersect(mouseX, mouseX+1, mouseY, mouseY+1, x, x+w, y, y+h)) {
-            rollover = true;
-
-            // Only start dragging when we are not inputting or making a selection box
-            if(mouseIsPressed && !inputting && !dragging && !selecting) {
-                if(!keyIsDown(SHIFT) && !selected) {
-                    for (let i = 0; i < boxes.length; i++) {
-                        boxes[i].deselect();
-                    }
-                }
-                dragging = true;
-                // Make it public that this component is being dragged
-                draginstance = boxes.indexOf(this)
-                               // Right-click delets the object
-                if (mouseButton === RIGHT) {
-                    draginstance = -1;
-                    this.delete();
-                }
-                // Keep track of the relative location of the mouse from the point where we clicked
-                offsetX = mouseX-x;
-                offsetY = mouseY-y;
-            }
-            // If the mouse isn't pressed, we're not dragigng anymore
-            else if (!mouseIsPressed && dragging) {
-                dragging = false;
-                draginstance = -1;
-            }
-        }
-
-        // If we are not being dragging but some other component is and we are selected, move it along with that box!
-        else if (draginstance != -1 && !dragging && selected && !inputting && !multipledragging) {
-            offsetX = mouseX-x;
-            offsetY = mouseY-y;
-            multipledragging = true;
-        }
-        // If the other box is no longer being dragged, so are we
-        else if (draginstance == -1 && multipledragging) {
-            multipledragging = false;
-        }
-        // Close input when clicking out of the box, also make sure we don't accidentally open an input while dragging
-        else if (mouseIsPressed && (inputting || selected)) {
-            this.closeinput();
-        }
-        else {
-            rollover = false;
-        }
-
-
-        // Finally, change colors and positions now we know what state it's in
-        if (dragging || multipledragging) {
-            x = mouseX - offsetX;
-            y = mouseY - offsetY;
-            fill (85);
-        }
-        else if(selected) {
-            fill(110);
-        }
-        else if (rollover) {
-            fill(135);
-        }
-        else {
-            fill('#afafaf');
-        }
-
-        // If the object goes over the edge, resize our canvas
-        if (x+w >= width) {
-            resizeCanvas(x+w+w, height);
-
-        }
-        if (y >= height) {
-            resizeCanvas(width, y+h+h);
-        }
-        // If we do not have a proper name/arguments, color the box red
-        if (!valid) {
-            fill('red');
-        }
-        // this could be better if we did it less often
-        this.updateInlets();
-
-        // Draw the box!
-        rect(x, y, w, h);
-
-        // Write text in it
-        fill (0);
-        noStroke();
-        textAlign(CENTER);
-        textSize(12);
-        text(name, x+(w/2), y+(h/1.5));
-
-        textAlign(LEFT);
-
-        stroke(1)
-
-    }
-
-    // Input name in double click
-    this.doubleclick = function() {
-        if ((mouseX > x && mouseX < x + w && mouseY > y && mouseY < y + h) && !inputting) {
-            this.inputname(name);
-        }
-    }
 
     // When the name changes or the object is being created, add the inlets
     this.changetype = function() {
+      myCircle.innerHTML = name;
         for(let i = 0; i < inlets.length; i++) {
             inlets[i].remove();
         }
@@ -399,14 +216,14 @@ function Component(name = 'resistor 200', xin = mouseX,  yin = mouseY-100) {
             if(types[type]['datatypes'] !== undefined) {
                 datatype = types[type]['datatypes'][i]
             }
-            inlets.push(new Inlet(x+15+(10*i), y+17, [this, i], 'inlet', datatype, types[type]['colors'][i]));
+            inlets.push(new Inlet((11*i)+6, -4, [this, i], 'inlet', datatype, types[type]['colors'][i]));
         }
         for(let i = 0; i < parseInt(types[type]['outlets']); i++) {
             let datatype = 'analog';
             if(types[type]['datatypes'] !== undefined) {
                 datatype = types[type]['datatypes'][i+types[type]['inlets']]
             }
-            inlets.push(new Inlet(x+15+(10*i), y+36, [this, types[type]['inlets']+i], 'outlet', datatype, types[type]['colors'][i+types[type]['inlets']]));
+            inlets.push(new Inlet((11*i)+6, 16, [this, types[type]['inlets']+i], 'outlet', datatype, types[type]['colors'][i+types[type]['inlets']]));
         }
     }
 
@@ -435,7 +252,7 @@ function Component(name = 'resistor 200', xin = mouseX,  yin = mouseY-100) {
                 boxes.move(boxes.indexOf(this), 0);
             }
             valid = true;
-            this.changetype();
+            _this.changetype();
             /*
             if(!initializing) {
             changed() // Update our code
@@ -468,6 +285,7 @@ function Component(name = 'resistor 200', xin = mouseX,  yin = mouseY-100) {
             inlets[i].remove();
         }
         inlets = [];
+        myCircle.parentNode.removeChild(myCircle);
 
         // Then remove the box
         boxes.splice(boxes.indexOf(this), 1);

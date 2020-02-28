@@ -5,6 +5,7 @@
 </header>
 <head>
   <title>OSC test server</title>
+  <script src="https://thibaultjanbeyer.github.io/DragSelect/ds.min.js"></script>
   <script src="console-viewer.js"></script>
   <script src="Inlet.js"></script>
   <script src="Component.js"></script>
@@ -14,6 +15,51 @@
 
 
   <style>
+  /* Add a black background color to the top navigation */
+.topnav {
+  background-color: #333;
+  position: fixed;
+  left: 0px;
+  top: 0px;
+  overflow: hidden;
+}
+
+/* Style the links inside the navigation bar */
+.topnav a {
+  float: left;
+  webkitAppRegion: drag;
+  color: #f2f2f2;
+  text-align: center;
+  padding: 10px 16px;
+  text-decoration: none;
+  font-size: 14px;
+  font-family: sans-serif;
+}
+
+/* Change the color of links on hover */
+.topnav a:hover {
+  background-color: #424242;
+  color: white;
+}
+
+/* Add a color to the active/current link */
+.topnav a.active {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.topnav a.pad {
+  background-color: #424242;
+  padding: 18px 40px;
+  color: white;
+}
+
+.topnav a.bar {
+  background-color: #424242;
+  padding: 0px 1000px;
+  color: white;
+}
+
   .drag-area {
   -webkit-app-region: drag;
 }
@@ -26,16 +72,26 @@
 
 </head>
 <body>
-  <style>
-  .unselectable {
-    -moz-user-select: -moz-none;
-    -khtml-user-select: none;
-    -webkit-user-select: none;
-    -o-user-select: none;
-    user-select: none;
-    -webkit-touch-callout : none
+  <div class="topnav">
+  <a class="pad" href="#home"></a>
+  <a href="#new" onclick="
+      localStorage.setItem('load', 'new');
+      window.onbeforeunload();
+      location.reload(true);
+  ">New</a>
+  <a href="#open" onclick="loadfile()">Open</a>
+  <a href="#save" onclick="generatesave(1);">Save</a>
+  <a href="#refresh" onclick="
+  generatesave(1, './lastsession.ncl');
+  loadfile(undefined, './lastsession.ncl');
+  ">Refresh</a>
+  <a class="bar" href="#end"></a>
+</div>
 
-}
+  <style>
+  body {
+  user-select: none;
+  }
   </style>
   <body>
 

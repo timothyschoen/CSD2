@@ -111,7 +111,7 @@ var ConsoleLogViewer = (function() {
         d.style.right = "13px";
         d.style.maxHeight = "88%";
         d.style.width = "28%";
-        d.style.background = "white";
+        d.style.background = "transparent";
         d.style.overflow = "auto";
         var m = document.getElementById("debug_console_messages");
         m.style.font = "11px monospace";
@@ -319,7 +319,7 @@ onerror:
         css += '#debug_console font.log-warn {color:orange;}';
         css += '#debug_console font.log-debug {color:lightblue;}';
         css += '#debug_console font.log-error {color:red;}';
-        css += '#debug_console font.log-normal {color:blac;}';
+        css += '#debug_console font.log-normal {color:#DCDCDC;}';
 
         var style = document.createElement('style');
         style.type = 'text/css';
