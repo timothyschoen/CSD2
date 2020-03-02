@@ -906,75 +906,8 @@ struct BJT : Component2<3, 4>
     }
 };
 
+
 struct OPA : Component2<3, 1>
-{
-
-    double amp;
-    double g;
-    double ng;
-    double v;
-    double vmax;
-
-    // pins: out, in+, in-, supply+, supply-
-    OPA(int vInP, int vInN, int vOut)
-    {
-        pinLoc[0] = vInP;
-        pinLoc[1] = vInN;
-        pinLoc[2] = vOut;
-
-        // the DC voltage gain
-        amp = 10e3;
-        vmax = 6;
-
-
-    }
-
-
-    void stamp(MNASystem & m)
-    {
-
-
-
-        // 1 = nets0, 2 = nets2, 3 = nets1, I = nets3
-
-        // This is a way faster method to simulate op-amps
-
-        //m.A[nets[0]][nets[3]].gdyn.push_back(&g);
-        //m.A[nets[1]][nets[3]].gdyn.push_back(&ng);
-
-        //m.stampStatic(-1, nets[2], nets[3]);
-        //m.stampStatic(1, nets[3], nets[2]);
-        m.stampStatic(1, nets[3], nets[0]);
-        m.stampStatic(-1, nets[3], nets[1]);
-
-        m.stampStatic(1, nets[2], nets[3]);
-        //m.stampStatic(-1, nets[1], nets[3]);
-
-
-        //m.b[nets[3]].g = 0;
-
-        m.b[nets[3]].g = 0;
-
-        // http://qucs.sourceforge.net/tech/node67.html  !!!!!!!!!!!
-
-
-
-    }
-    void update(MNASystem & m) final
-    {
-
-      /*
-      g = amp/(1 + pow(((2*M_PI)/2*vmax*amp*(m.b[0].lu-m.b[1].lu)), 2));
-      ng = -g;
-      v = vmax*(2/M_PI)*atan((M_PI/(2*vmax))*vmax*(m.b[0].lu-m.b[1].lu)); */
-
-    }
-
-
-
-};
-
-struct OPA2 : Component2<3, 1>
 {
 
     double amp;
@@ -986,15 +919,15 @@ struct OPA2 : Component2<3, 1>
     double lastVOut;
 
     // pins: out, in+, in-, supply+, supply-
-    OPA2(int vInP, int vInN, int vOut)
+    OPA(int vInP, int vInN, int vOut)
     {
         pinLoc[0] = vInP;
         pinLoc[1] = vInN;
         pinLoc[2] = vOut;
 
         // the DC voltage gain
-        amp = 2;
-        vmax = 3;
+        amp = 1;
+        vmax = 0.02;
         lastVInPn = 0;
         lastVOut = 0;
 
@@ -1005,25 +938,14 @@ struct OPA2 : Component2<3, 1>
     void stamp(MNASystem & m)
     {
 
-
-
-        // 1 = nets0, 2 = nets2, 3 = nets1, I = nets3
-
         // This is a way faster method to simulate op-amps
 
         m.A[nets[3]][nets[0]].gdyn.push_back(&g);
         m.A[nets[3]][nets[1]].gdyn.push_back(&ng);
         m.stampStatic(-1, nets[3], nets[2]);
 
-
-
         m.stampStatic(1, nets[2], nets[3]);
-        //m.stampStatic(1, nets[3], nets[2]);
-        //m.stampStatic(1, nets[3], nets[0]);
 
-
-        //m.stampStatic(1, nets[2], nets[3]);
-        //m.stampStatic(-1, nets[1], nets[3]);
 
 
         m.b[nets[3]].g = 0;
@@ -1037,25 +959,11 @@ struct OPA2 : Component2<3, 1>
     }
     void update(MNASystem & m) final
     {
-
-
-      double dInPn = (m.b[nets[0]].lu - m.b[nets[1]].lu) - lastVInPn;
-      double dOut = m.b[nets[2]].lu - lastVOut;
-
-
-
-      g = dOut/dInPn;
+      g = amp/(1 + pow(((2*M_PI)/2*vmax*amp*(m.b[0].lu-m.b[1].lu)), 2));
       ng = -g;
 
-
-      lastVInPn = m.b[nets[0]].lu - m.b[nets[1]].lu;
-      lastVOut = m.b[nets[2]].lu;
-
-
-
-      //g = amp/(1 + pow(((2*M_PI)/2*vmax*amp*(m.b[0].lu-m.b[1].lu)), 2));
-
-    v = g * (m.b[0].lu-m.b[1].lu) - (vmax*(2/M_PI)*atan((M_PI/(2*vmax))*amp*(m.b[0].lu-m.b[1].lu)));
+      // Alternatively, we can set the voltage at m.b[nets[3]] to this but I don't think it's makes a difference?? it might though
+      //v = g * (m.b[0].lu-m.b[1].lu) - (vmax*(2/M_PI)*atan((M_PI/(2*vmax))*amp*(m.b[0].lu-m.b[1].lu)));
 
     }
 
