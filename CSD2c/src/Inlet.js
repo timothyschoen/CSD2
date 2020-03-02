@@ -37,14 +37,17 @@ function dragElement(elmnt, sidebar) {
     if(sidebar == undefined) {
     elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
     elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+    elmnt.x = (elmnt.offsetLeft - pos1);
+    elmnt.y = (elmnt.offsetTop - pos2);
     for (var i = 0; i < connections.length; i++) {
       connections[i].update();
     }
     }
     else {
       cnvwidth = elmnt.offsetLeft - pos1;
-      elmnt.style.left = cnvwidth + "px";
       sbarwidth = window.innerWidth - cnvwidth;
+      elmnt.style.right = sbarwidth + "px";
+
       sidebar.windowresize();
     }
 

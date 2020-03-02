@@ -1,4 +1,4 @@
-
+#include <math.h>
 // Analog components
 
 struct Resistor : Component2<2>
@@ -217,18 +217,29 @@ struct Capacitor : Component2<2, 1>
         // since c*(v1 - v0) = (i1 + i0)/(2*t), where t = 1/T
         double g = 2*c;
 
-        m.stampTimed(+1, nets[0], nets[2]);
+        // Stamp timed vermenigvuldigd de weerstand met 1/timeStep
+        // De conductance is gelijk aan 2*c
+        // R = 1/(2*c)
+        // Trapezoidal formule stelt dat R = dT/2C = dT * 1/(2*C)
+        //
+        // Dit is de paralelle benadering van de condensator!!!
+
+        // Spanningsbron bron tussen input en output node
+
+        m.stampTimed(+1, nets[0], nets[2]); // Naar A->B system
         m.stampTimed(-1, nets[1], nets[2]);
 
+        // Weerstand parallel aan spanningsbron
         m.stampTimed(-g, nets[0], nets[0]);
         m.stampTimed(+g, nets[0], nets[1]);
         m.stampTimed(+g, nets[1], nets[0]);
         m.stampTimed(-g, nets[1], nets[1]);
 
-        m.stampStatic(+2*g, nets[2], nets[0]);
+        m.stampStatic(+2*g, nets[2], nets[0]);  // Naar A->C system
         m.stampStatic(-2*g, nets[2], nets[1]);
 
-        m.stampStatic(-1, nets[2], nets[2]);
+
+        m.stampStatic(-1, nets[2], nets[2]); // Naar A->D system
 
         // see the comment about v:C[%d] below
         m.b[nets[2]].gdyn.push_back(&stateVar);
@@ -269,11 +280,11 @@ struct Capacitor : Component2<2, 1>
 
 struct Inductor : Component2<2, 1>
 {
-    double c;
+    double l;
     double stateVar;
     double voltage;
 
-    Inductor(double c, int l0, int l1) : c(c)
+    Inductor(double l, int l0, int l1) : l(l)
     {
         pinLoc[0] = l0;
         pinLoc[1] = l1;
@@ -310,7 +321,11 @@ struct Inductor : Component2<2, 1>
 
         // trapezoidal needs another factor of two for the g
         // since c*(v1 - v0) = (i1 + i0)/(2*t), where t = 1/T
-        double g = 2*c;
+
+
+        // NOTE::: Capacitors doen dT/2C, inductors die 2L/dT
+
+        double g = 1/(2*l);
 
         m.stampTimed(+1, nets[0], nets[2]);
         m.stampTimed(-1, nets[1], nets[2]);
@@ -323,13 +338,14 @@ struct Inductor : Component2<2, 1>
         m.stampStatic(+2*g, nets[2], nets[0]);
         m.stampStatic(-2*g, nets[2], nets[1]);
 
-        m.stampStatic(-1, nets[2], nets[2]);
+        m.stampStatic(-1, nets[2], nets[2]); // does this make something a current source or a dependent voltage source???
 
         // see the comment about v:C[%d] below
         m.b[nets[2]].gdyn.push_back(&stateVar);
 
         // this isn't quite right as state stores 2*c*v - i/t
         // however, we'll fix this in updateFull() for display
+
         //m.nodes[nets[2]].scale = 1 / c;
     }
 
@@ -344,7 +360,7 @@ struct Inductor : Component2<2, 1>
 
         // then we can store this for display here
         // since this value won't be used at this point
-        m.b[nets[2]].lu = c*voltage;
+        m.b[nets[2]].lu = l*voltage;
     }
 
     void scaleTime(double told_per_new) final
@@ -356,7 +372,7 @@ struct Inductor : Component2<2, 1>
         // note that this also works if the old rate is infinite
         // (ie. t0=0) when going from DC analysis to transient
         //
-        double qq = 2*c*voltage;
+        double qq = 2*l*voltage;
         stateVar = qq + (stateVar - qq)*told_per_new;
     }
 };
@@ -890,140 +906,159 @@ struct BJT : Component2<3, 4>
     }
 };
 
-struct OPA : Component2<5, 6>
+struct OPA : Component2<3, 1>
 {
-    // diode clamps
-    JunctionPN  pnPP, pnNN;
 
+    double amp;
     double g;
+    double ng;
+    double v;
+    double vmax;
 
     // pins: out, in+, in-, supply+, supply-
-    OPA(int vOut, int vInP, int vInN, int vPP, int vNN)
+    OPA(int vInP, int vInN, int vOut)
     {
-        pinLoc[0] = vOut;
-        pinLoc[1] = vInP;
-        pinLoc[2] = vInN;
-        pinLoc[3] = vPP;
-        pinLoc[4] = vNN;
+        pinLoc[0] = vInP;
+        pinLoc[1] = vInN;
+        pinLoc[2] = vOut;
 
         // the DC voltage gain
-        g = 10e3;
+        amp = 10e3;
+        vmax = 6;
 
-        // any sort of reasonable diode will do
-        double is = 6.734e-15;
-        double n = 1.24;
-        initJunctionPN(pnPP, is, n);
-        initJunctionPN(pnNN, is, n);
 
-        linearizeJunctionPN(pnPP, 0);
-        linearizeJunctionPN(pnNN, 0);
     }
 
-    bool newton(MNASystem & m)
-    {
-        return newtonJunctionPN(pnPP, m.b[nets[5]].lu)
-               & newtonJunctionPN(pnNN, m.b[nets[6]].lu);
-    }
 
     void stamp(MNASystem & m)
     {
-        // What we want here is a high-gain VCVS where
-        // we then bypass to rails if we get too close.
-        //
-        // Here it's important not to have series resistance
-        // for thee diodes, otherwise we can still exceed rails.
-        //
-        // NOTE: the following ignores supply currents
-        //
-        //      0   1   2   3  4   5   6   7   8    9
-        //    vout in+ in- V+ V- vd+ vd- id+ id- iout
-        // 0 |  .   .   .   .  .   .   .  +1  -1   +1 | vout
-        // 1 |  .   .   .   .  .   .   .   .   .    . | in+
-        // 2 |  .   .   .   .  .   .   .   .   .    . | in-
-        // 3 |  .   .   .   .  .   .   .   .   .    . | v+
-        // 4 |  .   .   .   .  .   .   .   .   .    . | v-
-        // 5 |  .   .   .   .  . gpp   .  -1   .    . | vd+  = i0pp
-        // 6 |  .   .   .   .  .   . gnn   .  -1    . | vd-  = i0nn
-        // 7 | -1   .   .  +1  .  +1   .  ~0   .    . | id+  = +1.5
-        // 8 | +1   .   .   . -1   .  +1   .  ~0    . | id-  = +1.5
-        // 9 | -1  +g  -g   .  .   .   .   .   .   ro | iout
-        //
-        // We then add one useless extra row just to add
-        // the currents together, so one can plot the real
-        // current that actually get pushed into vOut
-
-        // output currents
-        m.stampStatic(+1, nets[0], nets[7]);
-        m.stampStatic(-1, nets[0], nets[8]);
-        m.stampStatic(+1, nets[0], nets[9]);
-
-        // output feedback
-        m.stampStatic(-1, nets[7], nets[0]);
-        m.stampStatic(+1, nets[8], nets[0]);
-        m.stampStatic(-1, nets[9], nets[0]);
-
-        // voltage input
-        m.stampStatic(+g, nets[9], nets[1]);
-        m.stampStatic(-g, nets[9], nets[2]);
-
-        // supply voltages
-        m.stampStatic(+1, nets[7], nets[3]);
-        m.stampStatic(-1, nets[8], nets[4]);
-
-        // voltage drops from the supply, should be slightly
-        // more than the drop voltage drop across the diodes
-        m.b[nets[7]].g += 1.5;
-        m.b[nets[8]].g += 1.5;
-
-        // diode voltages to currents
-        m.stampStatic(+1, nets[7], nets[5]);
-        m.stampStatic(-1, nets[5], nets[7]);
-
-        m.stampStatic(+1, nets[8], nets[6]);
-        m.stampStatic(-1, nets[6], nets[8]);
-
-        double ro = 10;
-
-        // the series resistance for the diode clamps
-        // needs to be small to handle the high gain,
-        // but still use something just slightly non-zero
-        double rs = gMin;
-
-        // series resistances for diodes
-        // allow "gmin" just for pivoting?
-        m.stampStatic(rs, nets[7], nets[7]);
-        m.stampStatic(rs, nets[8], nets[8]);
-
-        // series output resistance
-        m.stampStatic(ro, nets[9], nets[9]);
-
-        // Finally (not show above) put a resistor between
-        // the input pins.. this could be more as well.
-        double ri = 50e6;
-
-        // TODO: RECONSTRUEER DEZE CODE
-        m.stampConductor(1. / ri, nets[1], nets[2]);
-
-        // junctions
-        m.A[nets[5]][nets[5]].gdyn.push_back(&pnPP.geq);
-        m.A[nets[6]][nets[6]].gdyn.push_back(&pnNN.geq);
-
-        m.b[nets[5]].gdyn.push_back(&pnPP.ieq);
-        m.b[nets[6]].gdyn.push_back(&pnNN.ieq);
 
 
 
+        // 1 = nets0, 2 = nets2, 3 = nets1, I = nets3
+
+        // This is a way faster method to simulate op-amps
+
+        //m.A[nets[0]][nets[3]].gdyn.push_back(&g);
+        //m.A[nets[1]][nets[3]].gdyn.push_back(&ng);
+
+        //m.stampStatic(-1, nets[2], nets[3]);
+        //m.stampStatic(1, nets[3], nets[2]);
+        m.stampStatic(1, nets[3], nets[0]);
+        m.stampStatic(-1, nets[3], nets[1]);
+
+        m.stampStatic(1, nets[2], nets[3]);
+        //m.stampStatic(-1, nets[1], nets[3]);
 
 
+        //m.b[nets[3]].g = 0;
 
+        m.b[nets[3]].g = 0;
 
-        // this is useless as far as simulation goes
-        // it's just for getting a nice current value
-        m.stampStatic(+1, nets[10], nets[7]);
-        m.stampStatic(-1, nets[10], nets[8]);
-        m.stampStatic(+1, nets[10], nets[9]);
-        m.stampStatic(+1, nets[10], nets[10]);
+        // http://qucs.sourceforge.net/tech/node67.html  !!!!!!!!!!!
+
 
 
     }
+    void update(MNASystem & m) final
+    {
+
+      /*
+      g = amp/(1 + pow(((2*M_PI)/2*vmax*amp*(m.b[0].lu-m.b[1].lu)), 2));
+      ng = -g;
+      v = vmax*(2/M_PI)*atan((M_PI/(2*vmax))*vmax*(m.b[0].lu-m.b[1].lu)); */
+
+    }
+
+
+
+};
+
+struct OPA2 : Component2<3, 1>
+{
+
+    double amp;
+    double g;
+    double ng;
+    double v;
+    double vmax;
+    double lastVInPn;
+    double lastVOut;
+
+    // pins: out, in+, in-, supply+, supply-
+    OPA2(int vInP, int vInN, int vOut)
+    {
+        pinLoc[0] = vInP;
+        pinLoc[1] = vInN;
+        pinLoc[2] = vOut;
+
+        // the DC voltage gain
+        amp = 2;
+        vmax = 3;
+        lastVInPn = 0;
+        lastVOut = 0;
+
+
+    }
+
+
+    void stamp(MNASystem & m)
+    {
+
+
+
+        // 1 = nets0, 2 = nets2, 3 = nets1, I = nets3
+
+        // This is a way faster method to simulate op-amps
+
+        m.A[nets[3]][nets[0]].gdyn.push_back(&g);
+        m.A[nets[3]][nets[1]].gdyn.push_back(&ng);
+        m.stampStatic(-1, nets[3], nets[2]);
+
+
+
+        m.stampStatic(1, nets[2], nets[3]);
+        //m.stampStatic(1, nets[3], nets[2]);
+        //m.stampStatic(1, nets[3], nets[0]);
+
+
+        //m.stampStatic(1, nets[2], nets[3]);
+        //m.stampStatic(-1, nets[1], nets[3]);
+
+
+        m.b[nets[3]].g = 0;
+
+        //m.b[nets[3]].gdyn.push_back(&v);
+
+        // http://qucs.sourceforge.net/tech/node67.html  !!!!!!!!!!!
+
+
+
+    }
+    void update(MNASystem & m) final
+    {
+
+
+      double dInPn = (m.b[nets[0]].lu - m.b[nets[1]].lu) - lastVInPn;
+      double dOut = m.b[nets[2]].lu - lastVOut;
+
+
+
+      g = dOut/dInPn;
+      ng = -g;
+
+
+      lastVInPn = m.b[nets[0]].lu - m.b[nets[1]].lu;
+      lastVOut = m.b[nets[2]].lu;
+
+
+
+      //g = amp/(1 + pow(((2*M_PI)/2*vmax*amp*(m.b[0].lu-m.b[1].lu)), 2));
+
+    v = g * (m.b[0].lu-m.b[1].lu) - (vmax*(2/M_PI)*atan((M_PI/(2*vmax))*amp*(m.b[0].lu-m.b[1].lu)));
+
+    }
+
+
+
 };

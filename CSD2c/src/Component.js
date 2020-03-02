@@ -77,6 +77,8 @@ function Component(name = 'resistor 200', xin = mouseX,  yin = mouseY-100) {
     myCircle.style.fontSize = "12px";
     myCircle.style.fontAlign = "center";
     myCircle.style.zIndex = '-2'
+    myCircle.x = x
+    myCircle.y = y
     myCircle.innerHTML = name;
 
     myCircle.addEventListener('contextmenu', ((ev) => {
@@ -94,16 +96,6 @@ function Component(name = 'resistor 200', xin = mouseX,  yin = mouseY-100) {
 
     document.body.appendChild(myCircle);
 
-    var dragItem = myCircle;
-    var container = myCircle;
-
-    var active = false;
-    var currentX;
-    var currentY;
-    var initialX;
-    var initialY;
-    var xOffset = 0;
-    var yOffset = 0;
 
     dragElement(myCircle);
 
@@ -157,7 +149,7 @@ function Component(name = 'resistor 200', xin = mouseX,  yin = mouseY-100) {
     }
 
     this.getposition = function() {
-        return [x, y];
+        return [myCircle.x, myCircle.y];
     }
     this.getsize = function() {
         return [w, h];

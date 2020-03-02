@@ -18,41 +18,46 @@ function Sidebar() {
     let sbaroffset, sbardragging; // variables for our dragging feature
     let _this = this;
 
-    let bg = document.createElement("div");
-    bg.style.position = "fixed";
-    bg.style.width = sbarwidth-20 + 'px';
-    bg.style.height = window.innerHeight + "px";
-    bg.style.background = "#444";
-    bg.style.top = "0px";
-    bg.style.right = "0px";
-    bg.style.zIndex = "0";
-    document.body.appendChild(bg);
-
     let bar = document.createElement("div");
     bar.style.position = "fixed";
     bar.style.width = "30px";
     bar.style.height = window.innerHeight + "px";
     bar.style.background = "#333";
     bar.style.top = "0px";
-    bar.style.right = sbarwidth-40 + "px";
+    bar.style.right = sbarwidth-30 + "px";
     bar.style.zIndex = "0";
-    bg.appendChild(bar);
+
+
+    let bg = document.createElement("div");
+    bg.style.position = "fixed";
+    bg.style.background = "#444";
+    bg.style.top = "0px";
+    bg.style.right = "0px";
+    bg.style.height = window.innerHeight + "px";
+    bg.style.width = sbarwidth + "px";
+    bg.style.zIndex = "-1";
+    //bar.appendChild(bg);
+
+    document.body.appendChild(bg);
+    document.body.appendChild(bar);
+
 
     dragElement(bar, this);
 
     // label for the console
     let modlabel = document.createElement("div");
     modlabel.innerHTML = 'Console:';
+    modlabel.hide = () => {modlabel.style.display = "none"}
+    modlabel.show = () => {modlabel.style.display = "block"}
     modlabel.style.position = "fixed";
-    modlabel.style.top = "5%";
-    modlabel.style.left = cnvwidth+51 + "px";
-    modlabel.style.fontSize = "5";
-    modlabel.style.fontFamily = "monospace";
+    modlabel.style.top = "6%";
+    modlabel.style.right = sbarwidth-105 + "px";
+    modlabel.style.fontSize = "14px";
+    modlabel.style.color = "#dcdcdc";
+    modlabel.style.fontFamily = "sans-serif";
     modlabel.style.fontWeight = "bold";
     document.body.appendChild(modlabel);
 
-  //  modlabel.style.cssText ="fontSize:5; font-family:monospace; font-weight: bold; position:fixed; left:x0px; top:5%".replace('x0', cnvwidth+51));
-    //modlabel.style.display = "none";
 
     //Console logviewer object created in console-viewer.js!
     logviewer.windowResize(sbarwidth-60, window.innerHeight-200);
@@ -76,7 +81,7 @@ function Sidebar() {
             buttons[0].textContent = "<";
             hidden = 1;
             sbarwidth = 38;
-            cnvwidth = window.innerWidth-sbarwidth
+            cnvwidth = window.innerWidth-38
             _this.windowresize();
         }
         else {
@@ -85,11 +90,11 @@ function Sidebar() {
                 tab = 2;
             }
             sbarwidth = 350;
-            cnvwidth = window.innerWidth-sbarwidth
+            cnvwidth = window.innerWidth-350
             hidden = 0;
             _this.windowresize();
         }
-        let tabs = [[], [jackoptions, haliteoptions], [codebox], [medialib], [logviewer]];
+        let tabs = [[], [jackoptions, haliteoptions], [logviewer, modlabel], [medialib],  [codebox]];
         for (var i = 0; i < 5; i++) {
             if (i != tab) {
                 tabs[i].forEach((t) =>  t.hide()); //t.hide());
@@ -120,7 +125,7 @@ function Sidebar() {
     for (let i = 0; i < buttonpresets.length; i++) {
         buttons[i] = document.createElement("BUTTON");
         buttons[i].innerHTML = buttonpresets[i][0];
-        buttons[i].style.cssText = "border:none; outline:none; font-size:7; text-align:center; color:white; background-color:#202020; position:absolute; right:0px; top:x1%;".replace('x0', sbarwidth-38).replace('x1', buttonpresets[i][1]);
+        buttons[i].style.cssText = "border:none; outline:none; font-size:14px; text-align:center; color:white; background-color:#202020; position:absolute; right:0px; top:x1%;".replace('x0', sbarwidth-38).replace('x1', buttonpresets[i][1]);
         buttons[i].style.width = "28px";
         buttons[i].style.height = "27px";
         buttons[i].addEventListener("click", buttonpresets[i][2]);
@@ -129,28 +134,20 @@ function Sidebar() {
 
 
     this.windowresize = function() {
+      bg.style.width = sbarwidth + "px";
+      bar.style.right = sbarwidth-30 + "px";
 
-        bar.style.left = cnvwidth + "px";
-        bar.style.height = window.innerHeight + "px";
-
-        bg.style.right = "0px";
-        bg.style.height = window.innerHeight + "px";
-        bg.style.width = sbarwidth-20 + "px";
 
         for (let i = 0; i < buttons.length; i++) {
-          buttons[i].style.top = buttonpresets[i][1] + "%";
-          //buttons[i].style.right =  sbarwidth-38 + "px"
           buttons[i].style.width = "28px";
           buttons[i].style.height = "27px";
-            //buttons[i].style.cssText ="right:x0px;".replace('x0', sbarwidth-34);
         }
 
         jackoptions.windowResize();
         haliteoptions.windowResize();
         medialib.windowresize();
         codebox.windowResize();
-        modlabel.innerHTML = 'Console:';
-        modlabel.style.left = cnvwidth+51 + "px";
+        modlabel.style.right = sbarwidth-105 + "px";
 
 
         logviewer.windowResize(sbarwidth-60, window.innerHeight-50);
@@ -172,18 +169,19 @@ function Sidebar() {
 function jackOptions() {
     let jack;
 
-    let modlabel = document.createElement("div", 'Jack Settings:');
-    modlabel.style.cssText = "fontSize:5; font-family:monospace; font-weight: bold; position:fixed; left:x0px; top:5%".replace('x0', cnvwidth+51);
+    let modlabel = document.createElement("div");
+    modlabel.innerHTML = 'Jack Settings:';
+    modlabel.style.cssText = "color:#dcdcdc; font-size:14px; font-family:sans-serif; font-weight: bold; position:fixed; right:x0px; top:6%".replace('x0', sbarwidth-145);
     document.body.appendChild(modlabel);
 
     let driverlabel = document.createElement("div");
     driverlabel.innerHTML = 'Driver:';
-    driverlabel.style.cssText ="fontSize:3; font-family:monospace; position:fixed; left:x0px; top:10.5%".replace('x0', cnvwidth+51)
+    driverlabel.style.cssText = "color:#dcdcdc; font-size:14px; font-family:sans-serif; position:fixed; right:x0px; top:10.5%".replace('x0', sbarwidth-135)
     document.body.appendChild(driverlabel);
 
     let driverlist = ['coreaudio', 'alsa', 'portaudio'];
     let driversel = document.createElement("SELECT");
-    driversel.style.cssText = "font-size:7; position:fixed; right:11px; top:10%";
+    driversel.style.cssText = "font-size:12px; position:fixed; right:11px; top:10%";
     driversel.style.width = "100px"
     driversel.style.height = "20px"
     document.body.appendChild(driversel);
@@ -198,12 +196,12 @@ function jackOptions() {
 
     let srlabel = document.createElement("div");
     srlabel.innerHTML = 'Sample rate:';
-    srlabel.style.cssText ="fontSize:3; font-family:monospace; position:fixed; left:x0px; top:18.5%".replace('x0', cnvwidth+51);
+    srlabel.style.cssText = "color:#dcdcdc; font-size:14px; font-family:sans-serif; position:fixed; right:x0px; top:18.5%".replace('x0', sbarwidth-135);
     document.body.appendChild(srlabel);
 
     let samplesrates = [44100, 22050, 32000, 48000, 88200, 96000];
     let sampleratesel = document.createElement("SELECT");
-    sampleratesel.style.cssText ="font-size:7; position:fixed; right:11px; top:18%";
+    sampleratesel.style.cssText = "font-size:12px; position:fixed; right:11px; top:18%";
     sampleratesel.style.width = "100px"
     sampleratesel.style.height = "20px"
     document.body.appendChild(sampleratesel);
@@ -218,12 +216,12 @@ function jackOptions() {
 
     let buflabel = document.createElement("div");
     buflabel.innerHTML = 'Buffer size:';
-    buflabel.style.cssText ="fontSize:3; font-family:monospace; position:fixed; left:x0px; top:26.5%".replace('x0', cnvwidth+51);
+    buflabel.style.cssText = "color:#dcdcdc; font-size:14px; font-family:sans-serif; position:fixed; right:x0px; top:26.5%".replace('x0', sbarwidth-135);
     document.body.appendChild(buflabel);
 
     let bufsizes = [4096, 256, 512, 1024, 2048];
     let buffersel = document.createElement("SELECT");
-    buffersel.style.cssText = "font-size:7; position:fixed; right:11px; top:26%";
+    buffersel.style.cssText = "font-size:12px; position:fixed; right:11px; top:26%";
     buffersel.style.width = "100px"
     buffersel.style.height = "20px"
     document.body.appendChild(buffersel);
@@ -240,17 +238,17 @@ function jackOptions() {
 
     let inputlabel = document.createElement("div");
     inputlabel.innerHTML =  'Command:';
-    inputlabel.style.cssText ="fontSize:3; font-family:monospace; position:fixed; left:x0px; top:35%".replace('x0', cnvwidth+51);
+    inputlabel.style.cssText = "color:#dcdcdc; font-size:14px; font-family:sans-serif; position:fixed; right:x0px; top:35%".replace('x0', sbarwidth-135);
     document.body.appendChild(inputlabel);
 
     let inputcmd = document.createElement("INPUT");
-    inputcmd.style.cssText ="font-size:7; position:fixed; right:11px; top:34%";
+    inputcmd.style.cssText = "font-size:14px; position:fixed; right:11px; top:34%";
     inputcmd.style.width = sbarwidth-150 + "px";
     inputcmd.style.height = "20px";
     document.body.appendChild(inputcmd);
 
     onswitch = document.createElement("BUTTON");
-    onswitch.style.cssText = "border:none; outline:none; font-size:7; color:white; background-color:#303030; position:fixed; left:x0px; top:42%".replace('x0', cnvwidth+(sbarwidth/2));
+    onswitch.style.cssText = "border:none; outline:none; font-size:14px; color:white; background-color:#303030; position:fixed; right:x0px; top:42%".replace('x0', cnvwidth+(sbarwidth/2));
     onswitch.style.width = "48px";
     onswitch.style.height = "32px";
     onswitch.innerHTML = "OFF";
@@ -258,11 +256,13 @@ function jackOptions() {
         if (jackstatus == 1) {
             jack.kill('SIGINT');
             onswitch.innerHTML = "OFF";
+            onswitch.style.backgroundColor = "#303030";
         }
         else {
             let splitcmd = inputcmd.value.split(' ');
             jack = spawn(splitcmd[0], splitcmd.slice(1));
             onswitch.innerHTML = "ON";
+            onswitch.style.backgroundColor = "#229FD7";
             jack.stdout.on('data', function (data) {
                 console.log('Jack: ' + data);
             });
@@ -274,6 +274,7 @@ function jackOptions() {
             jack.on('close', function (code) {
                 jackstatus = 0;
                 onswitch.innerHTML = 'OFF'
+                onswitch.style.backgroundColor = "#303030";
                                            console.log('Jack closed with code ' + code);
                 if (code) {
                     console.warn('Jack has crashed');
@@ -300,16 +301,16 @@ function jackOptions() {
 
     this.windowResize = function() {
 
-        modlabel.style.left = cnvwidth+51 + "px";
-        onswitch.style.left = cnvwidth+(sbarwidth/2) + "px";
+        modlabel.style.right = sbarwidth-145 + "px";
+        onswitch.style.right = sbarwidth-(sbarwidth/1.6) + "px";
         inputcmd.style.width  = sbarwidth-180 + "px";
-        inputlabel.style.left = cnvwidth+51 + "px";
+        inputlabel.style.right = sbarwidth-135 + "px";
 
         driversel.style.width = sbarwidth-180 + "px";
         sampleratesel.style.width = sbarwidth-180 + "px";
-        srlabel.style.left = cnvwidth+51 + "px";
-        driverlabel.style.left = cnvwidth+51 + "px"
-        buflabel.style.left = cnvwidth+51 + "px";
+        srlabel.style.right = sbarwidth-135 + "px";
+        driverlabel.style.right = sbarwidth-135 + "px"
+        buflabel.style.right = sbarwidth-135 + "px";
         buffersel.style.width = sbarwidth-180 + "px";
     }
 
@@ -356,14 +357,14 @@ function mediaLibrary() {
 
     let modlabel = document.createElement("div");
     modlabel.innerHTML = 'Media Library:';
-    //modlabel.style.cssText ="fontSize:5; font-family:monospace; font-weight: bold; position:fixed; left:x0px; top:5%".replace('x0', cnvwidth+51));
-
+    modlabel.style.cssText = "color:#dcdcdc; font-size:14px; font-family:sans-serif; font-weight: bold; position:fixed; right:x0px; top:6%".replace('x0', sbarwidth-151);
+    document.body.appendChild(modlabel);
 
     let div = document.createElement('div');
     div.style.position = "fixed";
-    div.style.font = "monospace";
+    div.style.font = "sans-serif";
     div.style.right = "0px";
-    div.style.top = "55px";
+    div.style.top = "75px";
     div.style.height = (window.innerHeight-70) +'px'
                        div.style.width = sbarwidth-30 +'px'
                                          div.style.overflow = "auto";
@@ -402,10 +403,10 @@ function mediaLibrary() {
 
             img.style.top = (11+(32*top)) + "px";
             img.style.right = "50px"
-            middlebutton.style.cssText ="border:none; outline:none; font-size:7; text-align:left; color:white; background-color:x3; position:absolute; left:32px; top:x2px; width:x1px; height:32px;".replace('x0', 30).replace('x1', sbarwidth-95).replace('x2', top*32).replace('x3', ['#303030', '#0094d6'][top%2]);
+            middlebutton.style.cssText ="border:none; outline:none; font-size:14px; text-align:left; color:white; background-color:x3; position:absolute; left:32px; top:x2px; width:x1px; height:32px;".replace('x0', 30).replace('x1', sbarwidth-95).replace('x2', top*32).replace('x3', ['#303030', '#383838'][top%2]);
             middlebutton.innerHTML = file;
-            leftbutton.style.cssText ="border:none; outline:none; font-size:7; text-align:left; color:white; background-color:x3; position:absolute; left:0px; top:x2px; width:32px; height:32px;".replace('x1', 30).replace('x2', top*32).replace('x3', ['#303030', '#0094d6'][top%2]);
-            rightbutton.style.cssText ="border:none; outline:none; font-size:7; text-align:center; color:white; background-color:x3; position:absolute; right:0px; top:x2px; width:x1px; height:32px;".replace('x1', 39).replace('x2', top*32).replace('x3', ['#303030', '#0094d6'][top%2]);
+            leftbutton.style.cssText ="border:none; outline:none; font-size:14px; text-align:left; color:white; background-color:x3; position:absolute; left:0px; top:x2px; width:32px; height:32px;".replace('x1', 30).replace('x2', top*32).replace('x3', ['#303030', '#383838'][top%2]);
+            rightbutton.style.cssText ="border:none; outline:none; font-size:14px; text-align:center; color:white; background-color:x3; position:absolute; right:0px; top:x2px; width:x1px; height:32px;".replace('x1', 39).replace('x2', top*32).replace('x3', ['#303030', '#383838'][top%2]);
         };
         this.show = function() {
             middlebutton.style.display = "block"
@@ -492,7 +493,7 @@ function mediaLibrary() {
         for (let i = 0; i < filebuttonlist.length; i++) {
             filebuttonlist[i].windowResize();
         }
-        modlabel.style.left = cnvwidth+51 + "px";
+        modlabel.style.right = sbarwidth-141 + "px";
         div.style.height = (window.innerHeight-70).toString()+'px'
                            div.style.width = sbarwidth-30 +'px'
                                              div.scrollTop = div.scrollHeight+200;
@@ -510,28 +511,28 @@ function haliteOptions() {
     let modlabel = document.createElement("div");
     modlabel.innerHTML = 'Halite Settings:';
     document.body.appendChild(modlabel);
-    //modlabel.style.cssText ="fontSize:5; font-family:monospace; font-weight: bold; position:fixed; left:x0px; top:53%".replace('x0', cnvwidth+51));
+    modlabel.style.cssText = "color:#dcdcdc; font-size:14px; font-family:sans-serif; font-weight: bold; position:fixed; right:x0px; top:53%".replace('x0', sbarwidth-201);
 
     let srenginelabel = document.createElement("div");
-    srenginelabel.innerHTML = 'Halite engine sample rate:';
-    srenginelabel.style.cssText ="fontSize:3; font-family:monospace; position:fixed; left:x0px; top:60.5%".replace('x0', cnvwidth+51);
+    srenginelabel.innerHTML = 'Engine sample rate:';
+    srenginelabel.style.cssText = "color:#dcdcdc; font-size:14px; font-family:sans-serif; position:fixed; right:x0px; top:60.5%".replace('x0', sbarwidth-51);
     document.body.appendChild(srenginelabel);
 
     let samplerates = [44100, 22050, 32000, 48000, 88200, 96000];
     let srenginesel = document.createElement("SELECT");
-    srenginesel.style.cssText = "font-size:7; position:fixed; right:11px; top:60%";
+    srenginesel.style.cssText = "font-size:12px; position:fixed; right:11px; top:60%";
     srenginesel.style.width = "100px"
     srenginesel.style.height = "20px"
     document.body.appendChild(srenginesel);
 
 
     let sroutputlabel = document.createElement("div");
-    sroutputlabel.style.cssText ="fontSize:3; font-family:monospace; position:fixed; left:x0px; top:68.5%".replace('x0', cnvwidth+51);
-    sroutputlabel.innerHTML =  'File export sample rate:';
+    sroutputlabel.style.cssText = "color:#dcdcdc; font-size:14px; font-family:sans-serif; position:fixed; right:x0px; top:68.5%".replace('x0', sbarwidth/2);
+    sroutputlabel.innerHTML =  'Export sample rate:';
     document.body.appendChild(sroutputlabel);
 
     let sroutputsel = document.createElement("SELECT");
-    sroutputsel.style.cssText = "font-size:7; position:fixed; right:11px; top:68%";
+    sroutputsel.style.cssText = "font-size:12px; position:fixed; right:11px; top:68%";
     sroutputsel.style.width = "100px"
     sroutputsel.style.height = "20px"
     document.body.appendChild(sroutputsel);
@@ -551,12 +552,12 @@ function haliteOptions() {
     let depths = [24, 8, 16, 32];
 
     let depthlabel = document.createElement("div");
-    depthlabel.style.cssText ="fontSize:3; font-family:monospace; position:fixed; left:x0px; top:76.5%".replace('x0', cnvwidth+51);
-    depthlabel.innerHTML = 'File export bit depth:';
+    depthlabel.style.cssText = "color:#dcdcdc; font-size:14px; font-family:sans-serif; position:fixed; right:x0px; top:76.5%".replace('x0', sbarwidth-251);
+    depthlabel.innerHTML = 'Export bit depth:';
     document.body.appendChild(depthlabel);
 
     let depthsel = document.createElement("SELECT");
-    depthsel.style.cssText ="font-size:7; position:fixed; right:11px; top:76%";
+    depthsel.style.cssText = "font-size:12px; position:fixed; right:11px; top:76%";
     depthsel.style.width = "100px"
     depthsel.style.height = "20px"
     document.body.appendChild(depthsel);
@@ -571,12 +572,12 @@ function haliteOptions() {
     let formats = ['WAV', 'AIFF'];
 
     let formatlabel = document.createElement("div");
-    formatlabel.style.cssText ="fontSize:3; font-family:monospace; position:fixed; left:x0px; top:84.5%".replace('x0', cnvwidth+51);
+    formatlabel.style.cssText = "color:#dcdcdc; font-size:14px; font-family:sans-serif; position:fixed; right:x0px; top:84.5%".replace('x0', sbarwidth-251);
     formatlabel.innerHTML = 'Export format:';
     document.body.appendChild(formatlabel);
 
     let formatsel = document.createElement("SELECT");
-    formatsel.style.cssText ="font-size:7; position:fixed; right:11px; top:84%";
+    formatsel.style.cssText = "font-size:12px; position:fixed; right:11px; top:84%";
     formatsel.style.width = "100px";
     formatsel.style.height = "20px";
     document.body.appendChild(formatsel);
@@ -606,15 +607,15 @@ function haliteOptions() {
 
 
 
-        modlabel.style.left = cnvwidth+51 + "px";
-        srenginesel.style.width = sbarwidth-280 + "px";
-        srenginelabel.style.left = cnvwidth+51+ "px";
-        sroutputsel.style.width = sbarwidth-280 + "px";
-        sroutputlabel.style.left = cnvwidth+51 + "px";
-        depthsel.style.width = sbarwidth-280 + "px";
-        depthlabel.style.left = cnvwidth+51 + "px";
-        formatsel.style.width = sbarwidth-280 + "px";
-        formatlabel.style.left = cnvwidth+51 + "px";
+        modlabel.style.right = sbarwidth-155 + "px";
+        srenginesel.style.width = sbarwidth-200 + "px";
+        srenginelabel.style.right = sbarwidth-180+ "px";
+        sroutputsel.style.width = sbarwidth-200 + "px";
+        sroutputlabel.style.right = sbarwidth-180 + "px";
+        depthsel.style.width = sbarwidth-200 + "px";
+        depthlabel.style.right = sbarwidth-180 + "px";
+        formatsel.style.width = sbarwidth-200 + "px";
+        formatlabel.style.right = sbarwidth-180 + "px";
 
     }
 
@@ -649,22 +650,23 @@ function haliteOptions() {
 
 function codeBox() {
 
-    let modlabel = document.createElement("div", 'Code editor:');
-    modlabel.style.cssText ="fontSize:5; font-family:monospace; font-weight: bold; position:fixed; left:x0px; top:5%".replace('x0', cnvwidth+51);
-
+    let modlabel = document.createElement("div");
+    modlabel.innerHTML = 'Code editor:';
+    modlabel.style.cssText = "color:#dcdcdc; font-size:14px; font-family:sans-serif; font-weight: bold; position:fixed; right:x0px; top:6%".replace('x0', sbarwidth-131);
+    document.body.appendChild(modlabel);
 
     let codebox = document.createElement('textarea', code);
     codebox.style.position = "fixed";
     codebox.style.width = sbarwidth-10 + "px";
-    codebox.style.height =  window.innerHeight-149 + "px";
-    codebox.style.top = "60px";
+    codebox.style.height =  window.innerHeight-220 + "px";
+    codebox.style.top = "80px";
     codebox.style.right = "10px";
     codebox.style.resize = "none";
     codebox.style.display = "none";
     document.body.appendChild(codebox);
 
     let coderefresh = document.createElement("BUTTON");
-    coderefresh.style.cssText ="border:none; outline:none; font-size:7; color:white; background-color:#303030; position:fixed; width:60px; left:x0px; top:90%".replace('x0', cnvwidth+(sbarwidth/2)-50);
+    coderefresh.style.cssText ="border:none; outline:none; font-size:12px; color:white; background-color:#303030; position:fixed; width:60px; right:x0px; top:90%".replace('x0', (sbarwidth/2)-50);
     coderefresh.style.width = "52px";
     coderefresh.style.height = "32px";
     coderefresh.innerHTML = 'Update code'
@@ -674,7 +676,7 @@ function codeBox() {
     document.body.appendChild(coderefresh);
 
     let coderun = document.createElement("BUTTON");
-    coderun.style.cssText = "border:none; outline:none; font-size:7; color:white; background-color:#303030; position:fixed; width:60px; left:x0px; top:90%".replace('x0', cnvwidth+(sbarwidth/2)+0);
+    coderun.style.cssText = "border:none; outline:none; font-size:12px; color:white; background-color:#303030; position:fixed; width:60px; right:x0px; top:90%".replace('x0', (sbarwidth/2)+0);
     coderun.style.width =  "52px";
     coderun.style.height = "32px";
     coderun.innerHTML = 'Run realtime';
@@ -685,7 +687,7 @@ function codeBox() {
     document.body.appendChild(coderun);
 
     let rendercode = document.createElement("BUTTON");
-    rendercode.style.cssText ="border:none; outline:none; font-size:7; color:white; background-color:#303030; position:fixed; width:60px; left:x0px; top:90%".replace('x0', cnvwidth+(sbarwidth/2)+50);
+    rendercode.style.cssText ="border:none; outline:none; font-size:12px; color:white; background-color:#303030; position:fixed; width:60px; right:x0px; top:90%".replace('x0', (sbarwidth/2)+50);
     rendercode.style.width = "52px"
     rendercode.style.height = "32px";
       rendercode.innerHTML = 'Render to file';
@@ -701,11 +703,11 @@ function codeBox() {
 
     this.windowResize = function() {
         codebox.style.width = sbarwidth-70 + "px";
-        codebox.style.height = window.innerHeight-149 + "px";;
-        rendercode.style.left = (cnvwidth+(sbarwidth/2)+70) + "px"
-        coderun.style.left = cnvwidth+(sbarwidth/2)+0 + "px";
-        coderefresh.style.left = cnvwidth+(sbarwidth/2)-70 + "px";
-        modlabel.style.left = cnvwidth+51 + "px";
+        codebox.style.height = window.innerHeight-220 + "px";;
+        rendercode.style.right = ((sbarwidth-100)/2)+70 + "px"
+        coderun.style.right = ((sbarwidth-100)/2)+0 + "px";
+        coderefresh.style.right = ((sbarwidth-100)/2)-70 + "px";
+        modlabel.style.right = sbarwidth-130 + "px";
     }
 
     this.show = function()  {

@@ -194,6 +194,10 @@ int main(int argc, char* argv[])
         else if(!seglist[0].compare("varcap"))
             net->addComponent(new VariableCapacitor(stof(seglist[1]), std::stoi(seglist[2]), std::stoi(seglist[3]), seglist[4]));
 
+        else if(!seglist[0].compare("inductor"))
+            net->addComponent(new Inductor(stod(seglist[1]), std::stoi(seglist[2]), std::stoi(seglist[3])));
+
+
 
         else if(!seglist[0].compare("voltage"))
             net->addComponent(new Voltage(stof(seglist[1]), std::stoi(seglist[2]), std::stoi(seglist[3])));
@@ -208,7 +212,7 @@ int main(int argc, char* argv[])
             net->addComponent(new BJT(std::stoi(seglist[1]), std::stoi(seglist[2]), std::stoi(seglist[3]), std::stoi(seglist[4])));
 
         else if(!seglist[0].compare("opa"))
-            net->addComponent(new OPA(std::stoi(seglist[1]), std::stoi(seglist[2]), std::stoi(seglist[3]), std::stoi(seglist[4]), std::stoi(seglist[5])));
+            net->addComponent(new OPA(std::stoi(seglist[1]), std::stoi(seglist[2]), std::stoi(seglist[3])));
 
         else if(!seglist[0].compare("potentiometer")) {
             net->addComponent(new Potentiometer(stof(seglist[1]), stoi(seglist[2]), stoi(seglist[3]), stoi(seglist[4]), seglist[5]));

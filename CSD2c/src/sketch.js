@@ -5,9 +5,10 @@ const { spawn } = require('child_process');
 document.body.style.backgroundColor = "#505050";
 document.head.style.height = "1500px";
 
+/*
 new DragSelect({
   selectables: document.getElementsByClassName('selectable-nodes')
-});
+}); */
 
 // All our objects, plus the data that we need to convert it to halite
 let types = {
@@ -20,6 +21,8 @@ let types = {
     {'inlets': 0, 'outlets': 2, 'args': 1, 'colors': ['#ff0000', '#000000'], 'code': " voltage, a0, i0, i1"},
 'capacitor':
     {'inlets': 1, 'outlets': 1, 'args': 1, 'colors': ['#229FD7', '#229FD7'], 'code': " capacitor, a0, i0, i1"},
+'inductor':
+    {'inlets': 1, 'outlets': 1, 'args': 1, 'colors': ['#229FD7', '#229FD7'], 'code': " inductor, a0, i0, i1"},
 'diode':
     {'inlets': 1, 'outlets': 1, 'args': 0, 'colors': ['#ff0000', '#229FD7'], 'code': " diode, i0, i1"},
 'bjt':
@@ -30,7 +33,7 @@ let types = {
     {'inlets': 1, 'outlets': 2, 'args': 0, 'colors': ['#ff0000', '#000000', '#229FD7'], 'code': " bjt, i0, i1, i2, 0"},
 
 'op-amp':
-    {'inlets': 4, 'outlets': 1, 'args': 0, 'colors': ['#229FD7', '#000000', '#ff0000', '#000000', '#229FD7'], 'code': " opa, i4, i0, i1, i2, i3"},
+    {'inlets': 2, 'outlets': 1, 'args': 0, 'colors': ['#229FD7', '#000000', '#ff0000', '#000000', '#229FD7'], 'code': " opa, i0, i1, i2"},
 
     // Our analog Components
 'varres':
@@ -160,7 +163,7 @@ let realtime_playing = false; // Checks if we are playing in realtime
 let sbar = new Sidebar; // Sidebar (see sidebar.js)
 //let sbarwidth = 350;
 
-
+window.addEventListener("resize", () => {sbar.windowresize()});
 
 //let code = ''; // letiable to store code to use for exporting and displaying
 
@@ -525,7 +528,7 @@ function doubleClicked() {
 
 // Resize everything accordingly on windowResize
 function windowResized() {
-    resizeCanvas(window.innerWidth, window.innerHeight);
+    //resizeCanvas(window.innerWidth, window.innerHeight);
     sbar.windowresize();
     for (let i = 0; i < 3; i++) {
 
