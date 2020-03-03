@@ -76,36 +76,63 @@ struct AnalogDelay : Component2<2, 1, 1>
 struct VariableResistor : Component2<2, 0, 1>
 {
     double  r;
-    double  resvalue;
-    double  negresvalue;
+    double  g;
+    double  ng;
+    double scale;
+
+    double smoothscale = 1;
+    double previousscale = 1;
+    double a = 0.9; // smoothing factor
 
     VariableResistor(double r, int l0, int l1, std::string d0) : r(r)
     {
         pinLoc[0] = l0;
         pinLoc[1] = l1;
         digiPins[0] = d0;
+        scale = r;
+        g = 1. / r;
+        ng = -g;
 
-        resvalue = 1. / r;
-        negresvalue = -resvalue;
+
     }
 
     void stamp(MNASystem & m) final
     {
-        for (size_t r = 0; r < 2; r++) {
-            for (size_t c = 0; c < 2; c++) {
-                if(r==c) m.A[nets[r]][nets[c]].gdyn.push_back(&resvalue);
-                else m.A[nets[r]][nets[c]].gdyn.push_back(&negresvalue);
-            }
-        }
+
+      /*
+      m.stampStatic(+base, nets[0], nets[0]); //Positive on diagonal elements
+      m.stampStatic(-base, nets[0], nets[1]); //Negative on off-diagonal elements
+      m.stampStatic(-base, nets[1], nets[0]);
+      m.stampStatic(+base, nets[1], nets[1]); */
+
+
+        m.A[nets[0]][nets[0]].gdyn.push_back(&g);
+        m.A[nets[0]][nets[1]].gdyn.push_back(&ng);
+        m.A[nets[1]][nets[0]].gdyn.push_back(&ng);
+        m.A[nets[1]][nets[1]].gdyn.push_back(&g);
+
     }
     void updateInput(MNASystem & m) final
     {
+      scale = m.getDigital(digiNets[0], 1);
+      scale += scale == 0; // cant have 0
 
-        resvalue = 1. / (r * m.getDigital(digiNets[0]));
-        negresvalue = -resvalue;
+      // smooth movement is a must if you want to actually use this for anything
+      //smoothscale = ((1-a)*previousscale + a * scale);
+      //previousscale = smoothscale;
+
+
+    }
+    void update(MNASystem & m) final
+    {
+      g = 1. / scale;
+      ng = -g;
+
     }
 
 };
+
+
 
 struct Potentiometer : Component2<3, 0, 1>
 {
@@ -471,6 +498,38 @@ struct Voltage : Component2<2, 1>
         m.stampStatic(-1, nets[2], nets[1]);
 
         m.b[nets[2]].g = v;
+
+    }
+};
+
+struct Click : Component2<2, 1>
+{
+    double v;
+
+    Click(double v, int l0, int l1) : v(v)
+    {
+        pinLoc[0] = l0;
+        pinLoc[1] = l1;
+    }
+
+    void stamp(MNASystem & m) final
+    {
+        // Gets written to A matrix (B and C parts)
+        m.stampStatic(-1, nets[0], nets[2]); // -1 to the net connected to the negative
+        m.stampStatic(+1, nets[1], nets[2]);
+
+        m.stampStatic(+1, nets[2], nets[0]);
+        m.stampStatic(-1, nets[2], nets[1]);
+
+        m.b[nets[2]].gdyn.push_back(&v);
+
+    }
+    void update(MNASystem & m) final
+    {
+
+      if(m.ticks > 2) {
+      v = 0;
+    }
 
     }
 };
@@ -915,8 +974,6 @@ struct OPA : Component2<3, 1>
     double ng;
     double v;
     double vmax;
-    double lastVInPn;
-    double lastVOut;
 
     // pins: out, in+, in-, supply+, supply-
     OPA(int vInP, int vInN, int vOut)
@@ -927,9 +984,8 @@ struct OPA : Component2<3, 1>
 
         // the DC voltage gain
         amp = 1;
-        vmax = 0.02;
-        lastVInPn = 0;
-        lastVOut = 0;
+        vmax = 0.04;
+
 
 
     }
@@ -939,18 +995,13 @@ struct OPA : Component2<3, 1>
     {
 
         // This is a way faster method to simulate op-amps
-
         m.A[nets[3]][nets[0]].gdyn.push_back(&g);
         m.A[nets[3]][nets[1]].gdyn.push_back(&ng);
         m.stampStatic(-1, nets[3], nets[2]);
 
         m.stampStatic(1, nets[2], nets[3]);
 
-
-
-        m.b[nets[3]].g = 0;
-
-        //m.b[nets[3]].gdyn.push_back(&v);
+        m.b[nets[3]].gdyn.push_back(&v);
 
         // http://qucs.sourceforge.net/tech/node67.html  !!!!!!!!!!!
 
@@ -962,8 +1013,9 @@ struct OPA : Component2<3, 1>
       g = amp/(1 + pow(((2*M_PI)/2*vmax*amp*(m.b[0].lu-m.b[1].lu)), 2));
       ng = -g;
 
-      // Alternatively, we can set the voltage at m.b[nets[3]] to this but I don't think it's makes a difference?? it might though
-      //v = g * (m.b[0].lu-m.b[1].lu) - (vmax*(2/M_PI)*atan((M_PI/(2*vmax))*amp*(m.b[0].lu-m.b[1].lu)));
+      // Alternatively, we can set the voltage at m.b[nets[3]] to 0 but that doesn't allow self-oscillation to happen
+      v = g * (m.b[0].lu-m.b[1].lu) - (vmax*(2/M_PI)*atan((M_PI/(2*vmax))*amp*(m.b[0].lu-m.b[1].lu)));
+
 
     }
 

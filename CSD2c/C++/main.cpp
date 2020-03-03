@@ -1,5 +1,6 @@
 #include <sstream>
-#include "./jack/jack_module.h"
+#include "RtAudio.h"
+//#include "./jack/jack_module.h"
 #include "./halite.cpp"
 #include "./digitalComponents.cpp"
 #include "./analogComponents.cpp"
@@ -7,18 +8,79 @@
 
 #include "./rtmidi-master/RtMidi.h"
 
-
+#include <iostream>
+#include <cstdlib>
 #include <fstream>
 #include <streambuf>
 #include <tclap/CmdLine.h>
 
 std::vector<std::string> savefile;
 std::vector<std::string> object;
+NetList * net;
+double outamp = 0.8;
+unsigned int bufferFrames, fs = 44100, offset = 0;
+
+RtMidiIn *midiin = new RtMidiIn();
+std::vector<unsigned char> message;
+
+#define FORMAT RTAUDIO_FLOAT64
+#define SCALE  1.0
+
+void errorCallback( RtAudioError::Type type, const std::string &errorText )
+{
+  // This example error handling function does exactly the same thing
+  // as the embedded RtAudio::error() function.
+  std::cout << "in errorCallback" << std::endl;
+  if ( type == RtAudioError::WARNING )
+    std::cerr << '\n' << errorText << "\n\n";
+  else if ( type != RtAudioError::WARNING )
+    throw( RtAudioError( errorText, type ) );
+}
+
+unsigned int channs;
+RtAudio::StreamOptions options;
+unsigned int frameCounter = 0;
+bool checkCount = false;
+unsigned int nFrames = 0;
+unsigned int bufferBytes;
+double *inbuffer;
+
+double init[512] = {0};
+
+const unsigned int callbackReturnValue = 1;
+
+int inout( void *outputBuffer, void *inputBuffer, unsigned int nBufferFrames,
+         double /*streamTime*/, RtAudioStreamStatus status, void *data )
+{
+  unsigned int i, j;
+  extern unsigned int channs;
+  double *buffer = (double *) outputBuffer;
+  inbuffer = (double *) inputBuffer;
+
+
+  double *output;
+  midiin->getMessage( &message );
+
+    for ( i=0; i<nBufferFrames; i++ ) {
+      net->simulateTick();
+      output = net->getAudioOutput();
+      *buffer++ = *(output)*outamp;
+      *(buffer+nBufferFrames) = *(output+1)*outamp;
+  }
+
+
+  frameCounter += nBufferFrames;
+  if ( checkCount && ( frameCounter >= nFrames ) ) return callbackReturnValue;
+  return 0;
+}
+
+
 
 
 int main(int argc, char* argv[])
 {
 
+    inbuffer = init;
     bool realtime;
     int outputsamplerate;
     int enginesamplerate;
@@ -61,7 +123,6 @@ int main(int argc, char* argv[])
     }
 
 
-    double outamp = 0.8;
 
     std::ifstream t(inputpath);
     std::string str; // = "output, 0.3, 2 \n input, ./samples/sample-44k.wav, 0.2, 1, 0 \n resistor, 200, 1, 2 \n ";
@@ -77,7 +138,6 @@ int main(int argc, char* argv[])
 
     std::stringstream ss(str);
     std::string obj;
-    NetList * net;
 
 
     while(std::getline(ss,obj,'\n')) {
@@ -181,12 +241,11 @@ int main(int argc, char* argv[])
         else if(!seglist[0].compare("gate-"))
             net->addComponent(new Gate(seglist[1], seglist[2], seglist[3]));
 // Analog components
-
         else if(!seglist[0].compare("resistor"))
             net->addComponent(new Resistor(stof(seglist[1]), std::stoi(seglist[2]), std::stoi(seglist[3])));
 
         else if(!seglist[0].compare("varres"))
-            net->addComponent(new VariableResistor(stof(seglist[1]), std::stoi(seglist[2]), std::stoi(seglist[3]), seglist[4]));
+            net->addComponent(new VariableResistor(stod(seglist[1]), std::stoi(seglist[2]), std::stoi(seglist[3]), seglist[4]));
 
         else if(!seglist[0].compare("capacitor"))
             net->addComponent(new Capacitor(stod(seglist[1]), std::stoi(seglist[2]), std::stoi(seglist[3])));
@@ -201,6 +260,9 @@ int main(int argc, char* argv[])
 
         else if(!seglist[0].compare("voltage"))
             net->addComponent(new Voltage(stof(seglist[1]), std::stoi(seglist[2]), std::stoi(seglist[3])));
+
+        else if(!seglist[0].compare("click"))
+            net->addComponent(new Click(stof(seglist[1]), std::stoi(seglist[2]), std::stoi(seglist[3])));
 
         else if(!seglist[0].compare("input"))
             net->addComponent(new InputSample(seglist[1], std::stof(seglist[2]), std::stoi(seglist[3]), std::stoi(seglist[4])));
@@ -260,6 +322,9 @@ int main(int argc, char* argv[])
     std::cout << enginesamplerate << std::endl;
     std::cout << (double)1/enginesamplerate << std::endl;
 
+    net->setMidiInput(message);
+    net->setAudioInput(inbuffer);
+
     net->simulateTick();
     net->setTimeStep((double)1/enginesamplerate);
     net->simulateTick();
@@ -303,27 +368,25 @@ int main(int argc, char* argv[])
 
     else {
 
+        midiin->openVirtualPort("Halite Input Port 1");
+        midiin->ignoreTypes( false, false, false );
 
+/*
         JackModule jack;
         jack.init("halite");
 
 
-
-        jack.onProcess = [&net, &output, &outamp](jack_default_audio_sample_t *inBuf,
+        jack.onProcess = [&net, &output, &outamp, &midiin, &message](jack_default_audio_sample_t *inBuf,
                          jack_default_audio_sample_t *outBufR, jack_default_audio_sample_t *outBufL, jack_nframes_t nframes)
         {
+            midiin->getMessage( &message ); // get midi once per buffer
             //loop through frames, retrieve sample of sine per frame
             for(int i = 0; i < nframes; i++) {
 
                 net->setAudioInput(inBuf[i]);
                 net->simulateTick();
                 output = net->getAudioOutput();
-                /*
-                // clipping
-                if (output > 1) output = 1;
-                if (output < -1) output = -1;
 
-                */
                 outBufL[i] = *(output)*outamp;
                 outBufR[i] = *(output+1)*outamp;
             }
@@ -331,24 +394,73 @@ int main(int argc, char* argv[])
 
             return 0;
         };
-        jack.autoConnect();
+        jack.autoConnect(); */
 
 
-        RtMidiIn *midiin = new RtMidiIn();
-        midiin->openVirtualPort("Halite Input Port 1");
-        midiin->ignoreTypes( false, false, false );
 
-        std::vector<unsigned char> message;
-        int nBytes;
-
-        while(true) {
-            midiin->getMessage( &message );
-            nBytes = message.size();
-            if ( nBytes > 0) {
-                net->setMidiInput(message);
-            }
-            usleep(1);
+        RtAudio dac;
+        if ( dac.getDeviceCount() < 1 ) {
+          std::cout << "\nNo audio devices found!\n";
+          exit( 1 );
         }
+
+        channs = 2;
+
+
+        double *data = (double *) calloc( channs, sizeof( double ) );
+
+        // Let RtAudio print messages to stderr.
+        dac.showWarnings( true );
+
+        // Set our stream parameters for output only.
+        bufferFrames = 512;
+        RtAudio::StreamParameters oParams;
+        oParams.deviceId = dac.getDefaultOutputDevice();
+        oParams.nChannels = channs;
+        oParams.firstChannel = offset;
+
+        RtAudio::StreamParameters iParams;
+        iParams.deviceId = dac.getDefaultInputDevice();
+        iParams.nChannels = channs;
+        iParams.firstChannel = offset;
+
+        options.flags = RTAUDIO_HOG_DEVICE;
+        options.flags |= RTAUDIO_SCHEDULE_REALTIME;
+        options.flags |= RTAUDIO_NONINTERLEAVED;
+
+        try {
+          dac.openStream( &oParams, &iParams, FORMAT, 44100, &bufferFrames, &inout, (void *)&bufferBytes, &options );
+          dac.startStream();
+        }
+        catch ( RtAudioError& e ) {
+          e.printMessage();
+          goto cleanup;
+        }
+
+        if ( checkCount ) {
+          while ( dac.isStreamRunning() == true ) usleep( 100 );
+        }
+        else {
+          char input;
+          //std::cout << "Stream latency = " << dac.getStreamLatency() << "\n" << std::endl;
+          std::cout << "\nPlaying ... press <enter> to quit (buffer size = " << bufferFrames << ").\n";
+          std::cin.get( input );
+
+          try {
+            // Stop the stream
+            dac.stopStream();
+          }
+          catch ( RtAudioError& e ) {
+            e.printMessage();
+          }
+        }
+
+       cleanup:
+        if ( dac.isStreamOpen() ) dac.closeStream();
+        free( data );
+
+        return 0;
+
     }
 
 };

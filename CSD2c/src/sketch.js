@@ -19,6 +19,9 @@ let types = {
     {'inlets': 1, 'outlets': 0, 'args': 0, 'colors': ['#000000'], 'code': ""},
 'voltage':
     {'inlets': 0, 'outlets': 2, 'args': 1, 'colors': ['#ff0000', '#000000'], 'code': " voltage, a0, i0, i1"},
+'click':
+    {'inlets': 0, 'outlets': 2, 'args': 1, 'colors': ['#ff0000', '#000000'], 'code': " click, a0, i0, i1"},
+
 'capacitor':
     {'inlets': 1, 'outlets': 1, 'args': 1, 'colors': ['#229FD7', '#229FD7'], 'code': " capacitor, a0, i0, i1"},
 'inductor':
@@ -37,7 +40,7 @@ let types = {
 
     // Our analog Components
 'varres':
-    {'inlets': 2, 'outlets': 1, 'datatypes': ['analog', 'digital', 'analog'], 'colors': ['#229FD7', '#229FD7'], 'args': 1, 'code': " varres, a0, i0, i2, d1"},
+    {'inlets': 2, 'outlets': 1, 'datatypes': ['analog', 'digital', 'analog'], 'colors': ['#229FD7', '#229FD7', '#229FD7'], 'args': 1, 'code': " varres, a0, i0, i2, d1"},
 'varcap':
     {'inlets': 2, 'outlets': 1, 'datatypes': ['analog', 'digital', 'analog'], 'colors': ['#229FD7', '#229FD7'], 'args': 1, 'code': " varcap, a0, i0, i2, d1"},
 
@@ -359,11 +362,11 @@ function startHalite(realtime) {
                     // Write our patch to a file that Halite can read
                     precompile(1);
 
-    if(realtime && !realtime_playing && sbar.getJackStatus()) {
+    if(realtime) {
         haliteappendix = ['-r'];
         buttons[1].style.color = "red";
     }
-    else if (!realtime) {
+    else {
         // If we are not running in realtime, get a path to save the wav/aif file
         let savepath = dialog.showSaveDialog({
 filters: [{
@@ -374,7 +377,7 @@ extensions: ['wav', 'aif']
         haliteappendix = ['-o x0'.replace('x0', savepath)]; // this doesn't contain everything yet...
     }
 
-    if(!(realtime && (realtime_playing || !sbar.getJackStatus())))  {
+    if(!(realtime && (realtime_playing)))  {
 
         halite = spawn('compiled/Halite',  haliteappendix);
 
@@ -401,9 +404,7 @@ extensions: ['wav', 'aif']
         halite.kill('SIGINT')
         realtime_playing = false;
     }
-    if(realtime && sbar.getJackStatus() == 0) {
-        console.warn("No jack server running");
-    }
+
 }
 
 

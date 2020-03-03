@@ -17,7 +17,7 @@ struct MNASolver
 
     int nets;
     int rNets;
-    int maxIter = 2;
+    int maxIter = 200;
     double tStep;
     double **systemA;
     double *systemA_lu;

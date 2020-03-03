@@ -235,14 +235,13 @@ struct NetList
             components[i]->setAudioInput(system, input);
         }
     }
-    void setMidiInput(std::vector<unsigned char> message) {
-        for(int i = 0; i < components.size(); ++i)
-        {
-            components[i]->setMidiInput(system, message);
-        }
+    void setMidiInput(std::vector<unsigned char> &message) {
+        system.midiInput = &message;
     }
 
-
+    void setAudioInput(double* buf) {
+        system.audioInput = buf;
+    }
 
     void simulateTick()
     {

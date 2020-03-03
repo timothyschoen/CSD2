@@ -228,7 +228,8 @@ function Component(name = 'resistor 200', xin = mouseX,  yin = mouseY-100) {
             inp.remove();
         }
         // Arguments
-        args = name.split(" ");
+        args = name.replace("  ", " ").split(" ");
+        console.log(args);
         // type of object
         type = args.shift();
         // Check if type is existing

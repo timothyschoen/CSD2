@@ -595,17 +595,10 @@ struct rtDigitalInput : Component2<0, 0, 1>
     { }
     void update(MNASystem & m) final
     {
-        m.setDigital(digiNets[0], inputvalue*amplitude);
+        m.setDigital(digiNets[0], m.audioInput[m.ticks%512]);
 
     }
 
-    void setAudioInput(MNASystem & m, double input) final
-    {
-        inputvalue = input;
-
-
-
-    }
 
 };
 
@@ -628,7 +621,7 @@ struct MidiInput : Component2<0, 0, 3>
     {
     }
 
-    void setMidiInput(MNASystem & m, std::vector<unsigned char> message) final
+    void setMidiInput(MNASystem & m, std::vector<unsigned char> &message) final
     {
         //input = message;
 
@@ -673,6 +666,8 @@ struct midiNoteIn : Component2<0, 0, 2>
     int note;
     int velocity;
 
+    std::vector<unsigned char> copy;
+
     midiNoteIn(std::string d0, std::string d1)
     {
         digiPins[0] = d0;
@@ -683,7 +678,9 @@ struct midiNoteIn : Component2<0, 0, 2>
     }
 
     void stamp(MNASystem & m) final
-    { }
+    {
+
+  }
     void update(MNASystem & m) final
     {
         m.setDigital(digiNets[0], note);
@@ -693,17 +690,27 @@ struct midiNoteIn : Component2<0, 0, 2>
         m.setDigital(digiNets[1], velocity);
     }
 
-    void setMidiInput(MNASystem & m, std::vector<unsigned char> message) final
+    void setMidiInput(MNASystem & m, std::vector<unsigned char> &midimess) final
     {
-        if ((int)message[0] == 144 && (int)message[2] != 0) {
-            note = (int)message[1];
-            velocity = (int)message[2];
-        }
-        else if ((int)message[0] == 128 || ((int)message[0] == 144 && (int)message[2] != 0)) {
-            note = 0;
-            velocity = 0;
-        }
+        //message = &midimess;
+        //copy = *message;
+
     }
+    void updateInput(MNASystem & m) {
+
+      copy = *m.midiInput;
+
+      if(copy.size() > 0) {
+      if ((int)copy[0] == 144 && (int)copy[2] != 0) {
+          note = (int)copy[1];
+          velocity = (int)copy[2];
+      }
+      else if ((int)copy[0] == 128 || ((int)copy[0] == 144 && (int)copy[2] != 0)) {
+          note = 0;
+          velocity = 0;
+      }
+    }
+  }
 
 };
 

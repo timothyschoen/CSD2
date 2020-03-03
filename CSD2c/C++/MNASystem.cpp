@@ -6,9 +6,10 @@ struct MNASystem
 
 
     MNAMatrix   A; // A matrix
-    MNAVector   b; // This is likely the Z matrix since that contains our known values
-    //  Wikipedia: "When solving systems of equations, b is usually treated as a vector with a length equal to the height of matrix A"
+    MNAVector   b; // This is the Z matrix since that contains our known values
 
+    std::vector<unsigned char>* midiInput;
+    double* audioInput;
     double      time;
     long      ticks;
 
@@ -24,8 +25,8 @@ struct MNASystem
 
         for(unsigned i = 0; i < n; ++i)
         {
-            b[i].clear(); // keeping it 2d
-            A[i].resize(n); // making it 3d
+            b[i].clear(); // keeping it 21
+            A[i].resize(n); // making it 2d
 
 
             for(unsigned j = 0; j < n; ++j)
@@ -47,6 +48,11 @@ struct MNASystem
     void stampStatic(double g, int r, int c)
     {
         A[r][c].g += g;
+    }
+
+    void getMidi(std::vector<unsigned char> &data)
+    {
+        data = *midiInput;
     }
 
     // this doesn't work!

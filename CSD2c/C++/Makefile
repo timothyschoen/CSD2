@@ -8,18 +8,18 @@ MKLFLAGS=  -lpthread -lm -ldl
 
 all: Halite
 
-Halite : jack_module.o RtMidi.o
-	$(CC) -o $@ $(CFLAGS) main.cpp ./gen/phasor.cpp ./gen/genlib.cpp jack_module.o ./gen/json.o ./gen/json_builder.o RtMidi.o $(LDFLAGS) $(CAFLAGS) $(AFFLAGS) $(MKLFLAGS)
+Halite : RtMidi.o
+	$(CC) -o $@ $(CFLAGS) main.cpp RtAudio.cpp ./gen/phasor.cpp ./gen/genlib.cpp ./gen/json.o ./gen/json_builder.o RtMidi.o $(CAFLAGS) $(AFFLAGS) $(MKLFLAGS)
 	mv Halite ../compiled/
 
-jack_module.o:
-	$(CC) -c $< $(CFLAGS) ./jack/jack_module.cpp $(LDFLAGS)
+#jack_module.o:
+#	$(CC) -c $< $(CFLAGS) ./jack/jack_module.cpp $(LDFLAGS)
 
 phasor.o: genlib.o
-	$(CC) -o $@ $(CFLAGS) ./gen/phasor.cpp ./count.cpp genlib.o $(LDFLAGS)
+	$(CC) -o $@ $(CFLAGS) ./gen/phasor.cpp ./count.cpp genlib.o
 
 genlib.o: json.o
-	$(CC) -o $@ $(CFLAGS) ./gen/genlib.cpp ./gen/json.o ./gen/json_builder.o $(LDFLAGS)
+	$(CC) -o $@ $(CFLAGS) ./gen/genlib.cpp ./gen/json.o ./gen/json_builder.o 
 
 RtMidi.o:
 	$(CC) -c $< -D__MACOSX_CORE__ $(CFLAGS) ./rtmidi-master/RtMidi.cpp -framework CoreMIDI -framework CoreAudio -framework CoreFoundation

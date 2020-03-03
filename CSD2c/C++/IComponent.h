@@ -50,7 +50,7 @@ struct IComponent
     // realtime input function;
     virtual void setAudioInput(MNASystem & m, double input) {}
 
-    virtual void setMidiInput(MNASystem & m, std::vector<unsigned char> message) {}
+    virtual void setMidiInput(MNASystem & m, std::vector<unsigned char> &message) {}
 
     // time-step change, for caps to fix their state-variables
     virtual void scaleTime(double told_per_new) {}
