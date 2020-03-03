@@ -4,7 +4,6 @@
 #include "./analogComponents.cpp"
 #include "./genComponents.cpp"
 
-#include "./rtmidi-master/RtMidi.h"
 
 #include <sstream>
 #include <fstream>
@@ -313,6 +312,7 @@ else {
   };
   jack.autoConnect();
 
+  /*
 
   RtMidiIn *midiin = new RtMidiIn();
   midiin->openVirtualPort("Halite Input Port 1");
@@ -320,14 +320,15 @@ else {
 
   std::vector<unsigned char> message;
   int nBytes;
-  double stamp;
+  double stamp; */
 
   while(true){
+    /*
     midiin->getMessage( &message );
     nBytes = message.size();
     if ( nBytes > 0) {
       net->setMidiInput(message);
-    }
+    } */
     usleep(1);
   }
 }

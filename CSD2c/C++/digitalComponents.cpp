@@ -300,6 +300,7 @@ struct getDelta : Component<0, 0, 2>
     }
 
     void updateInput(MNASystem & m) final
+    {
 
       in = m.digiValues[digiNets[0]];
 
