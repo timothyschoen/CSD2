@@ -13,10 +13,12 @@ struct digitalArithmetic : Component2<0, 0, 3>
         digiPins[0] = d0;
         digiPins[1] = d1;
         digiPins[2] = d2;
-        if (init.size() > 0) {
+        if (init.size() > 0)
+        {
             value = std::stof(init[0]);
         }
-        else {
+        else
+        {
             value = 0;
         }
         input = 0;
@@ -680,7 +682,7 @@ struct midiNoteIn : Component2<0, 0, 2>
     void stamp(MNASystem & m) final
     {
 
-  }
+    }
     void update(MNASystem & m) final
     {
         m.setDigital(digiNets[0], note);
@@ -696,21 +698,25 @@ struct midiNoteIn : Component2<0, 0, 2>
         //copy = *message;
 
     }
-    void updateInput(MNASystem & m) {
+    void updateInput(MNASystem & m)
+    {
 
-      copy = *m.midiInput;
+        copy = *m.midiInput;
 
-      if(copy.size() > 0) {
-      if ((int)copy[0] == 144 && (int)copy[2] != 0) {
-          note = (int)copy[1];
-          velocity = (int)copy[2];
-      }
-      else if ((int)copy[0] == 128 || ((int)copy[0] == 144 && (int)copy[2] != 0)) {
-          note = 0;
-          velocity = 0;
-      }
+        if(copy.size() > 0)
+        {
+            if ((int)copy[0] == 144 && (int)copy[2] != 0)
+            {
+                note = (int)copy[1];
+                velocity = (int)copy[2];
+            }
+            else if ((int)copy[0] == 128 || ((int)copy[0] == 144 && (int)copy[2] != 0))
+            {
+                note = 0;
+                velocity = 0;
+            }
+        }
     }
-  }
 
 };
 

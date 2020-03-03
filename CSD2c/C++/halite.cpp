@@ -34,7 +34,8 @@ constexpr bool VERBOSE_LU = false;
 
 constexpr int unitValueOffset = 4;
 constexpr int unitValueMax = 8;
-constexpr const char* unitValueSuffixes[] = {
+constexpr const char* unitValueSuffixes[] =
+{
     "p", "n", "u", "m", "", "k", "M", "G"
 };
 
@@ -105,14 +106,17 @@ struct Component2 : IComponent
 
     //std::string digiNets[nDigipins];
 
-    int pinCount() final {
+    int pinCount() final
+    {
         return nPins;
     }
 
-    const int* getPinLocs() const final {
+    const int* getPinLocs() const final
+    {
         return pinLoc;    // This is used for running setupnets!!!! (for linking pinloc to nets)
     }
-    const std::vector<std::string> getDigiLocs() const final {
+    const std::vector<std::string> getDigiLocs() const final
+    {
         return digiPins;
     }
 
@@ -132,13 +136,16 @@ struct Component2 : IComponent
             std::stringstream ss(connections);
             std::string obj;
             std::vector<int> inputs;
-            if(connections.size() > 2) {
+            if(connections.size() > 2)
+            {
 
-                while(std::getline(ss,obj,':')) {
+                while(std::getline(ss,obj,':'))
+                {
                     inputs.push_back(std::stoi(obj));
                 }
             }
-            else if (connections.size() != 0) {
+            else if (connections.size() != 0)
+            {
                 inputs.push_back(std::stoi(connections));
             }
 
@@ -217,9 +224,11 @@ struct NetList
         system.ticks = 0;
     }
 
-    double* getAudioOutput() {
+    double* getAudioOutput()
+    {
         double* output = new double[2];
-        for (size_t c = 0; c < 2; c++) {
+        for (size_t c = 0; c < 2; c++)
+        {
             for(int i = 0; i < components.size(); ++i)
             {
                 output[c] += components[i]->getAudioOutput(system, c);
@@ -229,17 +238,20 @@ struct NetList
 
     }
 
-    void setAudioInput(double input) {
+    void setAudioInput(double input)
+    {
         for(int i = 0; i < components.size(); ++i)
         {
             components[i]->setAudioInput(system, input);
         }
     }
-    void setMidiInput(std::vector<unsigned char> &message) {
+    void setMidiInput(std::vector<unsigned char> &message)
+    {
         system.midiInput = &message;
     }
 
-    void setAudioInput(double* buf) {
+    void setAudioInput(double* buf)
+    {
         system.audioInput = buf;
     }
 
@@ -286,7 +298,8 @@ struct NetList
     }
 
     // plotting and such would want to use this
-    const MNASystem & getMNA() {
+    const MNASystem & getMNA()
+    {
         return system;
     }
 
@@ -300,7 +313,8 @@ protected:
     MNASystem       system2;
     MNASolver       solver;
 
-    void update() {
+    void update()
+    {
 
 
         for(int i = 0; i < components.size(); ++i)

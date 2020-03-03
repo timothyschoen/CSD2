@@ -6,20 +6,25 @@ let connectionsprox = []; // Where we store our connections
 let connecting = -1; // Is any inlet currently in the connecting state?
 
 // Change array order (used to make sure ground is at 0)
-Array.prototype.move = function(from, to) {
+Array.prototype.move = function(from, to)
+{
     this.splice(to, 0, this.splice(from, 1)[0]);
 };
 
-var arrayChangeHandler = {
+var arrayChangeHandler =
+{
 get:
-    function(target, property) {
+    function(target, property)
+    {
         // property is index in this case
         return target[property];
     },
 set:
-    function(target, property, value, receiver) {
+    function(target, property, value, receiver)
+    {
         target[property] = value;
-        if (property == 'length' && !initializing) {
+        if (property == 'length' && !initializing)
+        {
             // disabeled for now because it's too glitchy
             //changed();
 
@@ -33,7 +38,8 @@ set:
 var connections = new Proxy( connectionsprox, arrayChangeHandler );
 var boxes = new Proxy( boxesprox, arrayChangeHandler );
 
-function Component(name = 'resistor 200', xin = mouseX,  yin = mouseY-100) {
+function Component(name = 'resistor 200', xin = mouseX,  yin = mouseY-100)
+{
     let x, y, w, h;          // Location and size
     let inp;                 // letiable for input field
     let inputting = false;  // Check if we have an active input field
@@ -73,25 +79,27 @@ function Component(name = 'resistor 200', xin = mouseX,  yin = mouseY-100) {
     myCircle.style.left = x + "px";
     myCircle.style.color = "#DCDCDC";
     myCircle.style.border = "1px solid #DCDCDC"
-    myCircle.style.fontFamily = "sans-serif";
+                            myCircle.style.fontFamily = "sans-serif";
     myCircle.style.fontSize = "12px";
     myCircle.style.fontAlign = "center";
     myCircle.style.zIndex = '-2'
-    myCircle.x = x
-    myCircle.y = y
-    myCircle.innerHTML = name;
+                            myCircle.x = x
+                                         myCircle.y = y
+                                                 myCircle.innerHTML = name;
 
-    myCircle.addEventListener('contextmenu', ((ev) => {
-    ev.preventDefault();
-    this.delete();
-    return false;
-  }), false);
+    myCircle.addEventListener('contextmenu', ((ev) =>
+    {
+        ev.preventDefault();
+        this.delete();
+        return false;
+    }), false);
 
-  myCircle.addEventListener('dblclick', ((ev) => {
-  ev.preventDefault();
-  this.inputname(name);
-  return false;
-}), false);
+    myCircle.addEventListener('dblclick', ((ev) =>
+    {
+        ev.preventDefault();
+        this.inputname(name);
+        return false;
+    }), false);
 
 
     document.body.appendChild(myCircle);
@@ -102,7 +110,8 @@ function Component(name = 'resistor 200', xin = mouseX,  yin = mouseY-100) {
 
 
     // Open input field
-    this.inputname = function(text) {
+    this.inputname = function(text)
+    {
         inp = document.createElement("INPUT");
         inp.value = text;
         inputting = true;
@@ -112,83 +121,103 @@ function Component(name = 'resistor 200', xin = mouseX,  yin = mouseY-100) {
         inp.style.height = myCircle.clientHeight + 'px';
         inp.style.width = myCircle.clientWidth + 'px';
         inp.style.top = bound.top + 'px'
-        inp.style.left = bound.left + 'px'
-        inp.style.position = 'absolute';
+                        inp.style.left = bound.left + 'px'
+                                         inp.style.position = 'absolute';
         inp.addEventListener("focusout", this.closeinput);
         document.body.appendChild(inp);
     }
 
     //Bunch of getters and setters to interact and get info from these boxes
 
-    this.getinlets = function() {
+    this.getinlets = function()
+    {
         return inlets;
     }
 
-    this.getindex = function() {
+    this.getindex = function()
+    {
         return boxes.indexOf(this);
     }
 
-    this.gettype = function() {
+    this.gettype = function()
+    {
         return type;
     }
 
-    this.getdiv = function() {
+    this.getdiv = function()
+    {
         return myCircle;
     }
 
-    this.getargs = function() {
+    this.getargs = function()
+    {
         return args;
     }
 
-    this.getoptargs = function() {
+    this.getoptargs = function()
+    {
         return optargs;
     }
 
-    this.getname = function() {
+    this.getname = function()
+    {
         return name;
     }
 
-    this.getposition = function() {
+    this.getposition = function()
+    {
         return [myCircle.x, myCircle.y];
     }
-    this.getsize = function() {
+    this.getsize = function()
+    {
         return [w, h];
     }
-    this.select = function() {
+    this.select = function()
+    {
         selected = true;
     }
-    this.deselect = function() {
+    this.deselect = function()
+    {
         selected = false;
     }
 
 
     // Select the box if there is a click on it
-    this.mouseClicked = function() {
-        if (intersect(mouseX, mouseX+1, mouseY, mouseY+1, x, x+w, y, y+h)) {
+    this.mouseClicked = function()
+    {
+        if (intersect(mouseX, mouseX+1, mouseY, mouseY+1, x, x+w, y, y+h))
+        {
             selected = true;
         }
         // Only deselect when clicking outside the box if shift is not down
         // This allows us to select multiple objects when holding down shift!
-        else if(!keyIsDown(SHIFT) && !selecting)  {
+        else if(!keyIsDown(SHIFT) && !selecting)
+        {
             selected = false;
         }
     }
 
     // Change positions of inlets and outlets
-    this.updateInlets = function() {
+    this.updateInlets = function()
+    {
         let offset = 0;
-        for(let i = 0; i < inlets.length; i++) {
-            if(inlets[i].gettype() == 'inlet') {
+        for(let i = 0; i < inlets.length; i++)
+        {
+            if(inlets[i].gettype() == 'inlet')
+            {
                 inlets[i].setposition(x+15+(10*i), y+17)
                 offset++;
             }
-            else {
+            else
+            {
                 inlets[i].setposition(x+15+(10*(i-offset)), y+36);
             }
-            if(inlets[i].getposition()[0] > cnvwidth) {
+            if(inlets[i].getposition()[0] > cnvwidth)
+            {
                 inlets[i].show(false);
             }
-            else {
+            else
+            {
                 inlets[i].show(true);
             }
         }
@@ -196,23 +225,29 @@ function Component(name = 'resistor 200', xin = mouseX,  yin = mouseY-100) {
 
 
     // When the name changes or the object is being created, add the inlets
-    this.changetype = function() {
-      myCircle.innerHTML = name;
-        for(let i = 0; i < inlets.length; i++) {
+    this.changetype = function()
+    {
+        myCircle.innerHTML = name;
+        for(let i = 0; i < inlets.length; i++)
+        {
             inlets[i].remove();
         }
         inlets = [];
 
-        for(let i = 0; i < parseInt(types[type]['inlets']); i++) {
+        for(let i = 0; i < parseInt(types[type]['inlets']); i++)
+        {
             let datatype = 'analog';
-            if(types[type]['datatypes'] !== undefined) {
+            if(types[type]['datatypes'] !== undefined)
+            {
                 datatype = types[type]['datatypes'][i]
             }
             inlets.push(new Inlet((11*i)+6, -4, [this, i], 'inlet', datatype, types[type]['colors'][i]));
         }
-        for(let i = 0; i < parseInt(types[type]['outlets']); i++) {
+        for(let i = 0; i < parseInt(types[type]['outlets']); i++)
+        {
             let datatype = 'analog';
-            if(types[type]['datatypes'] !== undefined) {
+            if(types[type]['datatypes'] !== undefined)
+            {
                 datatype = types[type]['datatypes'][i+types[type]['inlets']]
             }
             inlets.push(new Inlet((11*i)+6, 16, [this, types[type]['inlets']+i], 'outlet', datatype, types[type]['colors'][i+types[type]['inlets']]));
@@ -220,8 +255,10 @@ function Component(name = 'resistor 200', xin = mouseX,  yin = mouseY-100) {
     }
 
     // Close the input and parse the name
-    this.closeinput = function() {
-        if (inputting == true) {
+    this.closeinput = function()
+    {
+        if (inputting == true)
+        {
             inputting = false;
             typing = false;
             name = inp.value;
@@ -233,15 +270,19 @@ function Component(name = 'resistor 200', xin = mouseX,  yin = mouseY-100) {
         // type of object
         type = args.shift();
         // Check if type is existing
-        if (type in types && types[type]['args'] <= args.length) {
+        if (type in types && types[type]['args'] <= args.length)
+        {
             // Make sure ground is at 0
-            if(types[type]['args'] != args.length) {
+            if(types[type]['args'] != args.length)
+            {
                 optargs = args.splice(types[type]['args'], args.length)
             }
-            for (let i = 0; i < optargs.length; i++) {
+            for (let i = 0; i < optargs.length; i++)
+            {
                 optargs[i] = parseFloat(optargs[i])
             }
-            if(type == 'ground' &&  boxes.indexOf(this) != 0) {
+            if(type == 'ground' &&  boxes.indexOf(this) != 0)
+            {
                 boxes.move(boxes.indexOf(this), 0);
             }
             valid = true;
@@ -251,7 +292,8 @@ function Component(name = 'resistor 200', xin = mouseX,  yin = mouseY-100) {
             changed() // Update our code
             } */
         }
-        else {
+        else
+        {
             valid = false;
         }
         // Resize width according to length of name
@@ -260,21 +302,26 @@ function Component(name = 'resistor 200', xin = mouseX,  yin = mouseY-100) {
     }
 
     // Delete an inlet
-    this.removeinlet = function(inlet) {
+    this.removeinlet = function(inlet)
+    {
         inlets.splice(inlet, 1);
     }
 
     // Delete a whole box
-    this.delete = function() {
+    this.delete = function()
+    {
         // First remove connections
-        for(let i = connections.length-1; i >= 0 ; i--) {
+        for(let i = connections.length-1; i >= 0 ; i--)
+        {
             // count backwards to avoid messing up the order when removing
-            if(connections[i].getinlets()[0].includes(boxes.indexOf(this))) {
+            if(connections[i].getinlets()[0].includes(boxes.indexOf(this)))
+            {
                 connections[i].remove();
             }
         }
         // Then remove inlets
-        for(let i = 0; i < inlets.length; i++) {
+        for(let i = 0; i < inlets.length; i++)
+        {
             inlets[i].remove();
         }
         inlets = [];
@@ -287,18 +334,22 @@ function Component(name = 'resistor 200', xin = mouseX,  yin = mouseY-100) {
 
     // function to run on backspace or delete
     // If this box is selected, delete it
-    this.deleteIfSelected = function() {
-        if (selected) {
+    this.deleteIfSelected = function()
+    {
+        if (selected)
+        {
             this.delete();
         }
     }
 
 
 // If this object has no name, open an input!
-    if (name  == undefined) {
+    if (name  == undefined)
+    {
         this.inputname("New Object");
     }
-    else {
+    else
+    {
         this.closeinput();
     }
 }

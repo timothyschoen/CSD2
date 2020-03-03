@@ -4,7 +4,8 @@
  * <https://github.com/markknol/console-log-viewer>
  * @author Mark Knol <http://blog.stroep.nl>
  */
-var ConsoleLogViewer = (function() {
+var ConsoleLogViewer = (function()
+{
     ConsoleLogViewer.ALIGNMENT = "top"; // top | bottom
     ConsoleLogViewer.IS_MINIMIZED = false; // true | false
     ConsoleLogViewer.LOG_ENABLED = true;
@@ -174,7 +175,8 @@ onerror:
             self.log(self.flatten(Array.prototype.slice.call(arguments).join(",")),"log-error", true);
             original.console.error.apply(this, arguments);
         }
-        window.onerror = function(message, url, lineNumber) {
+        window.onerror = function(message, url, lineNumber)
+        {
             self.log([message, "<a target='_blank' href='"+url+"#"+lineNumber+"'>"+url+"</a>", "line:" + lineNumber], "log-error", true);
             if (original.window.onerror) return original.window.onerror(message, url, lineNumber);
             else return false;
@@ -224,33 +226,39 @@ onerror:
         div.innerHTML = (html);
         document.getElementsByTagName('body')[0].appendChild(div);
 
-        document.getElementById("debug_console_close_button").addEventListener("click", function(e) {
+        document.getElementById("debug_console_close_button").addEventListener("click", function(e)
+        {
             //div.style.display = "none";
             ConsoleLogViewer.IS_CLOSED = !ConsoleLogViewer.IS_CLOSED;
             self.setClosed(ConsoleLogViewer.IS_CLOSED);
             e.preventDefault();
         }, false);
 
-        window.addEventListener("keydown", function(e) {
-            if (e.keyCode == 192) {
+        window.addEventListener("keydown", function(e)
+        {
+            if (e.keyCode == 192)
+            {
                 ConsoleLogViewer.IS_CLOSED = !ConsoleLogViewer.IS_CLOSED;
                 self.setClosed(ConsoleLogViewer.IS_CLOSED);
             }
         }, false);
 
-        document.getElementById("debug_console_minimize_button").addEventListener("click", function(e) {
+        document.getElementById("debug_console_minimize_button").addEventListener("click", function(e)
+        {
             ConsoleLogViewer.IS_MINIMIZED = !ConsoleLogViewer.IS_MINIMIZED;
             self.setMinimized(ConsoleLogViewer.IS_MINIMIZED);
             e.preventDefault();
         }, false);
 
-        document.getElementById("debug_console_position_button").addEventListener("click", function(e) {
+        document.getElementById("debug_console_position_button").addEventListener("click", function(e)
+        {
             ConsoleLogViewer.ALIGNMENT = ConsoleLogViewer.ALIGNMENT == "top" ? "bottom" : "top";
             self.alignTo(ConsoleLogViewer.ALIGNMENT);
             e.preventDefault();
         }, false);
 
-        document.getElementById("debug_console_pause_button").addEventListener("click", function(e) {
+        document.getElementById("debug_console_pause_button").addEventListener("click", function(e)
+        {
             ConsoleLogViewer.LOG_ENABLED = !ConsoleLogViewer.LOG_ENABLED;
             self.setLogEnabled(ConsoleLogViewer.LOG_ENABLED);
             e.preventDefault();
@@ -262,7 +270,8 @@ onerror:
         self.alignTo(ConsoleLogViewer.ALIGNMENT);
     }
 
-    ConsoleLogViewer.prototype.setClosed = function(value) { // true | false
+    ConsoleLogViewer.prototype.setClosed = function(value)   // true | false
+    {
         ConsoleLogViewer.IS_CLOSED = value;
 
         document.getElementById("debug_console_close_button").innerHTML = !value ? "x" : "&Xi;";
@@ -286,18 +295,21 @@ onerror:
         document.getElementById("debug_console_messages").style.display = "none";
     }
 
-    ConsoleLogViewer.prototype.setLogEnabled = function(value) { // true | false
+    ConsoleLogViewer.prototype.setLogEnabled = function(value)   // true | false
+    {
         ConsoleLogViewer.LOG_ENABLED = value;
         document.getElementById("debug_console_pause_button").innerHTML = (!value ? "||" : "&#9658;");
     }
 
-    ConsoleLogViewer.prototype.setMinimized = function(value) { // true | false
+    ConsoleLogViewer.prototype.setMinimized = function(value)   // true | false
+    {
         ConsoleLogViewer.IS_MINIMIZED = value;
         document.getElementById("debug_console_minimize_button").innerHTML = value ? "+" : "-";
         this.updateLog();
     }
 
-    ConsoleLogViewer.prototype.alignTo = function(value) { // top | bottom
+    ConsoleLogViewer.prototype.alignTo = function(value)   // top | bottom
+    {
         ConsoleLogViewer.ALIGNMENT = value;
         document.getElementById("debug_console").className = value == "bottom" ? "bottom-aligned" : "top-aligned";
         document.getElementById("debug_console_position_button").innerHTML = value == "bottom" ? "&uarr;" : "&darr;";

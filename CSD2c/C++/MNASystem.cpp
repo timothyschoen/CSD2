@@ -66,7 +66,8 @@ struct MNASystem
 
     void setDigital(std::vector<int> outputs, double value)
     {
-        for (size_t i = 0; i < outputs.size(); i++) {
+        for (size_t i = 0; i < outputs.size(); i++)
+        {
             digiValues[outputs[i]] = value;
         }
 
@@ -75,12 +76,15 @@ struct MNASystem
     double getDigital(std::vector<int> inputs, double fallback = 0)
     {
         double accum = 0;
-        if (inputs.size() > 0) {
-            for (size_t i = 0; i < inputs.size(); i++) {
+        if (inputs.size() > 0)
+        {
+            for (size_t i = 0; i < inputs.size(); i++)
+            {
                 accum += digiValues[inputs[i]];
             }
         }
-        else {
+        else
+        {
             accum = fallback;
         }
         return accum;

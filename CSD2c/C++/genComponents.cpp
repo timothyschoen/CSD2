@@ -42,7 +42,8 @@ struct genLoader : Component2<0, 0, 3>
         std::cout << a_args.size() << '\n';
 
         // Map them to pins
-        for (size_t i = 0; i < a_args.size(); i++) {
+        for (size_t i = 0; i < a_args.size(); i++)
+        {
             digiPins[i] = mylist[i];
         }
 
@@ -55,7 +56,8 @@ struct genLoader : Component2<0, 0, 3>
 
     }
 
-    void setPatcher(std::string name) {
+    void setPatcher(std::string name)
+    {
         if(!name.compare("phasor"))
             namespace Patcher = phasor;
         else if (!name.compare("count"))
@@ -71,7 +73,8 @@ struct genLoader : Component2<0, 0, 3>
 
         // Setting in
 
-        for (int i = 0; i < nInChannels; i++) {
+        for (int i = 0; i < nInChannels; i++)
+        {
 
             *(gInputs + i) = m.getDigital(digiNets[i]);
 
@@ -85,7 +88,8 @@ struct genLoader : Component2<0, 0, 3>
     void update(MNASystem & m) final
     {
 
-        for (int i = 0; i < nInChannels; i++) {
+        for (int i = 0; i < nInChannels; i++)
+        {
             ip[i] = &inputbuff[i];
         }
 
@@ -94,7 +98,8 @@ struct genLoader : Component2<0, 0, 3>
         // Run the patch!!
         Patcher::perform(gState, ip, 2, op, 1, 1);
         // Getting output
-        for (int i = 0; i < nOutChannels; i++) {
+        for (int i = 0; i < nOutChannels; i++)
+        {
             m.setDigital(digiNets[nInChannels+i], *op[0]);
         }
 

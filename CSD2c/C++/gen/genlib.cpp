@@ -81,7 +81,8 @@ t_ptr sysmem_resizeptrclear(void *ptr, t_ptr_size newsize)
     size_t oldsize = malloc_size(ptr);
     t_ptr p = (t_ptr)realloc(ptr, newsize);
 
-    if (p) {
+    if (p)
+    {
         if (newsize > oldsize)
             my_memset((char *)p + oldsize, 0, newsize - oldsize);
     }
@@ -126,7 +127,8 @@ void set_zero64(t_sample *memory, long size)
 {
     long i;
 
-    for (i = 0; i < size; i++, memory++) {
+    for (i = 0; i < size; i++, memory++)
+    {
         *memory = 0.;
     }
 }
@@ -151,16 +153,20 @@ unsigned long systime_ticks(void)
 }
 
 // NEED THIS FOR WINDOWS:
-void *operator new(size_t size) {
+void *operator new(size_t size)
+{
     return sysmem_newptr(size);
 }
-void *operator new[](size_t size) {
+void *operator new[](size_t size)
+{
     return sysmem_newptr(size);
 }
-void operator delete(void *p) throw() {
+void operator delete(void *p) throw()
+{
     sysmem_freeptr(p);
 }
-void operator delete[](void *p) throw() {
+void operator delete[](void *p) throw()
+{
     sysmem_freeptr(p);
 }
 
@@ -219,7 +225,8 @@ void genlib_data_setbuffer(t_genlib_data *b, void *ref)
     genlib_report_error("not supported for export targets\n");
 }
 
-typedef struct {
+typedef struct
+{
     t_genlib_data_info	info;
     t_sample			cursor;	// used by Delay
     //t_symbol *		name;
@@ -248,7 +255,8 @@ void genlib_data_release(t_genlib_data *b)
 {
     t_dsp_gen_data *self = (t_dsp_gen_data *)b;
 
-    if (self->info.data) {
+    if (self->info.data)
+    {
         genlib_sysmem_freeptr(self->info.data);
         self->info.data = 0;
     }
@@ -283,7 +291,8 @@ void genlib_data_resize(t_genlib_data *b, long s, long c)
     oldchannels = self->info.channels;
 
     // limit [data] size:
-    if (s * c > DATA_MAXIMUM_ELEMENTS) {
+    if (s * c > DATA_MAXIMUM_ELEMENTS)
+    {
         s = DATA_MAXIMUM_ELEMENTS/c;
         genlib_report_message("warning: constraining [data] to < 256MB");
     }
@@ -291,13 +300,17 @@ void genlib_data_resize(t_genlib_data *b, long s, long c)
     sz = sizeof(t_sample) * s * c;
     oldsz = sizeof(t_sample) * olddim * oldchannels;
 
-    if (old && sz == oldsz) {
+    if (old && sz == oldsz)
+    {
         // no need to re-allocate, just resize
         // careful, audio thread may still be using it:
-        if (s > olddim) {
+        if (s > olddim)
+        {
             self->info.channels = c;
             self->info.dim = s;
-        } else {
+        }
+        else
+        {
             self->info.dim = s;
             self->info.channels = c;
         }
@@ -305,18 +318,24 @@ void genlib_data_resize(t_genlib_data *b, long s, long c)
         set_zero64(self->info.data, s * c);
         return;
 
-    } else {
+    }
+    else
+    {
 
         // allocate new:
         replaced = (t_sample *)sysmem_newptr(sz);
 
         // check allocation:
-        if (replaced == 0) {
+        if (replaced == 0)
+        {
             genlib_report_error("allocating [data]: out of memory");
             // try to reallocate with a default/minimal size instead:
-            if (s > 512 || c > 1) {
+            if (s > 512 || c > 1)
+            {
                 genlib_data_resize((t_genlib_data *)self, 512, 1);
-            } else {
+            }
+            else
+            {
                 // if this fails, then Max is kaput anyway...
                 genlib_data_resize((t_genlib_data *)self, 4, 1);
             }
@@ -327,23 +346,29 @@ void genlib_data_resize(t_genlib_data *b, long s, long c)
         set_zero64(replaced, s * c);
 
         // copy in old data:
-        if (old) {
+        if (old)
+        {
             // frames to copy:
             // clamped:
             copydim = olddim > s ? s : olddim;
             // use memcpy if channels haven't changed:
-            if (c == oldchannels) {
+            if (c == oldchannels)
+            {
                 copysz = sizeof(t_sample) * copydim * c;
                 //post("reset resize (same channels) %p %p, %d", self->info.data, old, copysz);
                 memcpy(replaced, old, copysz);
-            } else {
+            }
+            else
+            {
                 // memcpy won't work if channels have changed,
                 // because data is interleaved.
                 // clamp channels copied:
                 copychannels = oldchannels > c ? c : oldchannels;
                 //post("reset resize (different channels) %p %p, %d %d", self->info.data, old, copydim, copychannels);
-                for (i = 0; i < copydim; i++) {
-                    for (j = 0; j < copychannels; j++) {
+                for (i = 0; i < copydim; i++)
+                {
+                    for (j = 0; j < copychannels; j++)
+                    {
                         replaced[j + i * c] = old[j + i * oldchannels];
                     }
                 }
@@ -351,33 +376,45 @@ void genlib_data_resize(t_genlib_data *b, long s, long c)
         }
 
         // now update info:
-        if (old == 0) {
+        if (old == 0)
+        {
             self->info.data = replaced;
             self->info.dim = s;
             self->info.channels = c;
-        } else {
+        }
+        else
+        {
             // need to be careful; the audio thread may still be using it
             // since dsp_gen_data is preserved through edits
             // the order of resizing has to be carefully done
             // to prevent indexing out of bounds
             // (or maybe I'm being too paranoid here...)
-            if (oldsz > sz) {
+            if (oldsz > sz)
+            {
                 // shrink size first
-                if (s > olddim) {
+                if (s > olddim)
+                {
                     self->info.channels = c;
                     self->info.dim = s;
-                } else {
+                }
+                else
+                {
                     self->info.dim = s;
                     self->info.channels = c;
                 }
                 self->info.data = replaced;
-            } else {
+            }
+            else
+            {
                 // shrink size after
                 self->info.data = replaced;
-                if (s > olddim) {
+                if (s > olddim)
+                {
                     self->info.channels = c;
                     self->info.dim = s;
-                } else {
+                }
+                else
+                {
                     self->info.dim = s;
                     self->info.channels = c;
                 }
@@ -402,7 +439,8 @@ void genlib_build_json(CommonState *cself, json_value **jsonvalue, getparameter_
 
     *jsonvalue = json_object_new(0);
 
-    for (i = 0; i < cself->numparams; i++) {
+    for (i = 0; i < cself->numparams; i++)
+    {
         t_param val;
 
         (getmethod)(cself, i, &val);
@@ -456,24 +494,32 @@ short genlib_setstate(CommonState *cself, const char *state, setparameter_method
     if (value == NULL)
         return 1;
 
-    if (value->type == json_object) {
+    if (value->type == json_object)
+    {
         unsigned int i;
-        for (i = 0; i < value->u.object.length; i++) {
+        for (i = 0; i < value->u.object.length; i++)
+        {
             char *name = NULL;
             t_param val = 0;
             int j;
 
-            if (value->u.object.values[i].value->type == json_double) {
+            if (value->u.object.values[i].value->type == json_double)
+            {
                 name = value->u.object.values[i].name;
                 val = t_param(value->u.object.values[i].value->u.dbl);
-            } else if (value->u.object.values[i].value->type == json_integer) {
+            }
+            else if (value->u.object.values[i].value->type == json_integer)
+            {
                 name = value->u.object.values[i].name;
                 val = t_param(value->u.object.values[i].value->u.integer);
             }
 
-            if (name) {
-                for (j = 0; j < cself->numparams; j++) {
-                    if (!strcmp(cself->params[j].name, name)) {
+            if (name)
+            {
+                for (j = 0; j < cself->numparams; j++)
+                {
+                    if (!strcmp(cself->params[j].name, name))
+                    {
                         (setmethod)(cself, j, val, NULL);
                     }
                 }

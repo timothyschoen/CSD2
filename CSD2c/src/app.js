@@ -8,9 +8,11 @@ const {app, BrowserWindow} = require('electron')
 
 
 // Wait until the app is ready
-app.once('ready', () => {
+                                                     app.once('ready', () =>
+{
     // Create a new window
-    window = new BrowserWindow({
+    window = new BrowserWindow(
+    {
         // Set the initial width to 500px
         width: 1100,
         // Set the initial height to 400px
@@ -29,18 +31,21 @@ resizable: true
 
     })
 
-    window.on('closed', function() {
+    window.on('closed', function()
+    {
         app.quit();
     });
 
 
-    window.loadURL(url.format({
+    window.loadURL(url.format(
+    {
 pathname: path.join(__dirname, 'index.html'),
 protocol: 'file:',
 slashes: true
     }))
 
-    window.once('ready-to-show', () => {
+    window.once('ready-to-show', () =>
+    {
         window.show()
     })
 })

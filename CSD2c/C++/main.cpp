@@ -29,13 +29,13 @@ std::vector<unsigned char> message;
 
 void errorCallback( RtAudioError::Type type, const std::string &errorText )
 {
-  // This example error handling function does exactly the same thing
-  // as the embedded RtAudio::error() function.
-  std::cout << "in errorCallback" << std::endl;
-  if ( type == RtAudioError::WARNING )
-    std::cerr << '\n' << errorText << "\n\n";
-  else if ( type != RtAudioError::WARNING )
-    throw( RtAudioError( errorText, type ) );
+    // This example error handling function does exactly the same thing
+    // as the embedded RtAudio::error() function.
+    std::cout << "in errorCallback" << std::endl;
+    if ( type == RtAudioError::WARNING )
+        std::cerr << '\n' << errorText << "\n\n";
+    else if ( type != RtAudioError::WARNING )
+        throw( RtAudioError( errorText, type ) );
 }
 
 unsigned int channs;
@@ -51,28 +51,29 @@ double init[512] = {0};
 const unsigned int callbackReturnValue = 1;
 
 int inout( void *outputBuffer, void *inputBuffer, unsigned int nBufferFrames,
-         double /*streamTime*/, RtAudioStreamStatus status, void *data )
+           double /*streamTime*/, RtAudioStreamStatus status, void *data )
 {
-  unsigned int i;
-  extern unsigned int channs;
-  double *buffer = (double *) outputBuffer;
-  inbuffer = (double *) inputBuffer;
+    unsigned int i;
+    extern unsigned int channs;
+    double *buffer = (double *) outputBuffer;
+    inbuffer = (double *) inputBuffer;
 
 
-  double *output;
-  midiin->getMessage( &message );
+    double *output;
+    midiin->getMessage( &message );
 
-    for ( i=0; i<nBufferFrames; i++ ) {
-      net->simulateTick();
-      output = net->getAudioOutput();
-      *buffer++ = *(output)*outamp;
-      *(buffer+nBufferFrames) = *(output+1)*outamp;
-  }
+    for ( i=0; i<nBufferFrames; i++ )
+    {
+        net->simulateTick();
+        output = net->getAudioOutput();
+        *buffer++ = *(output)*outamp;
+        *(buffer+nBufferFrames) = *(output+1)*outamp;
+    }
 
 
-  frameCounter += nBufferFrames;
-  if ( checkCount && ( frameCounter >= nFrames ) ) return callbackReturnValue;
-  return 0;
+    frameCounter += nBufferFrames;
+    if ( checkCount && ( frameCounter >= nFrames ) ) return callbackReturnValue;
+    return 0;
 }
 
 
@@ -90,7 +91,8 @@ int main(int argc, char* argv[])
     std::string outputpath;
     std::string outputformat;
 
-    try {
+    try
+    {
         TCLAP::CmdLine cmd("Halite", ' ', "0.9");
         TCLAP::ValueArg<std::string> inputFile("i","input", "choose input file", false, "./precompile.ncl", "path");
         TCLAP::ValueArg<std::string> outputFile("o","output", "choose output file", false, "./output.wav", "path");
@@ -141,7 +143,8 @@ int main(int argc, char* argv[])
     std::string obj;
 
 
-    while(std::getline(ss,obj,'\n')) {
+    while(std::getline(ss,obj,'\n'))
+    {
         std::vector<std::string> seglist;
         std::vector<std::string> optargs;
         std::string segment;
@@ -168,7 +171,8 @@ int main(int argc, char* argv[])
 
         std::cout << seglist[0] << '\n';
 
-        if(!seglist[0].compare("setup")) {
+        if(!seglist[0].compare("setup"))
+        {
             net = new NetList(stoi(seglist[1]), stoi(seglist[2]));
         }
 // Digital components
@@ -277,7 +281,8 @@ int main(int argc, char* argv[])
         else if(!seglist[0].compare("opa"))
             net->addComponent(new OPA(std::stoi(seglist[1]), std::stoi(seglist[2]), std::stoi(seglist[3])));
 
-        else if(!seglist[0].compare("potentiometer")) {
+        else if(!seglist[0].compare("potentiometer"))
+        {
             net->addComponent(new Potentiometer(stof(seglist[1]), stoi(seglist[2]), stoi(seglist[3]), stoi(seglist[4]), seglist[5]));
         }
 
@@ -310,7 +315,8 @@ int main(int argc, char* argv[])
             net->addComponent(new digitalArithmetic(seglist[0], optargs, seglist[1], seglist[2],seglist[3]));
 
 
-        else if(!seglist[0].compare("probe")) {
+        else if(!seglist[0].compare("probe"))
+        {
             net->addComponent(new Probe(stof(seglist[1]), std::stoi(seglist[2])));
             outamp = std::stof(seglist[3]);
         }
@@ -336,14 +342,17 @@ int main(int argc, char* argv[])
 
     double* output;
 
-    if (realtime == false) {
+    if (realtime == false)
+    {
 
         int length = 8 * 44100;
         AudioFile<double> audioFile;
         audioFile.setAudioBufferSize (2, length);
 
-        for (int i = 0; i<length; i++) {
-            if(i%20000 == 0) {
+        for (int i = 0; i<length; i++)
+        {
+            if(i%20000 == 0)
+            {
                 std::cout << int(i * (100./float(length))) << "%" << std::endl;
             }
             net->simulateTick();
@@ -367,42 +376,44 @@ int main(int argc, char* argv[])
             audioFile.save(outputpath);
     }
 
-    else {
+    else
+    {
 
         midiin->openVirtualPort("Halite Input Port 1");
         midiin->ignoreTypes( false, false, false );
 
-/*
-        JackModule jack;
-        jack.init("halite");
+        /*
+                JackModule jack;
+                jack.init("halite");
 
 
-        jack.onProcess = [&net, &output, &outamp, &midiin, &message](jack_default_audio_sample_t *inBuf,
-                         jack_default_audio_sample_t *outBufR, jack_default_audio_sample_t *outBufL, jack_nframes_t nframes)
-        {
-            midiin->getMessage( &message ); // get midi once per buffer
-            //loop through frames, retrieve sample of sine per frame
-            for(int i = 0; i < nframes; i++) {
+                jack.onProcess = [&net, &output, &outamp, &midiin, &message](jack_default_audio_sample_t *inBuf,
+                                 jack_default_audio_sample_t *outBufR, jack_default_audio_sample_t *outBufL, jack_nframes_t nframes)
+                {
+                    midiin->getMessage( &message ); // get midi once per buffer
+                    //loop through frames, retrieve sample of sine per frame
+                    for(int i = 0; i < nframes; i++) {
 
-                net->setAudioInput(inBuf[i]);
-                net->simulateTick();
-                output = net->getAudioOutput();
+                        net->setAudioInput(inBuf[i]);
+                        net->simulateTick();
+                        output = net->getAudioOutput();
 
-                outBufL[i] = *(output)*outamp;
-                outBufR[i] = *(output+1)*outamp;
-            }
+                        outBufL[i] = *(output)*outamp;
+                        outBufR[i] = *(output+1)*outamp;
+                    }
 
 
-            return 0;
-        };
-        jack.autoConnect(); */
+                    return 0;
+                };
+                jack.autoConnect(); */
 
 
 
         RtAudio dac;
-        if ( dac.getDeviceCount() < 1 ) {
-          std::cout << "\nNo audio devices found!\n";
-          exit( 1 );
+        if ( dac.getDeviceCount() < 1 )
+        {
+            std::cout << "\nNo audio devices found!\n";
+            exit( 1 );
         }
 
         channs = 2;
@@ -429,34 +440,40 @@ int main(int argc, char* argv[])
         options.flags |= RTAUDIO_SCHEDULE_REALTIME;
         options.flags |= RTAUDIO_NONINTERLEAVED;
 
-        try {
-          dac.openStream( &oParams, &iParams, FORMAT, 44100, &bufferFrames, &inout, (void *)&bufferBytes, &options );
-          dac.startStream();
+        try
+        {
+            dac.openStream( &oParams, &iParams, FORMAT, 44100, &bufferFrames, &inout, (void *)&bufferBytes, &options );
+            dac.startStream();
         }
-        catch ( RtAudioError& e ) {
-          e.printMessage();
-          goto cleanup;
-        }
-
-        if ( checkCount ) {
-          while ( dac.isStreamRunning() == true ) usleep( 100 );
-        }
-        else {
-          char input;
-          //std::cout << "Stream latency = " << dac.getStreamLatency() << "\n" << std::endl;
-          std::cout << "\nPlaying ... press <enter> to quit (buffer size = " << bufferFrames << ").\n";
-          std::cin.get( input );
-
-          try {
-            // Stop the stream
-            dac.stopStream();
-          }
-          catch ( RtAudioError& e ) {
+        catch ( RtAudioError& e )
+        {
             e.printMessage();
-          }
+            goto cleanup;
         }
 
-       cleanup:
+        if ( checkCount )
+        {
+            while ( dac.isStreamRunning() == true ) usleep( 100 );
+        }
+        else
+        {
+            char input;
+            //std::cout << "Stream latency = " << dac.getStreamLatency() << "\n" << std::endl;
+            std::cout << "\nPlaying ... press <enter> to quit (buffer size = " << bufferFrames << ").\n";
+            std::cin.get( input );
+
+            try
+            {
+                // Stop the stream
+                dac.stopStream();
+            }
+            catch ( RtAudioError& e )
+            {
+                e.printMessage();
+            }
+        }
+
+cleanup:
         if ( dac.isStreamOpen() ) dac.closeStream();
         free( data );
 

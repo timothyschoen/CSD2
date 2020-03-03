@@ -53,22 +53,24 @@ public:
         rNets = size-1;
         tStep = timestep;
 
-         systemA = new double*[rNets*rNets];
-         systemA_lu = new double[rNets*rNets];
-         pivot = new int[rNets*rNets];
-         systemB = new double*[rNets];
-         //systemX = new double*[rNets];
-         r = new double[rNets];
-         c = new double[rNets];
-         work = new double[rNets*rNets];
-         iwork = new int[rNets*rNets];
+        systemA = new double*[rNets*rNets];
+        systemA_lu = new double[rNets*rNets];
+        pivot = new int[rNets*rNets];
+        systemB = new double*[rNets];
+        //systemX = new double*[rNets];
+        r = new double[rNets];
+        c = new double[rNets];
+        work = new double[rNets*rNets];
+        iwork = new int[rNets*rNets];
 
-         for (int i = 0; i < rNets; i++ ) {
-             systemB[i] = &m.b[i+1].lu;
-             for (int j = 0; j < rNets; j++ ) {
-                 systemA[(i*(rNets))+j] = &m.A[j+1][i+1].lu; //Fill a 1D array with pointers to the 2D matrix, because lapack requires a 1d matrix
-             }
-         }
+        for (int i = 0; i < rNets; i++ )
+        {
+            systemB[i] = &m.b[i+1].lu;
+            for (int j = 0; j < rNets; j++ )
+            {
+                systemA[(i*(rNets))+j] = &m.A[j+1][i+1].lu; //Fill a 1D array with pointers to the 2D matrix, because lapack requires a 1d matrix
+            }
+        }
 
 
     }
@@ -83,9 +85,11 @@ public:
         std::vector<double> systemA((rNets)*(rNets));
         std::vector<double> systemB(rNets);
 
-        for (int i = 0; i < rNets; i++ ) {
+        for (int i = 0; i < rNets; i++ )
+        {
             systemB[i] = m.b[i+1].lu;
-            for (int j = 0; j < rNets; j++ ) {
+            for (int j = 0; j < rNets; j++ )
+            {
                 systemA[(i*(rNets))+j] = m.A[j+1][i+1].lu; //klopt dit??
             }
         }
@@ -107,7 +111,8 @@ public:
 
 
         m.b[0].lu = 0;
-        for (size_t i = 1; i < rNets; i++) {
+        for (size_t i = 1; i < rNets; i++)
+        {
             m.b[i].lu = host_x[i-1];
 
         }
@@ -124,11 +129,12 @@ public:
 
         for(iter = 0; iter < maxIter; ++iter)
         {
-          //std::cout << "oude iter "<< iter << '\n';
+            //std::cout << "oude iter "<< iter << '\n';
             // restore matrix state and add dynamic values
             updatePre(tStep, m);
 
-            if(nets > 1) {
+            if(nets > 1)
+            {
 
                 luFactor(m);
 
@@ -145,136 +151,136 @@ public:
 
 
 
-/*
-    void solve4(MNASystem & m)
+    /*
+        void solve4(MNASystem & m)
+            {
+
+
+              std::cout << "heyyy" << '\n';
+
+              double systemA[rNets*rNets];
+              double systemB[rNets];
+              double systemX[rNets];
+
+              long colstarts[rNets];
+              int rowind[rNets];
+
+              for (size_t i = 0; i < rNets; i++) {
+                colstarts[i] = i*rNets;
+                rowind[i] = i;
+              }
+
+              SparseMatrixStructure astruc;
+              astruc.rowCount = rNets;
+              astruc.columnCount = rNets;
+              astruc.columnStarts = colstarts;
+              astruc.attributes = SparseAttributes_t();
+              astruc.blockSize = 1;
+              astruc.rowIndices = rowind;
+
+
+              updatePre(tStep, m);
+
+
+
+
+
+              for (int i = 0; i < rNets; i++ ) {
+                  systemB[i] = m.b[i+1].lu;
+                  for (int j = 0; j < rNets; j++ ) {
+                      systemA[(i*(rNets))+j] = m.A[j+1][i+1].lu; //klopt dit??
+                  }
+              }
+                  SparseMatrix_Double a;
+                  //a.withUnsafeMutableBufferPointer();
+                  a.structure = astruc;
+                  a.data = systemA;
+
+
+                  DenseMatrix_Double b;
+                  b.data = systemB;
+
+                  DenseMatrix_Double x;
+                  x.data = systemX;
+
+
+                  bool status = SparseSolve(SparseLSMR(), a, b, x);
+
+
+                  m.b[0].lu = 0;
+                  for (size_t i = 1; i < nets; i++) {
+                      m.b[i].lu = systemX[i-1];
+
+                  }
+                  //dgesvx();
+
+                  //cblas_dgesvx_();
+
+                  cblas_dgesvx(CblasRowMajor, CblasNoTrans, 8, 4, 1.0f, (*)a, 4, x, 1, 1.0f, y, 1);
+
+                  std::vector<double> a1(systemA);
+                  std::vector<double> b1(systemB);
+                  std::vector<int> ipiv(rNets);
+
+
+                  cblas_dgesv_('N', 'N', 0, 1, &systemA, &rNets, &rNets, a1.data(), &dim, ipiv.data(), b1.data(), &dim, &info);
+
+                  dgesv( rNets, int* nrhs, double* a, int* lda, int* ipiv,
+                    double* b, int* ldb, int* info );
+
+                  cblas_dgesv_(&rNets, &rNets, a1.data(), &dim, ipiv.data(), b1.data(), &dim, &info);
+
+            }
+    */
+
+
+    void solve5(std::vector<IComponent*> &components, MNASystem & m)
+    {
+
+        int iter;
+
+        for(iter = 0; iter < maxIter; ++iter)
         {
 
+            updatePre(tStep, m);
 
-          std::cout << "heyyy" << '\n';
+            dgesv_(&rNets, &one, *systemA, &rNets, pivot, *systemB, &rNets, &info);
 
-          double systemA[rNets*rNets];
-          double systemB[rNets];
-          double systemX[rNets];
+            if(newton(components, m)) break;
 
-          long colstarts[rNets];
-          int rowind[rNets];
-
-          for (size_t i = 0; i < rNets; i++) {
-            colstarts[i] = i*rNets;
-            rowind[i] = i;
-          }
-
-          SparseMatrixStructure astruc;
-          astruc.rowCount = rNets;
-          astruc.columnCount = rNets;
-          astruc.columnStarts = colstarts;
-          astruc.attributes = SparseAttributes_t();
-          astruc.blockSize = 1;
-          astruc.rowIndices = rowind;
-
-
-          updatePre(tStep, m);
-
-
-
-
-
-          for (int i = 0; i < rNets; i++ ) {
-              systemB[i] = m.b[i+1].lu;
-              for (int j = 0; j < rNets; j++ ) {
-                  systemA[(i*(rNets))+j] = m.A[j+1][i+1].lu; //klopt dit??
-              }
-          }
-              SparseMatrix_Double a;
-              //a.withUnsafeMutableBufferPointer();
-              a.structure = astruc;
-              a.data = systemA;
-
-
-              DenseMatrix_Double b;
-              b.data = systemB;
-
-              DenseMatrix_Double x;
-              x.data = systemX;
-
-
-              bool status = SparseSolve(SparseLSMR(), a, b, x);
-
-
-              m.b[0].lu = 0;
-              for (size_t i = 1; i < nets; i++) {
-                  m.b[i].lu = systemX[i-1];
-
-              }
-              //dgesvx();
-
-              //cblas_dgesvx_();
-
-              cblas_dgesvx(CblasRowMajor, CblasNoTrans, 8, 4, 1.0f, (*)a, 4, x, 1, 1.0f, y, 1);
-
-              std::vector<double> a1(systemA);
-              std::vector<double> b1(systemB);
-              std::vector<int> ipiv(rNets);
-
-
-              cblas_dgesv_('N', 'N', 0, 1, &systemA, &rNets, &rNets, a1.data(), &dim, ipiv.data(), b1.data(), &dim, &info);
-
-              dgesv( rNets, int* nrhs, double* a, int* lda, int* ipiv,
-                double* b, int* ldb, int* info );
-
-              cblas_dgesv_(&rNets, &rNets, a1.data(), &dim, ipiv.data(), b1.data(), &dim, &info);
-
+            e = 'E';
         }
-*/
+
+        //e = 'F';
+    }
 
 
-        void solve5(std::vector<IComponent*> &components, MNASystem & m)
+    void solve6(std::vector<IComponent*> &components, MNASystem & m)
+    {
+
+        int iter;
+
+        for(iter = 0; iter < maxIter; ++iter)
         {
 
-                  int iter;
-
-                  for(iter = 0; iter < maxIter; ++iter)
-                  {
-
-                    updatePre(tStep, m);
-
-                      dgesv_(&rNets, &one, *systemA, &rNets, pivot, *systemB, &rNets, &info);
-
-                      if(newton(components, m)) break;
-
-                      e = 'E';
-                }
-
-                  //e = 'F';
-      }
-
-
-      void solve6(std::vector<IComponent*> &components, MNASystem & m)
-      {
-
-                int iter;
-
-                for(iter = 0; iter < maxIter; ++iter)
-                {
-
-                  updatePre(tStep, m);
+            updatePre(tStep, m);
 
 
 
 
-                    //sposv_( "Lower", &rNets, &one, systemA, &rNets, systemB, &rNets, &info );
+            //sposv_( "Lower", &rNets, &one, systemA, &rNets, systemB, &rNets, &info );
 
-                     //la_solve();
+            //la_solve();
 
 
-                    //std::cout << "nieuwe iter "<< iter << '\n';
+            //std::cout << "nieuwe iter "<< iter << '\n';
 
-                    if(newton(components, m)) break;
+            if(newton(components, m)) break;
 
-                    e = 'E';
-              }
+            e = 'E';
+        }
 
-                e = 'F';
+        e = 'F';
     }
 
 
