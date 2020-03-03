@@ -50,7 +50,7 @@ function Sidebar() {
     modlabel.hide = () => {modlabel.style.display = "none"}
     modlabel.show = () => {modlabel.style.display = "block"}
     modlabel.style.position = "fixed";
-    modlabel.style.top = "6%";
+    modlabel.style.top = "45px";
     modlabel.style.right = sbarwidth-105 + "px";
     modlabel.style.fontSize = "14px";
     modlabel.style.color = "#dcdcdc";
@@ -107,17 +107,17 @@ function Sidebar() {
         //this.windowresize();
     }
 
-    let buttonpresets = [['>', 4, function() {
+    let buttonpresets = [['>', '35px', function() {
         showTab(0)
-    }], ['J', 44, function() {
+    }], ['J', '44%', function() {
         showTab(1)
     }],
-    ['C', 50, function() {
+    ['C', '50%', function() {
              showTab(2)
-    }], ['E', 56, function() {
+    }], ['E', '56%', function() {
         showTab(4)
     }],
-    ['M', 62, function() {
+    ['M', '62%', function() {
              showTab(3)
          }]];
     let buttons = [];
@@ -125,8 +125,8 @@ function Sidebar() {
     for (let i = 0; i < buttonpresets.length; i++) {
         buttons[i] = document.createElement("BUTTON");
         buttons[i].innerHTML = buttonpresets[i][0];
-        buttons[i].style.cssText = "border:none; outline:none; font-size:14px; text-align:center; color:white; background-color:#202020; position:absolute; right:0px; top:x1%;".replace('x0', sbarwidth-38).replace('x1', buttonpresets[i][1]);
-        buttons[i].style.width = "28px";
+        buttons[i].style.cssText = "border:none; outline:none; font-size:14px; text-align:center; color:white; background-color:#202020; position:absolute; right:0px; top:x1;".replace('x0', sbarwidth-38).replace('x1', buttonpresets[i][1]);
+        buttons[i].style.width = "30px";
         buttons[i].style.height = "27px";
         buttons[i].addEventListener("click", buttonpresets[i][2]);
         bar.appendChild(buttons[i])
@@ -137,9 +137,12 @@ function Sidebar() {
       bg.style.width = sbarwidth + "px";
       bar.style.right = sbarwidth-30 + "px";
 
+      bg.style.height = window.innerHeight + "px";
+      bar.style.height = window.innerHeight + "px";
+
 
         for (let i = 0; i < buttons.length; i++) {
-          buttons[i].style.width = "28px";
+          buttons[i].style.width = "30px";
           buttons[i].style.height = "27px";
         }
 
@@ -171,7 +174,7 @@ function jackOptions() {
 
     let modlabel = document.createElement("div");
     modlabel.innerHTML = 'Jack Settings:';
-    modlabel.style.cssText = "color:#dcdcdc; font-size:14px; font-family:sans-serif; font-weight: bold; position:fixed; right:x0px; top:6%".replace('x0', sbarwidth-145);
+    modlabel.style.cssText = "color:#dcdcdc; font-size:14px; font-family:sans-serif; font-weight: bold; position:fixed; right:x0px; top:45px".replace('x0', sbarwidth-145);
     document.body.appendChild(modlabel);
 
     let driverlabel = document.createElement("div");
@@ -357,7 +360,7 @@ function mediaLibrary() {
 
     let modlabel = document.createElement("div");
     modlabel.innerHTML = 'Media Library:';
-    modlabel.style.cssText = "color:#dcdcdc; font-size:14px; font-family:sans-serif; font-weight: bold; position:fixed; right:x0px; top:6%".replace('x0', sbarwidth-151);
+    modlabel.style.cssText = "color:#dcdcdc; font-size:14px; font-family:sans-serif; font-weight: bold; position:fixed; right:x0px; top:45px".replace('x0', sbarwidth-151);
     document.body.appendChild(modlabel);
 
     let div = document.createElement('div');
@@ -652,7 +655,7 @@ function codeBox() {
 
     let modlabel = document.createElement("div");
     modlabel.innerHTML = 'Code editor:';
-    modlabel.style.cssText = "color:#dcdcdc; font-size:14px; font-family:sans-serif; font-weight: bold; position:fixed; right:x0px; top:6%".replace('x0', sbarwidth-131);
+    modlabel.style.cssText = "color:#dcdcdc; font-size:14px; font-family:sans-serif; font-weight: bold; position:fixed; right:x0px; top:45px".replace('x0', sbarwidth-131);
     document.body.appendChild(modlabel);
 
     let codebox = document.createElement('textarea', code);

@@ -1,15 +1,16 @@
 #include <sstream>
-#include "RtAudio.h"
-//#include "./jack/jack_module.h"
+#include "./rtlibs/RtAudio.h"
+#include "./rtlibs/RtMidi.h"
+
+#include "./gen/genlib.h"
+
 #include "./halite.cpp"
 #include "./digitalComponents.cpp"
 #include "./analogComponents.cpp"
 #include "./genComponents.cpp"
 
-#include "./rtmidi-master/RtMidi.h"
 
-#include <iostream>
-#include <cstdlib>
+
 #include <fstream>
 #include <streambuf>
 #include <tclap/CmdLine.h>
@@ -52,7 +53,7 @@ const unsigned int callbackReturnValue = 1;
 int inout( void *outputBuffer, void *inputBuffer, unsigned int nBufferFrames,
          double /*streamTime*/, RtAudioStreamStatus status, void *data )
 {
-  unsigned int i, j;
+  unsigned int i;
   extern unsigned int channs;
   double *buffer = (double *) outputBuffer;
   inbuffer = (double *) inputBuffer;

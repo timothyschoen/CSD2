@@ -1,14 +1,12 @@
-#include <arrayfire.h>
-#include <af/defines.h>
-#include <af/dim4.hpp>
-#include <af/traits.hpp>
-//#include <Accelerate/Accelerate.h>
+
+#ifdef __linux__
+#include </opt/intel/compilers_and_libraries_2020.0.166/linux/mkl/include/mkl.h>
+
+#elif __APPLE__
 #include </opt/intel/compilers_and_libraries_2020.0.166/mac/mkl/include/mkl.h>
+#endif
+
 #include <iostream>
-
-
-
-
 
 
 
@@ -92,20 +90,20 @@ public:
             }
         }
 
-        af::array A(rNets, rNets, f64);
-        af::array b(rNets, f64);
+        //af::array A(rNets, rNets, f64);
+        //af::array b(rNets, f64);
 
-        A.write(static_cast<void*>(systemA.data()), systemA.size() * sizeof(double));
-        b.write(static_cast<void*>(systemB.data()), systemB.size() * sizeof(double));
+        //A.write(static_cast<void*>(systemA.data()), systemA.size() * sizeof(double));
+        //b.write(static_cast<void*>(systemB.data()), systemB.size() * sizeof(double));
 
-        af::array x = af::solve(A, b);
+        //af::array x = af::solve(A, b);
 
 
         double *host_a = new double[rNets*rNets];
         double *host_x = new double[rNets];
 
-        A.host(host_a);
-        x.host(host_x);
+        //A.host(host_a);
+        //x.host(host_x);
 
 
         m.b[0].lu = 0;
@@ -119,53 +117,6 @@ public:
 
     }
 
-
-    void solve2(MNASystem & m)
-    {
-        updatePre(tStep, m);
-
-
-        std::vector<double> systemA((rNets)*(rNets));
-        std::vector<double> systemB(rNets);
-
-        for (int i = 0; i < rNets; i++ ) {
-            systemB[i] = m.b[i+1].lu;
-            for (int j = 0; j < rNets; j++ ) {
-                systemA[(i*(rNets))+j] = m.A[j+1][i+1].lu; //klopt dit??
-            }
-        }
-
-        af::array A(nets, nets, f64);
-        af::array b(nets, f64);
-
-        A.write(static_cast<void*>(systemA.data()), systemA.size() * sizeof(double));
-        b.write(static_cast<void*>(systemB.data()), systemB.size() * sizeof(double));
-
-
-        af::array A_lu, pivot;
-        af::lu(A_lu, pivot, A);
-        af::array x = af::solveLU(A, pivot, b);
-
-
-        double *host_a = new double[nets*nets];
-        double *host_x = new double[nets];
-
-        A.host(host_a);
-        x.host(host_x);
-
-
-        m.b[0].lu = 0;
-        for (size_t i = 1; i < nets; i++) {
-            m.b[i].lu = host_x[i-1];
-
-        }
-
-        delete [] host_a;
-        delete [] host_x;
-
-
-
-    }
 
     void solve3(std::vector<IComponent*> &components, MNASystem & m)
     {
@@ -194,11 +145,11 @@ public:
 
 
 
-
+/*
     void solve4(MNASystem & m)
         {
 
-          /*
+
           std::cout << "heyyy" << '\n';
 
           double systemA[rNets*rNets];
@@ -258,7 +209,7 @@ public:
               //dgesvx();
 
               //cblas_dgesvx_();
-              /*
+
               cblas_dgesvx(CblasRowMajor, CblasNoTrans, 8, 4, 1.0f, (*)a, 4, x, 1, 1.0f, y, 1);
 
               std::vector<double> a1(systemA);
@@ -271,30 +222,10 @@ public:
               dgesv( rNets, int* nrhs, double* a, int* lda, int* ipiv,
                 double* b, int* ldb, int* info );
 
-              cblas_dgesv_(&rNets, &rNets, a1.data(), &dim, ipiv.data(), b1.data(), &dim, &info); */
+              cblas_dgesv_(&rNets, &rNets, a1.data(), &dim, ipiv.data(), b1.data(), &dim, &info);
 
         }
-
-
-        /*
-
-        int dgesvx_(
-          char *__fact,
-          char *__trans,
-          int *__n,
-          int *__nrhs,
-           *__a,
-          int *__lda,
-           *__af,
-          int *__ldaf,
-          int *__ipiv,
-          char *__equed,
-           *__r__,  *__c__,
-                 *__b, int *__ldb,  *__x,
-                int *__ldx, double *__rcond,
-                double *__ferr, double *__berr,
-                double *__work, int *__iwork,
-                int *__info) */
+*/
 
 
         void solve5(std::vector<IComponent*> &components, MNASystem & m)

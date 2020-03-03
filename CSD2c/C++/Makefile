@@ -1,38 +1,26 @@
 CC = g++
 CFLAGS = -Wall -std=c++17
 LDFLAGS= -ljack
-CAFLAGS= -D__MACOSX_CORE__ -framework CoreMIDI -framework CoreAudio -framework CoreFoundation
-AFFLAGS= -I/opt/arrayfire/include -rpath /opt/arrayfire/lib -lafcpu -L/opt/arrayfire/lib -framework Accelerate -llapack
-MKLFLAGS=  -lpthread -lm -ldl
+CAFLAGS= -D__MACOSX_CORE__ -framework CoreMIDI -framework CoreAudio -framework CoreFoundation -lpthread
+#AFFLAGS= -I/opt/arrayfire/include -rpath /opt/arrayfire/lib -lafcpu -L/opt/arrayfire/lib -framework Accelerate
+MKLFLAGS=  -lm -ldl -llapack
 
 
 all: Halite
 
-Halite : RtMidi.o
-	$(CC) -o $@ $(CFLAGS) main.cpp RtAudio.cpp ./gen/phasor.cpp ./gen/genlib.cpp ./gen/json.o ./gen/json_builder.o RtMidi.o $(CAFLAGS) $(AFFLAGS) $(MKLFLAGS)
+Halite : RtMidi.o, RtAudio.o genlib.o
+	$(CC) -o $@ $(CFLAGS) $(CAFLAGS) main.cpp genlib.o phasor.o json.o json_builder.o RtMidi.o RtAudio.o $(MKLFLAGS)
 	mv Halite ../compiled/
 
-#jack_module.o:
-#	$(CC) -c $< $(CFLAGS) ./jack/jack_module.cpp $(LDFLAGS)
 
-phasor.o: genlib.o
-	$(CC) -o $@ $(CFLAGS) ./gen/phasor.cpp ./count.cpp genlib.o
+RtMidi.o, RtAudio.o:
+	$(CC) -c $< $(CFLAGS) $(CAFLAGS) ./rtlibs/RtMidi.cpp ./rtlibs/RtAudio.cpp
 
 genlib.o: json.o
-	$(CC) -o $@ $(CFLAGS) ./gen/genlib.cpp ./gen/json.o ./gen/json_builder.o 
-
-RtMidi.o:
-	$(CC) -c $< -D__MACOSX_CORE__ $(CFLAGS) ./rtmidi-master/RtMidi.cpp -framework CoreMIDI -framework CoreAudio -framework CoreFoundation
-
-#genHeaders.h:
-#	bash -c 'for i in `ls ./gen/*.h`; do echo "#include <$i>" >>genHeaders.h; done'
+	$(CC) -c $< $(CFLAGS) ./gen/genlib.cpp ./gen/phasor.cpp ./gen/json.o ./gen/json_builder.o
 
 json.o:
-	gcc -c ./gen/json.o ./gen/json_builder.o
-
-
-
-
+	gcc -c ./gen/json.c ./gen/json_builder.c
 
 
 
