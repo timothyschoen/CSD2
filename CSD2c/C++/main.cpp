@@ -20,7 +20,7 @@ double* inbuffer;
 std::vector<std::string> savefile;
 std::vector<std::string> object;
 NetList * net;
-double outamp;
+double outamp = 0.2;
 unsigned int bufferFrames, fs = 44100, offset = 0;
 
 RtMidiIn *midiin = new RtMidiIn();
@@ -57,18 +57,9 @@ int inout( void *outputBuffer, void *inputBuffer, unsigned int nBufferFrames,
     unsigned int i;
     extern unsigned int channs;
     double *buffer = (double *) outputBuffer;
-
-
     unsigned int *bytes = (unsigned int *) data;
 
-    //std::cout <<  ((double *)inputBuffer)[300] << '\n';
-
     inbuffer = (double *) inputBuffer;
-    //std::cout << inbuffer[50] << '\n';
-    //memcpy(inbuffer, inputBuffer, *bytes); // not efficient i know
-    //std::cout <<  inbuffer[300] << '\n';
-
-
 
     double *output;
     midiin->getMessage( &message );
@@ -191,6 +182,10 @@ int main(int argc, char* argv[])
         {
             net = new NetList(stoi(seglist[1]), stoi(seglist[2]));
         }
+        else if(!seglist[0].compare("ground"))
+        {
+            continue;
+        }
 // Digital components
 
         else if(!seglist[0].compare("cycle-"))
@@ -205,8 +200,10 @@ int main(int argc, char* argv[])
         else if(!seglist[0].compare("adc"))
             net->addComponent(new analogDigitalConverter(std::stoi(seglist[1]), std::stoi(seglist[2]), seglist[3]));
 
-        else if(!seglist[0].compare("output-"))
+        else if(!seglist[0].compare("output-")) {
             net->addComponent(new digitalOutput(std::stof(seglist[1]), seglist[2], seglist[3]));
+            outamp = std::stof(seglist[1]);
+          }
 
         else if(!seglist[0].compare("input-"))
             net->addComponent(new digitalInput(seglist[1], std::stof(seglist[2]), seglist[3]));

@@ -803,9 +803,15 @@ struct digitalDelay : Component2<0, 0, 3>
         digiPins[1] = d1;
         digiPins[2] = d2;
 
-        if(init.size() > 0) bufSize = stoi(init[0]);
+        int offset = 0; // sometimes a space slips inbetween here, this offset is a fix
+
+        if(init[0].empty()) {
+          offset = 1;
+        }
+
+        if(init.size() > offset) bufSize = stoi(init[0]);
         else bufSize = 88200;
-        if(init.size() > 1) t = stof(init[1]);
+        if(init.size() > offset+1) t = stof(init[1]);
         else t = 10000;
         currentSample = 0;
         smoothTime = t;
@@ -817,14 +823,13 @@ struct digitalDelay : Component2<0, 0, 3>
 
     void updateInput(MNASystem & m) final
     {
-
-
         t = (int)m.getDigital(digiNets[1]);
 
         if (t>bufSize-1) t = bufSize-1;
 
         //Write current value
         buf[currentSample] = m.getDigital(digiNets[0]);
+
     }
 
     void update(MNASystem & m) final

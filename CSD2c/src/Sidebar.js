@@ -71,7 +71,7 @@ function Sidebar()
     // Initialize all sidebar components (except the console)
 
 
-    let audiosettings = new audioSettings(); // Same tab as jackoptions
+    let audiosettings = new audioSettings();
 
     let medialib = new mediaLibrary();
 
@@ -184,10 +184,7 @@ function Sidebar()
     {
         medialib.update();
     }
-    this.getJackStatus = function()
-    {
-        return jackstatus;
-    }
+
 }
 
 

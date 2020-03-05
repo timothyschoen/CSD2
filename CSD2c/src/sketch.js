@@ -53,8 +53,6 @@ let types =
     {'inlets': 2, 'outlets': 0, 'args': 1, 'colors': ['#229FD7'], 'code': " probe, i0, i1, a0"},
 'print':
     {'inlets': 1, 'outlets': 1, 'colors': ['#229FD7', '#229FD7'], 'args': 0, 'code': " print, i0, i1"},
-'delay':
-    {'inlets': 2, 'outlets': 1, 'datatypes': ['analog', 'digital', 'analog'], 'colors': ['#229FD7', '#229FD7'], 'args': 2, 'code': " delay, a0, a1, i0, d1, i2"},
 
     // conversion objects
 'dac':
@@ -189,10 +187,6 @@ let selecting = false; // Are we selecting?
 
 let halsettings = [44100, 44100, 24, '.WAV', 1024]; // Export and audio settings for halite
 
-let jackstatus = 0; // Is jack running?
-
-let jack; // letiable for jack process
-
 let typing = false; // Check if we're typing, if so, disable keyboard shortcuts
 
 let initializing = true;
@@ -212,10 +206,6 @@ window.onbeforeunload = function()
         {
             halite.kill('SIGINT');
         }
-        if (jackstatus)
-        {
-            jack.kill('SIGINT')
-        }
     }
     catch (e) {}
 };
@@ -230,7 +220,7 @@ document.ondragover = document.ondrop = (ev) =>
     ev.preventDefault()
 }
 
-document.body.ondrop = (ev) =>
+document.body.ondrop = (ev) => // this is not working: why?
 {
     // If we get a new file, move it to our media library
     fs.createReadStream(ev.dataTransfer.files[0].path).pipe(fs.createWriteStream('./media/' + ev.dataTransfer.files[0].name));
@@ -264,11 +254,6 @@ window.addEventListener("resize", () =>
 });
 
 
-//createCanvas(window.innerWidth, window.innerHeight);
-
-// Initialize the sidebar (from sidebar.js)
-//sbar = new Sidebar;
-
 // Set the canvas size
 cnvwidth = window.innerWidth-sbarwidth;
 
@@ -291,12 +276,7 @@ changed();
 
 ds.addSelectables(document.getElementsByClassName('component'));
 
-/*
-for (var i = 0; i < boxes.length; i++) {
-  console.log(boxes[i].getdiv().className);
-} */
 
-console.log(document.getElementsByClassName('div'));
 // set up main buttons at the bottom
 // I had to set up so many buttons throughout this program that using loops saves me hundreds of lines
 for (let i = 0; i < 3; i++)
@@ -573,19 +553,38 @@ document.addEventListener("keydown", function(event)
         case (90): // ctrl-z
             if(event.metaKey)
             {
-                unredo(-1);
+                console.log("Undo/redo has been disabled for stability")
+                //unredo(-1);
             }
             break;
         case (82): // ctrl-R??/
             if(event.metaKey)
             {
-                unredo(1);
+                console.log("Undo/redo has been disabled for stability")
+                //unredo(1);
             }
             break;
             case (67): // ctrl-c
                 if(event.metaKey)
                 {
                     clipboard.writeText(JSON.stringify(copySelection()));
+                }
+                break;
+            case (88): // ctrl-x
+                if(event.metaKey)
+                {
+                    clipboard.writeText(JSON.stringify(copySelection()));
+                    for (let i = boxes.length-1; i >= 0; i--)
+                    {
+                        boxes[i].deleteIfSelected();
+                    }
+                }
+                break;
+            case (68): // ctrl-d
+                if(event.metaKey)
+                {
+                    pasteSelection(copySelection()); // nice
+
                 }
                 break;
             case (86):
@@ -685,7 +684,7 @@ function changed()
 }
 
 
-
+// temporarily disabled because it's glitchy
 function unredo(step)
 {
     //console.log('histpos', histpos)
