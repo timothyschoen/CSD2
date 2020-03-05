@@ -99,12 +99,6 @@ struct VariableResistor : Component2<2, 0, 1>
     void stamp(MNASystem & m) final
     {
 
-        /*
-        m.stampStatic(+base, nets[0], nets[0]); //Positive on diagonal elements
-        m.stampStatic(-base, nets[0], nets[1]); //Negative on off-diagonal elements
-        m.stampStatic(-base, nets[1], nets[0]);
-        m.stampStatic(+base, nets[1], nets[1]); */
-
 
         m.A[nets[0]][nets[0]].gdyn.push_back(&g);
         m.A[nets[0]][nets[1]].gdyn.push_back(&ng);
@@ -116,11 +110,6 @@ struct VariableResistor : Component2<2, 0, 1>
     {
         scale = m.getDigital(digiNets[0], 1);
         scale += scale == 0; // cant have 0
-
-        // smooth movement is a must if you want to actually use this for anything
-        //smoothscale = ((1-a)*previousscale + a * scale);
-        //previousscale = smoothscale;
-
 
     }
     void update(MNASystem & m) final
@@ -138,8 +127,11 @@ struct Potentiometer : Component2<3, 0, 1>
 {
     double  r;
 
-    double resvalue;
-    double invresvalue;
+    double g;
+    double ig;
+
+    double ng;
+    double ing;
 
 
 
@@ -150,44 +142,35 @@ struct Potentiometer : Component2<3, 0, 1>
         pinLoc[2] = l2; // inv out
         digiPins[0] = d0; // set value
 
-        resvalue = 1. / r;
-        invresvalue = 1. / r;
+        g = r*0.5;
+        ig = r*0.5;
+
+        ng = -g;
+        ing = -ig;
     }
 
     void stamp(MNASystem & m) final
     {
 
-        /*
+          m.A[nets[0]][nets[0]].gdyn.push_back(&g);
+          m.A[nets[0]][nets[1]].gdyn.push_back(&ng);
+          m.A[nets[1]][nets[0]].gdyn.push_back(&ng);
+          m.A[nets[1]][nets[1]].gdyn.push_back(&g);
 
-          for (size_t r = 0; r < 2; r++) {
-            for (size_t c = 0; c < 2; c++) {
-              if (r==c) {
-                m.A[nets[r]][nets[c]].gdyn.push_back(&resvalue);
-                m.A[nets[r * 2]][nets[c * 2]].gdyn.push_back(&invresvalue);
-              }
-              else  {
-                m.A[nets[r]][nets[c]].gdyn.push_back(&negresvalue);
-                m.A[nets[r * 2]][nets[c * 2]].gdyn.push_back(&neginvresvalue);
-              }
-            }
-          } */
-
-        m.stampStatic(+resvalue, nets[0], nets[0]);
-        m.stampStatic(-resvalue, nets[0], nets[1]);
-        m.stampStatic(-resvalue, nets[1], nets[0]);
-        m.stampStatic(+resvalue, nets[1], nets[1]);
-
-        m.stampStatic(+invresvalue, nets[0], nets[0]);
-        m.stampStatic(-invresvalue, nets[0], nets[2]);
-        m.stampStatic(-invresvalue, nets[2], nets[0]);
-        m.stampStatic(+invresvalue, nets[2], nets[2]);
+          m.A[nets[0]][nets[0]].gdyn.push_back(&ig);
+          m.A[nets[0]][nets[2]].gdyn.push_back(&ing);
+          m.A[nets[2]][nets[0]].gdyn.push_back(&ing);
+          m.A[nets[2]][nets[2]].gdyn.push_back(&ig);
 
     }
     void updateInput(MNASystem & m) final
     {
 
-        resvalue = 1. / (r * m.getDigital(digiNets[0]));
-        invresvalue = 1. / (r - (r * m.getDigital(digiNets[1])));
+        g = 1. / (r * m.getDigital(digiNets[0]));
+        ig = 1. / (r - (r * m.getDigital(digiNets[0])));
+
+        ng = -g;
+        ing = -ig;
     }
 
     void update(MNASystem & m) final
@@ -988,7 +971,7 @@ struct OPA : Component2<3, 1>
 
         // the DC voltage gain
         amp = 1;
-        vmax = 0.04;
+        vmax = 0.02;
 
 
 

@@ -1,14 +1,14 @@
 let dialog = require('electron').remote.dialog;
 let fs = require("fs");
 const { spawn } = require('child_process');
+const { clipboard } = require('electron')
 
 document.body.style.backgroundColor = "#505050";
 document.head.style.height = "1500px";
 
-/*
-new DragSelect({
-  selectables: document.getElementsByClassName('selectable-nodes')
-}); */
+
+// All icons by Chanut is Industries from the Noun Project
+
 
 // All our objects, plus the data that we need to convert it to halite
 let types =
@@ -17,7 +17,7 @@ let types =
 'resistor':
     {'inlets': 1, 'outlets': 1, 'colors': ['#229FD7', '#229FD7'], 'args': 1, 'code': " resistor, a0, i0, i1"},
 'ground':
-    {'inlets': 1, 'outlets': 0, 'args': 0, 'colors': ['#000000'], 'code': ""},
+    {'inlets': 1, 'outlets': 0, 'args': 0, 'colors': ['#000000'], 'code': " ground"},
 'voltage':
     {'inlets': 0, 'outlets': 2, 'args': 1, 'colors': ['#ff0000', '#000000'], 'code': " voltage, a0, i0, i1"},
 'click':
@@ -158,6 +158,17 @@ let types =
 
 }
 
+// Aliases
+
+types['r'] = types['resistor'];
+types['c'] = types['capacitor'];
+types['i'] = types['inductor'];
+types['v'] = types['voltage'];
+types['opamp'] = types['op-amp'];
+
+
+
+
 let preset = ["ground", "output 0.3", 'input "./samples/sample-44k.wav" 0.2'];
 
 let halite; // letiable for halite process
@@ -167,10 +178,6 @@ let realtime_playing = false; // Checks if we are playing in realtime
 let sbar = new Sidebar; // Sidebar (see sidebar.js)
 //let sbarwidth = 350;
 
-window.addEventListener("resize", () =>
-{
-    sbar.windowresize()
-});
 
 //let code = ''; // letiable to store code to use for exporting and displaying
 
@@ -180,7 +187,7 @@ let selectX, selectY, selwidth, selheight; // X, Y, W, H of our selection
 
 let selecting = false; // Are we selecting?
 
-let halsettings = [44100, 44100, 24, 'WAV']; // Export and audio settings for halite (CURRENTLY UNUSED!!)
+let halsettings = [44100, 44100, 24, '.WAV', 1024]; // Export and audio settings for halite
 
 let jackstatus = 0; // Is jack running?
 
@@ -233,32 +240,28 @@ document.body.ondrop = (ev) =>
 }
 
 // All our control buttons in an array
-let buttonpresets = [['+', 100, function ()
+let buttonpresets = [[']', 100, function ()
 {
     boxes.push(new Component(undefined, 500, 500))
-}], ['R', 0, function ()
+}], ['{', 0, function ()
 {
     startHalite(1)
 }],
-['S', -100, function ()
+['w', -100, function ()
      {
          startHalite(0)
-}], ['N', 100, function ()
-{
-    localStorage.setItem("load", 'new');
-    window.onbeforeunload();
-    location.reload(true);
-}],
-['O', 150, loadfile], ['S', 200, function ()
-{
-    generatesave(1)
-} ], ['R', 250, function ()
-     {
-         generatesave(1, './lastsession.ncl');
-         loadfile('./lastsession.ncl');
 }]];
 let buttons = [];
 
+
+window.addEventListener("resize", () =>
+{
+    sbar.windowresize()
+    for (var i = 0; i < buttons.length; i++) {
+      buttons[i].style.left = ((window.innerWidth-sbarwidth)/2)+buttonpresets[i][1] + "px";
+    }
+
+});
 
 
 //createCanvas(window.innerWidth, window.innerHeight);
@@ -286,6 +289,14 @@ else
 initializing = false;
 changed();
 
+ds.addSelectables(document.getElementsByClassName('component'));
+
+/*
+for (var i = 0; i < boxes.length; i++) {
+  console.log(boxes[i].getdiv().className);
+} */
+
+console.log(document.getElementsByClassName('div'));
 // set up main buttons at the bottom
 // I had to set up so many buttons throughout this program that using loops saves me hundreds of lines
 for (let i = 0; i < 3; i++)
@@ -294,15 +305,22 @@ for (let i = 0; i < 3; i++)
 
 
     buttons[i].innerHTML = buttonpresets[i][0];
-    buttons[i].style.cssText = "border-radius:100%; border:none; outline:none; font-size:15; color:white; background-color:#303030; position:fixed;  bottom:60px;  left:x0px;".replace("x0", (cnvwidth/2)+buttonpresets[i][1]);
+    buttons[i].style.cssText = "border-radius:100%; border:none; outline:none; font-size:32px; color:white; background-color:#303030; position:fixed;  bottom:60px;  left:x0px;".replace("x0", (cnvwidth/2)+buttonpresets[i][1]);
     buttons[i].style.height =  "48px";
     buttons[i].style.width = "48px";
+    buttons[i].style.fontFamily = "Entypo";
     buttons[i].style.zIndez = "5";
     buttons[i].addEventListener("click", buttonpresets[i][2]);
     document.body.appendChild(buttons[i])
 
 }
 
+function convertMetric(str) {
+  if(!str.includes('/')) { // filter out links and stuff
+  str = str.replace('p', 'e-12').replace('n', 'e-9').replace('u', 'e-6').replace('m', 'e-3').replace('k', 'e3');
+  }
+  return str;
+}
 
 // Convert our line-based network into an electrical nodes network that Halite can interpret
 function precompile(save = 1)
@@ -373,14 +391,14 @@ function precompile(save = 1)
         }
         for(let x = 0; x < boxargs.length; x++)
         {
-            itercode = itercode.replace("a"+x, boxargs[x])
+            itercode = itercode.replace("a"+x, convertMetric(boxargs[x]))
         }
-        itercode = itercode + ', ' + JSON.stringify(optargs) + '\n';
+        itercode = itercode + ', ' + JSON.stringify(optargs).replace(',', ':') + '\n';
 
         iterboxes[i] = itercode;
     }
 
-    let setupnodes = " setup, nodes, digiconns".replace('nodes', exists.length).replace('digiconns', digitalconns.length+1);
+    let setupnodes = " setup, nodes, digiconns \n".replace('nodes', exists.length).replace('digiconns', digitalconns.length+1);
     code = setupnodes + iterboxes.join("");
     sbar.codeUpdate(code);
 
@@ -392,6 +410,12 @@ function precompile(save = 1)
 
 function startHalite(realtime)
 {
+    let params = [];
+    let prefixes = ['-s', '-t', '-d', '-f', '-b']
+    for (var i = 0; i < halsettings.length; i++) {
+      params.push(prefixes[i] + halsettings[i]);
+    }
+    console.log(params);
     let haliteappendix;
     let halitecmd = 'compiled/Halite'
 
@@ -529,11 +553,12 @@ function loadfile(e, path)
 
 // Process keyboard commands and shortcuts
 
+
 document.addEventListener("keydown", function(event)
 {
     if(!typing)   //ignore shortcuts when typing
     {
-        switch(keyCode)
+        switch(event.keyCode)
         {
         case (8 || 46): // 'backspace' or 'delete' is pressed
             for (let i = boxes.length-1; i >= 0; i--)
@@ -545,18 +570,30 @@ document.addEventListener("keydown", function(event)
         case 78:  // 'n' is pressed
             boxes.push(new Component(undefined, 500, 500));
             break;
-        case (90):
-            unredo(-1);
+        case (90): // ctrl-z
             if(event.metaKey)
             {
-                console.log('meta')
+                unredo(-1);
             }
-        case (82):
+            break;
+        case (82): // ctrl-R??/
             if(event.metaKey)
             {
                 unredo(1);
             }
             break;
+            case (67): // ctrl-c
+                if(event.metaKey)
+                {
+                    clipboard.writeText(JSON.stringify(copySelection()));
+                }
+                break;
+            case (86):
+                if(event.metaKey)
+                {
+                    pasteSelection(JSON.parse(clipboard.readText()));
+                }
+                break;
         default:
             break;
 
@@ -565,7 +602,7 @@ document.addEventListener("keydown", function(event)
     }
     else
     {
-        if(keyCode === 13)   // if enter is pressed while typing, close textbox
+        if(event.keyCode === 13)   // if enter is pressed while typing, close textbox
         {
             boxes.forEach(box =>
             {
@@ -575,38 +612,59 @@ document.addEventListener("keydown", function(event)
     }
 });
 
+function copySelection() {
+  let boxnames = [];
+  let boxindices = [];
+  for (var i = 0; i < boxes.length; i++) {
+    if(boxes[i].isSelected()) {
+      boxindices.push(i);
+      boxnames.push([i, boxes[i].getname(), boxes[i].getposition()])
+    }
+  }
+  let conns = [];
 
 
-// Functions to run on actions like clicks, resizes etc.
+  for (let i = 0; i < connections.length; i++)
+  {
+      let connInlets = connections[i].getinlets();
+      if(boxindices.includes(connInlets[0][0]) && boxindices.includes(connInlets[0][1])) {
+        let newindices = [[boxindices.indexOf(connInlets[0][0]), boxindices.indexOf(connInlets[0][1])]];
+        let formattedconn = newindices.concat([connInlets[1]].concat(connections[i].gettype()));
+        conns.push(formattedconn);
+    }
+  }
 
-// Selects a component
-function mouseClicked()
-{
-    boxes.forEach(function(component)
-    {
-        component.mouseClicked();
-    });
+  let savefile = [boxnames, conns];
+  console.log(JSON.stringify(savefile));
+  return savefile;
+
+
+
 }
 
-// This opens the name inputting field on a component
-function doubleClicked()
-{
-    for(let i = 0; i<boxes.length; i++)
-    {
-        boxes[i].doubleclick();
-    }
-}
+function pasteSelection(pasted) {
 
-// Resize everything accordingly on windowResize
-function windowResized()
-{
-    //resizeCanvas(window.innerWidth, window.innerHeight);
-    sbar.windowresize();
-    for (let i = 0; i < 3; i++)
+  try
+  {
+    let tempboxes = [];
+    for (let i = 0; i < pasted[0].length; i++)
     {
-
-        buttons[i].style.cssText = "left:x0px;".replace("x0", (cnvwidth/2)+buttonpresets[i][1]);
+        var component = new Component(pasted[0][i][1], pasted[0][i][2][0]+50, pasted[0][i][2][1]+50)
+        boxes.push(component);
+        tempboxes.push(component);
     }
+
+
+    for (let i = 0; i < pasted[1].length; i++)
+    {
+        console.log(JSON.stringify(pasted[1][i]));
+        let newconn = new Connection([tempboxes[pasted[1][i][0][0]], pasted[1][i][1][0]], [tempboxes[pasted[1][i][0][1]], pasted[1][i][1][1]], pasted[1][i][2]);
+        connections.push(newconn);
+    }
+  }
+  catch(err) {
+    console.log("Invalid clipboard content");
+  }
 
 }
 
@@ -653,28 +711,3 @@ function unredo(step)
     }
     initializing = false;
 }
-
-
-// Utility functions
-
-// Intersection of rectangles
-function intersect(aleft, aright, atop, abottom, bleft, bright, btop, bbottom)
-{
-    return (Math.max(aleft, bleft) < Math.min(aright, bright) || Math.max(aright, bleft) < Math.min(aleft, bright)) &&
-           (Math.max(atop, btop) < Math.min(abottom, bbottom) || Math.max(abottom, btop) < Math.min(atop, bbottom));
-}
-
-// Remove duplicates from array (necessary for precompile())
-function removeDuplicates(array)
-{
-    let x = {};
-    array.forEach(function(z)
-    {
-        let i = JSON.stringify(z);
-        if(!x[i])
-        {
-            x[i] = z
-        }
-    })
-    return Object.values(x);
-};

@@ -528,7 +528,7 @@ struct Elapsed : Component2<0, 0, 1>
 {
 
 
-    Elapsed(std::string d0, std::string d1)
+    Elapsed(std::string d0)
     {
 
         digiPins[0] = d0;
@@ -541,7 +541,7 @@ struct Elapsed : Component2<0, 0, 1>
 
     void update(MNASystem & m) final
     {
-        m.setDigital(digiNets[1], m.ticks);
+        m.setDigital(digiNets[0], (double)m.ticks);
 
     }
 
@@ -597,7 +597,7 @@ struct rtDigitalInput : Component2<0, 0, 1>
     { }
     void update(MNASystem & m) final
     {
-        m.setDigital(digiNets[0], m.audioInput[m.ticks%512]);
+        m.setDigital(digiNets[0], inbuffer[m.ticks%512]);
 
     }
 
@@ -789,6 +789,7 @@ struct digitalCycle : Component2<0, 0, 2>
 struct digitalDelay : Component2<0, 0, 3>
 {
     int t = 10000;
+    int bufSize;
     int currentSample;
     double smoothTime;
     int readHead;
@@ -802,12 +803,13 @@ struct digitalDelay : Component2<0, 0, 3>
         digiPins[1] = d1;
         digiPins[2] = d2;
 
-        if(init.size() > 0) buf.assign(stoi(init[0]), 0);
-        else buf.assign(88200, 0);
+        if(init.size() > 0) bufSize = stoi(init[0]);
+        else bufSize = 88200;
         if(init.size() > 1) t = stof(init[1]);
         else t = 10000;
         currentSample = 0;
         smoothTime = t;
+        buf.assign(bufSize, 0);
     }
 
     void stamp(MNASystem & m) final
@@ -819,6 +821,8 @@ struct digitalDelay : Component2<0, 0, 3>
 
         t = (int)m.getDigital(digiNets[1]);
 
+        if (t>bufSize-1) t = bufSize-1;
+
         //Write current value
         buf[currentSample] = m.getDigital(digiNets[0]);
     }
@@ -828,13 +832,13 @@ struct digitalDelay : Component2<0, 0, 3>
 
         currentSample++;
 
-        if (currentSample >= 88200) currentSample = currentSample-88200;
+        if (currentSample >= bufSize) currentSample = currentSample-bufSize;
         if(m.ticks < t) t = 0;
 
         smoothTime = ((1-a)*prevTime + a * t);
         prevTime = smoothTime;
 
-        if (currentSample-smoothTime < 0) readHead = currentSample-smoothTime+88200;
+        if (currentSample-smoothTime < 0) readHead = currentSample-smoothTime+bufSize;
         else readHead = currentSample-smoothTime;
 
         m.setDigital(digiNets[2], buf[readHead]);

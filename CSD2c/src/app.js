@@ -22,7 +22,7 @@ const {app, BrowserWindow} = require('electron')
         // minimum height
         minHeight: 450,
         // set the title bar style
-titleBarStyle: 'hiddenInset',
+//titleBarStyle: 'hiddenInset',
         // set the background color to black
 backgroundColor: "#FFFFF",
         // Don't show the window until it's ready, this prevents any white flickering

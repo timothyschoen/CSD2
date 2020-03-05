@@ -2,19 +2,47 @@
 
 let sbarwidth;
 
+/*
+var resizeViewPort = function(width, height) {
+    var tmp = document.documentElement.style.overflow;
+    document.documentElement.style.overflow = "scroll";
+
+    if (window.outerWidth) {
+        window.resizeTo(
+            width + (window.outerWidth - document.documentElement.clientWidth),
+            height + (window.outerHeight - document.documentElement.clientHeight)
+        );
+    } else {
+        window.resizeTo(500, 500);
+        window.resizeTo(
+            width + (500 - document.documentElement.clientWidth),
+            height + (500 - document.documentElement.clientHeight)
+        );
+    }
+
+    document.documentElement.style.overflow = tmp;
+}; */
+
+let scrollitem = document.createElement("div");
+scrollitem.innerHTML = '!!';
+scrollitem.style.position = "absolute";
+scrollitem.style.height = "8px";
+scrollitem.style.width = "8px";
+document.body.appendChild(scrollitem);
+
+
+let ds = new DragSelect({});
+
+
 function dragElement(elmnt, sidebar)
 {
     var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-    if (document.getElementById(elmnt.id + "header"))
-    {
-        // if present, the header is where you move the DIV from:
-        document.getElementById(elmnt.id + "header").onmousedown = dragMouseDown;
-    }
-    else
-    {
-        // otherwise, move the DIV from anywhere inside the DIV:
-        elmnt.onmousedown = dragMouseDown;
-    }
+
+    elmnt.onmousedown = dragMouseDown;
+
+    var adjustBodyWidth = function(nPixels) {
+      scrollitem.style.left = nPixels + 'px';
+    };
 
     function dragMouseDown(e)
     {
@@ -37,15 +65,24 @@ function dragElement(elmnt, sidebar)
         pos2 = pos4 - e.clientY;
         pos3 = e.clientX;
         pos4 = e.clientY;
+        ds.addSelection(elmnt);
+        ds.break();
         // set the element's new position:
         //elmnt.style.right = "0px";
 
         if(sidebar == undefined)
         {
-            elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
-            elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
-            elmnt.x = (elmnt.offsetLeft - pos1);
-            elmnt.y = (elmnt.offsetTop - pos2);
+            let elements = ds.getSelection();
+            for (var i = 0; i < elements.length; i++) {
+              elements[i].style.left = (elements[i].offsetLeft - pos1) + "px";
+              elements[i].style.top = (elements[i].offsetTop - pos2) + "px";
+              elements[i].x = (elements[i].offsetLeft - pos1);
+              elements[i].y = (elements[i].offsetTop - pos2);
+              if(elements[i].x > window.innerWidth-sbarwidth-30) {
+                adjustBodyWidth(elmnt.x + sbarwidth + 100);
+            }
+
+          }
             for (var i = 0; i < connections.length; i++)
             {
                 connections[i].update();
@@ -112,8 +149,8 @@ function Inlet(x, y, instance, type, datatype, color = '#229FD7')
     inletbutton.style.padding = "0";
     inletbutton.style.margin = "0";
     inletbutton.style.borderRadius = '100%'
-                                     inletbutton.style.border = '0px'
-                                             inletbutton.style.zIndex = "-1";
+    inletbutton.style.border = '0px'
+    inletbutton.style.zIndex = "-1";
 
     inletbutton.style.background = color;
     inletbutton.style.top =  y + "px";
@@ -240,9 +277,9 @@ function getmousePos()
 {
     return {
 left:
-        mouseX+5,
+        mouseX+5 + window.pageXOffset,
 top:
-        mouseY+4,
+        mouseY+4 + window.pageYOffset,
 width:
         -1,
     height:
@@ -301,7 +338,7 @@ function Connection(start, end, datatype = 'analog')   // Optional argument 'dat
 
     htmlLine.addEventListener('mouseenter', function()
     {
-        htmlLine.style.backgroundColor = "blue";
+        htmlLine.style.backgroundColor = "#229FD7";
     });
 
     htmlLine.addEventListener('contextmenu', ((ev) =>

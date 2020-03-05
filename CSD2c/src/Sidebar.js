@@ -4,7 +4,6 @@
 // Seperator lines
 let bar;
 
-let onswitch;
 sbarwidth = 350;
 let cnvwidth = window.innerWidth-300; // Width of our canvas without the sidebar
 
@@ -71,9 +70,8 @@ function Sidebar()
 
     // Initialize all sidebar components (except the console)
 
-    let jackoptions = new jackOptions();
 
-    let haliteoptions = new haliteOptions(); // Same tab as jackoptions
+    let audiosettings = new audioSettings(); // Same tab as jackoptions
 
     let medialib = new mediaLibrary();
 
@@ -87,7 +85,7 @@ function Sidebar()
         // Show/hide
         if (!tab && !hidden)
         {
-            buttons[0].textContent = "<";
+            buttons[0].textContent = "\xE7";
             hidden = 1;
             sbarwidth = 38;
             cnvwidth = window.innerWidth-38
@@ -95,7 +93,7 @@ function Sidebar()
         }
         else
         {
-            buttons[0].textContent = ">";
+            buttons[0].textContent = "\xE5";
             if(!tab)
             {
                 tab = 2;
@@ -105,7 +103,7 @@ function Sidebar()
                        hidden = 0;
             _this.windowresize();
         }
-        let tabs = [[], [jackoptions, haliteoptions], [logviewer, modlabel], [medialib],  [codebox]];
+        let tabs = [[], [audiosettings], [logviewer, modlabel], [medialib],  [codebox]];
         for (var i = 0; i < 5; i++)
         {
             if (i != tab)
@@ -121,21 +119,21 @@ function Sidebar()
         //this.windowresize();
     }
 
-    let buttonpresets = [['>', '35px', function()
+    let buttonpresets = [['\xE5', '35px', function()
     {
         showTab(0)
-    }], ['J', '44%', function()
+    }], ['\xE1', '44%', function()
     {
         showTab(1)
     }],
     ['C', '50%', function()
          {
              showTab(2)
-    }], ['E', '56%', function()
+    }], ['&', '56%', function()
     {
         showTab(4)
     }],
-    ['M', '62%', function()
+    ['r', '62%', function()
          {
              showTab(3)
          }]];
@@ -145,9 +143,10 @@ function Sidebar()
     {
         buttons[i] = document.createElement("BUTTON");
         buttons[i].innerHTML = buttonpresets[i][0];
-        buttons[i].style.cssText = "border:none; outline:none; font-size:14px; text-align:center; color:white; background-color:#202020; position:absolute; right:0px; top:x1;".replace('x0', sbarwidth-38).replace('x1', buttonpresets[i][1]);
+        buttons[i].style.cssText = "border:none; outline:none; font-size:24px; text-align:center; color:white; background-color:#202020; position:absolute; right:0px; top:x1;".replace('x0', sbarwidth-38).replace('x1', buttonpresets[i][1]);
+        buttons[i].style.fontFamily = "Entypo";
         buttons[i].style.width = "30px";
-        buttons[i].style.height = "27px";
+        buttons[i].style.height = "30px";
         buttons[i].addEventListener("click", buttonpresets[i][2]);
         bar.appendChild(buttons[i])
     }
@@ -165,11 +164,10 @@ function Sidebar()
         for (let i = 0; i < buttons.length; i++)
         {
             buttons[i].style.width = "30px";
-            buttons[i].style.height = "27px";
+            buttons[i].style.height = "30px";
         }
 
-        jackoptions.windowResize();
-        haliteoptions.windowResize();
+        audiosettings.windowResize();
         medialib.windowresize();
         codebox.windowResize();
         modlabel.style.right = sbarwidth-105 + "px";
@@ -192,201 +190,6 @@ function Sidebar()
     }
 }
 
-
-
-function jackOptions()
-{
-    let jack;
-
-    let modlabel = document.createElement("div");
-    modlabel.innerHTML = 'Jack Settings:';
-    modlabel.style.cssText = "color:#dcdcdc; font-size:14px; font-family:sans-serif; font-weight: bold; position:fixed; right:x0px; top:45px".replace('x0', sbarwidth-145);
-    document.body.appendChild(modlabel);
-
-    let driverlabel = document.createElement("div");
-    driverlabel.innerHTML = 'Driver:';
-    driverlabel.style.cssText = "color:#dcdcdc; font-size:14px; font-family:sans-serif; position:fixed; right:x0px; top:10.5%".replace('x0', sbarwidth-135)
-                                document.body.appendChild(driverlabel);
-
-    let driverlist = ['coreaudio', 'alsa', 'portaudio'];
-    let driversel = document.createElement("SELECT");
-    driversel.style.cssText = "font-size:12px; position:fixed; right:11px; top:10%";
-    driversel.style.width = "100px"
-                            driversel.style.height = "20px"
-                                    document.body.appendChild(driversel);
-
-    for (let i = 0; i < driverlist.length; i++)
-    {
-        let opt = document.createElement('option');
-        opt.appendChild( document.createTextNode(driverlist[i]));
-        opt.value = driverlist[i];
-        driversel.appendChild(opt);
-    }
-
-
-    let srlabel = document.createElement("div");
-    srlabel.innerHTML = 'Sample rate:';
-    srlabel.style.cssText = "color:#dcdcdc; font-size:14px; font-family:sans-serif; position:fixed; right:x0px; top:18.5%".replace('x0', sbarwidth-135);
-    document.body.appendChild(srlabel);
-
-    let samplesrates = [44100, 22050, 32000, 48000, 88200, 96000];
-    let sampleratesel = document.createElement("SELECT");
-    sampleratesel.style.cssText = "font-size:12px; position:fixed; right:11px; top:18%";
-    sampleratesel.style.width = "100px"
-                                sampleratesel.style.height = "20px"
-                                        document.body.appendChild(sampleratesel);
-
-
-    for (let i = 0; i < samplesrates.length; i++)
-    {
-        let opt = document.createElement('option');
-        opt.appendChild( document.createTextNode(samplesrates[i]));
-        opt.value = samplesrates[i];
-        sampleratesel.appendChild(opt);
-    }
-
-    let buflabel = document.createElement("div");
-    buflabel.innerHTML = 'Buffer size:';
-    buflabel.style.cssText = "color:#dcdcdc; font-size:14px; font-family:sans-serif; position:fixed; right:x0px; top:26.5%".replace('x0', sbarwidth-135);
-    document.body.appendChild(buflabel);
-
-    let bufsizes = [4096, 256, 512, 1024, 2048];
-    let buffersel = document.createElement("SELECT");
-    buffersel.style.cssText = "font-size:12px; position:fixed; right:11px; top:26%";
-    buffersel.style.width = "100px"
-                            buffersel.style.height = "20px"
-                                    document.body.appendChild(buffersel);
-
-    for (let i = 0; i < bufsizes.length; i++)
-    {
-        let opt = document.createElement('option');
-        opt.appendChild( document.createTextNode(bufsizes[i]));
-        opt.value = bufsizes[i];
-        buffersel.appendChild(opt);
-    }
-
-    let jackcommand = 'jackd' + ' -d'+driversel.value + ' -r'+sampleratesel.value + ' -p'+buffersel.value;
-
-
-    let inputlabel = document.createElement("div");
-    inputlabel.innerHTML =  'Command:';
-    inputlabel.style.cssText = "color:#dcdcdc; font-size:14px; font-family:sans-serif; position:fixed; right:x0px; top:35%".replace('x0', sbarwidth-135);
-    document.body.appendChild(inputlabel);
-
-    let inputcmd = document.createElement("INPUT");
-    inputcmd.style.cssText = "font-size:14px; position:fixed; right:11px; top:34%";
-    inputcmd.style.width = sbarwidth-150 + "px";
-    inputcmd.style.height = "20px";
-    document.body.appendChild(inputcmd);
-
-    onswitch = document.createElement("BUTTON");
-    onswitch.style.cssText = "border:none; outline:none; font-size:14px; color:white; background-color:#303030; position:fixed; right:x0px; top:42%".replace('x0', cnvwidth+(sbarwidth/2));
-    onswitch.style.width = "48px";
-    onswitch.style.height = "32px";
-    onswitch.innerHTML = "OFF";
-    onswitch.addEventListener("click", () =>
-    {
-        if (jackstatus == 1)
-        {
-            jack.kill('SIGINT');
-            onswitch.innerHTML = "OFF";
-            onswitch.style.backgroundColor = "#303030";
-        }
-        else
-        {
-            let splitcmd = inputcmd.value.split(' ');
-            jack = spawn(splitcmd[0], splitcmd.slice(1));
-            onswitch.innerHTML = "ON";
-            onswitch.style.backgroundColor = "#229FD7";
-            jack.stdout.on('data', function (data)
-            {
-                console.log('Jack: ' + data);
-            });
-
-            jack.stderr.on('data', function (data)
-            {
-                console.warn('Jack Error: ' + data);
-            });
-
-            jack.on('close', function (code)
-            {
-                jackstatus = 0;
-                onswitch.innerHTML = 'OFF'
-                                     onswitch.style.backgroundColor = "#303030";
-                console.log('Jack closed with code ' + code);
-                if (code)
-                {
-                    console.warn('Jack has crashed');
-                    console.warn('Please make sure you are not already running a jack server');
-                }
-
-            });
-
-        }
-        jackstatus = !jackstatus;
-    });
-    document.body.appendChild(onswitch);
-
-    this.update = function()
-    {
-        jackcommand = 'jackd' + ' -d'+driversel.value + ' -r'+sampleratesel.value + ' -p'+buffersel.value;
-        inputcmd.value = jackcommand;
-        inputcmd.innerHTML = jackcommand;
-
-    }
-
-    driversel.onchange = this.update;
-    buffersel.onchange = this.update;
-    sampleratesel.onchange = this.update;
-
-    this.windowResize = function()
-    {
-
-        modlabel.style.right = sbarwidth-145 + "px";
-        onswitch.style.right = sbarwidth-(sbarwidth/1.6) + "px";
-        inputcmd.style.width  = sbarwidth-180 + "px";
-        inputlabel.style.right = sbarwidth-135 + "px";
-
-        driversel.style.width = sbarwidth-180 + "px";
-        sampleratesel.style.width = sbarwidth-180 + "px";
-        srlabel.style.right = sbarwidth-135 + "px";
-        driverlabel.style.right = sbarwidth-135 + "px"
-                                  buflabel.style.right = sbarwidth-135 + "px";
-        buffersel.style.width = sbarwidth-180 + "px";
-    }
-
-
-
-    this.show = function()
-    {
-        modlabel.style.display = "block"
-                                 onswitch.style.display = "block";
-        inputcmd.style.display = "block";
-        buffersel.style.display = "block";
-        sampleratesel.style.display = "block";
-        inputlabel.style.display = "block";
-        buflabel.style.display = "block";
-        srlabel.style.display = "block";
-        driversel.style.display = "block";
-        driverlabel.style.display = "block";
-    }
-
-    this.hide = function()
-    {
-        modlabel.style.display = "none"
-                                 onswitch.style.display = "none";
-        inputlabel.style.display = "none";
-        inputcmd.style.display = "none";
-        buffersel.style.display = "none";
-        sampleratesel.style.display = "none";
-        buflabel.style.display = "none";
-        srlabel.style.display = "none";
-        driversel.style.display = "none";
-        driverlabel.style.display = "none";
-    }
-
-    this.hide();
-}
 
 function mediaLibrary()
 {
@@ -463,7 +266,7 @@ function mediaLibrary()
         {
             middlebutton.style.display = "block"
                                          leftbutton.style.display = "block"
-                                                 rightbutton.style.display = "block"
+ rightbutton.style.display = "block"
         }
 
         this.hide = function()
@@ -570,36 +373,57 @@ function mediaLibrary()
 
 }
 
-function haliteOptions()
+function audioSettings()
 {
     let modlabel = document.createElement("div");
-    modlabel.innerHTML = 'Halite Settings:';
+    modlabel.innerHTML = 'Audio Settings:';
     document.body.appendChild(modlabel);
-    modlabel.style.cssText = "color:#dcdcdc; font-size:14px; font-family:sans-serif; font-weight: bold; position:fixed; right:x0px; top:53%".replace('x0', sbarwidth-201);
+    modlabel.style.cssText = "color:#dcdcdc; font-size:14px; font-family:sans-serif; font-weight: bold; position:fixed; right:x0px; top:7%".replace('x0', sbarwidth-201);
+
+
+    let buflabel = document.createElement("div");
+    buflabel.innerHTML = 'Buffer size:';
+    buflabel.style.cssText = "color:#dcdcdc; font-size:14px; font-family:sans-serif; position:fixed; right:x0px; top:13%".replace('x0', sbarwidth-135);
+    document.body.appendChild(buflabel);
+
+    let bufsizes = [4096, 256, 512, 1024, 2048];
+    let buffersel = document.createElement("SELECT");
+    buffersel.style.cssText = "font-size:12px; position:fixed; right:11px; top:13%";
+    buffersel.style.width = "100px"
+                            buffersel.style.height = "20px"
+                                    document.body.appendChild(buffersel);
+
+    for (let i = 0; i < bufsizes.length; i++)
+    {
+        let opt = document.createElement('option');
+        opt.appendChild( document.createTextNode(bufsizes[i]));
+        opt.value = bufsizes[i];
+        buffersel.appendChild(opt);
+    }
 
     let srenginelabel = document.createElement("div");
     srenginelabel.innerHTML = 'Engine sample rate:';
-    srenginelabel.style.cssText = "color:#dcdcdc; font-size:14px; font-family:sans-serif; position:fixed; right:x0px; top:60.5%".replace('x0', sbarwidth-51);
+    srenginelabel.style.cssText = "color:#dcdcdc; font-size:14px; font-family:sans-serif; position:fixed; right:x0px; top:20%".replace('x0', sbarwidth-51);
     document.body.appendChild(srenginelabel);
 
     let samplerates = [44100, 22050, 32000, 48000, 88200, 96000];
     let srenginesel = document.createElement("SELECT");
-    srenginesel.style.cssText = "font-size:12px; position:fixed; right:11px; top:60%";
-    srenginesel.style.width = "100px"
-                              srenginesel.style.height = "20px"
-                                      document.body.appendChild(srenginesel);
+    srenginesel.style.cssText = "font-size:12px; position:fixed; right:11px; top:20%";
+    srenginesel.style.width = "100px";
+    srenginesel.style.height = "20px";
+    document.body.appendChild(srenginesel);
 
 
     let sroutputlabel = document.createElement("div");
-    sroutputlabel.style.cssText = "color:#dcdcdc; font-size:14px; font-family:sans-serif; position:fixed; right:x0px; top:68.5%".replace('x0', sbarwidth/2);
+    sroutputlabel.style.cssText = "color:#dcdcdc; font-size:14px; font-family:sans-serif; position:fixed; right:x0px; top:27%".replace('x0', sbarwidth/2);
     sroutputlabel.innerHTML =  'Export sample rate:';
     document.body.appendChild(sroutputlabel);
 
     let sroutputsel = document.createElement("SELECT");
-    sroutputsel.style.cssText = "font-size:12px; position:fixed; right:11px; top:68%";
-    sroutputsel.style.width = "100px"
-                              sroutputsel.style.height = "20px"
-                                      document.body.appendChild(sroutputsel);
+    sroutputsel.style.cssText = "font-size:12px; position:fixed; right:11px; top:27%";
+    sroutputsel.style.width = "100px";
+    sroutputsel.style.height = "20px";
+    document.body.appendChild(sroutputsel);
 
     for (let i = 0; i < samplerates.length; i++)
     {
@@ -617,12 +441,12 @@ function haliteOptions()
     let depths = [24, 8, 16, 32];
 
     let depthlabel = document.createElement("div");
-    depthlabel.style.cssText = "color:#dcdcdc; font-size:14px; font-family:sans-serif; position:fixed; right:x0px; top:76.5%".replace('x0', sbarwidth-251);
+    depthlabel.style.cssText = "color:#dcdcdc; font-size:14px; font-family:sans-serif; position:fixed; right:x0px; top:34%".replace('x0', sbarwidth-251);
     depthlabel.innerHTML = 'Export bit depth:';
     document.body.appendChild(depthlabel);
 
     let depthsel = document.createElement("SELECT");
-    depthsel.style.cssText = "font-size:12px; position:fixed; right:11px; top:76%";
+    depthsel.style.cssText = "font-size:12px; position:fixed; right:11px; top:34%";
     depthsel.style.width = "100px"
                            depthsel.style.height = "20px"
                                    document.body.appendChild(depthsel);
@@ -635,15 +459,15 @@ function haliteOptions()
         depthsel.appendChild(opt);
     }
 
-    let formats = ['WAV', 'AIFF'];
+    let formats = ['.WAV', '.AIFF'];
 
     let formatlabel = document.createElement("div");
-    formatlabel.style.cssText = "color:#dcdcdc; font-size:14px; font-family:sans-serif; position:fixed; right:x0px; top:84.5%".replace('x0', sbarwidth-251);
+    formatlabel.style.cssText = "color:#dcdcdc; font-size:14px; font-family:sans-serif; position:fixed; right:x0px; top:41%".replace('x0', sbarwidth-251);
     formatlabel.innerHTML = 'Export format:';
     document.body.appendChild(formatlabel);
 
     let formatsel = document.createElement("SELECT");
-    formatsel.style.cssText = "font-size:12px; position:fixed; right:11px; top:84%";
+    formatsel.style.cssText = "font-size:12px; position:fixed; right:11px; top:41%";
     formatsel.style.width = "100px";
     formatsel.style.height = "20px";
     document.body.appendChild(formatsel);
@@ -660,11 +484,12 @@ function haliteOptions()
     this.update = function()
     {
         halsettings[0] = srenginesel.value
-                         halsettings[1] = sroutputsel.value
-                                          halsettings[2] = depthsel.value
-                                                  halsettings[3] = formatsel.value
+        halsettings[1] = sroutputsel.value
+        halsettings[2] = depthsel.value
+        halsettings[3] = formatsel.value
+        halsettings[4] = buffersel.value
     }
-
+    buffersel.onchange = this.update;
     depthsel.onchange = this.update;
     formatsel.onchange = this.update;
     sroutputsel.onchange = this.update;
@@ -677,6 +502,8 @@ function haliteOptions()
 
 
         modlabel.style.right = sbarwidth-155 + "px";
+        buffersel.style.width = sbarwidth-200 + "px";
+        buflabel.style.right = sbarwidth-180 + "px";
         srenginesel.style.width = sbarwidth-200 + "px";
         srenginelabel.style.right = sbarwidth-180+ "px";
         sroutputsel.style.width = sbarwidth-200 + "px";
@@ -691,27 +518,31 @@ function haliteOptions()
     this.show = function()
     {
         modlabel.style.display = "block"
-                                 srenginesel.style.display = "block"
-                                         srenginelabel.style.display = "block"
-                                                 sroutputsel.style.display = "block"
-                                                         sroutputlabel.style.display = "block"
-                                                                 depthsel.style.display = "block"
-                                                                         depthlabel.style.display = "block"
-                                                                                 formatsel.style.display = "block"
-                                                                                         formatlabel.style.display = "block"
+        buffersel.style.display = "block"
+        buflabel.style.display = "block"
+        srenginesel.style.display = "block"
+        srenginelabel.style.display = "block"
+        sroutputsel.style.display = "block"
+        sroutputlabel.style.display = "block"
+        depthsel.style.display = "block"
+        depthlabel.style.display = "block"
+        formatsel.style.display = "block"
+        formatlabel.style.display = "block"
     }
 
     this.hide = function()
     {
         modlabel.style.display = "none"
-                                 srenginesel.style.display = "none"
-                                         srenginelabel.style.display = "none"
-                                                 sroutputsel.style.display = "none"
-                                                         sroutputlabel.style.display = "none"
-                                                                 depthsel.style.display = "none"
-                                                                         depthlabel.style.display = "none"
-                                                                                 formatsel.style.display = "none"
-                                                                                         formatlabel.style.display = "none"
+        buffersel.style.display = "none"
+        buflabel.style.display = "none"
+        srenginesel.style.display = "none"
+        srenginelabel.style.display = "none"
+        sroutputsel.style.display = "none"
+        sroutputlabel.style.display = "none"
+        depthsel.style.display = "none"
+        depthlabel.style.display = "none"
+        formatsel.style.display = "none"
+        formatlabel.style.display = "none"
     }
 
     this.hide();
@@ -742,7 +573,7 @@ function codeBox()
     coderefresh.style.width = "52px";
     coderefresh.style.height = "32px";
     coderefresh.innerHTML = 'Update code'
-                            coderefresh.addEventListener("click", () =>
+      coderefresh.addEventListener("click", () =>
     {
         precompile(0);
     });

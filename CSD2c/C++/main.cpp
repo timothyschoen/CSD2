@@ -4,6 +4,8 @@
 
 #include "./gen/genlib.h"
 
+double* inbuffer;
+
 #include "./halite.cpp"
 #include "./digitalComponents.cpp"
 #include "./analogComponents.cpp"
@@ -18,7 +20,7 @@
 std::vector<std::string> savefile;
 std::vector<std::string> object;
 NetList * net;
-double outamp = 0.8;
+double outamp;
 unsigned int bufferFrames, fs = 44100, offset = 0;
 
 RtMidiIn *midiin = new RtMidiIn();
@@ -44,9 +46,8 @@ unsigned int frameCounter = 0;
 bool checkCount = false;
 unsigned int nFrames = 0;
 unsigned int bufferBytes;
-double *inbuffer;
 
-double init[512] = {0};
+
 
 const unsigned int callbackReturnValue = 1;
 
@@ -56,7 +57,17 @@ int inout( void *outputBuffer, void *inputBuffer, unsigned int nBufferFrames,
     unsigned int i;
     extern unsigned int channs;
     double *buffer = (double *) outputBuffer;
+
+
+    unsigned int *bytes = (unsigned int *) data;
+
+    //std::cout <<  ((double *)inputBuffer)[300] << '\n';
+
     inbuffer = (double *) inputBuffer;
+    //std::cout << inbuffer[50] << '\n';
+    //memcpy(inbuffer, inputBuffer, *bytes); // not efficient i know
+    //std::cout <<  inbuffer[300] << '\n';
+
 
 
     double *output;
@@ -66,8 +77,8 @@ int inout( void *outputBuffer, void *inputBuffer, unsigned int nBufferFrames,
     {
         net->simulateTick();
         output = net->getAudioOutput();
-        *buffer++ = *(output)*outamp;
-        *(buffer+nBufferFrames) = *(output+1)*outamp;
+        *buffer++ = output[0]*outamp;
+        *(buffer+nBufferFrames) = output[1]*outamp;
     }
 
 
@@ -82,14 +93,16 @@ int inout( void *outputBuffer, void *inputBuffer, unsigned int nBufferFrames,
 int main(int argc, char* argv[])
 {
 
-    inbuffer = init;
     bool realtime;
     int outputsamplerate;
     int enginesamplerate;
     int bitdepth;
+    int buffersize;
     std::string inputpath;
     std::string outputpath;
     std::string outputformat;
+    double initarr[512] = {0};
+    inbuffer = initarr;
 
     try
     {
@@ -98,7 +111,8 @@ int main(int argc, char* argv[])
         TCLAP::ValueArg<std::string> outputFile("o","output", "choose output file", false, "./output.wav", "path");
         TCLAP::ValueArg<int> osr("s","samplerate", "set sample rate for output", false, 44100, "integer");
         TCLAP::ValueArg<int> esr("t","interval", "set sample rate for engine", false, 44100, "integer");
-        TCLAP::ValueArg<int> bd("b","bitdepht", "set bit depth for output", false, 24, "integer");
+        TCLAP::ValueArg<int> bd("d","bitdepht", "set bit depth for output", false, 24, "integer");
+        TCLAP::ValueArg<int> bs("b","buffersize", "set realtime buffersize", false, 1024, "integer");
         TCLAP::ValueArg<std::string> format("f","format", "output file format", false, ".WAV", "string");
         TCLAP::SwitchArg rtswitch("r", "realtime", "enable realtime playback");
 
@@ -107,12 +121,14 @@ int main(int argc, char* argv[])
         cmd.add(esr);
         cmd.add(osr);
         cmd.add(bd);
+        cmd.add(bs);
         cmd.add(rtswitch);
         cmd.add(format);
         cmd.parse(argc, argv);
 
         outputformat = format.getValue();
         bitdepth = bd.getValue();
+        buffersize = bs.getValue();
         outputsamplerate = osr.getValue();
         enginesamplerate = esr.getValue();
         inputpath = inputFile.getValue();
@@ -162,7 +178,7 @@ int main(int argc, char* argv[])
         std::string parsedargs;
 
 
-        while(std::getline(argstream, parsedargs, ','))
+        while(std::getline(argstream, parsedargs, ':'))
         {
             parsedargs.erase(0, 1);
             parsedargs.erase(parsedargs.size()-1, 1);
@@ -226,7 +242,7 @@ int main(int argc, char* argv[])
             net->addComponent(new History(seglist[1], seglist[2]));
 
         else if(!seglist[0].compare("elapsed-"))
-            net->addComponent(new Elapsed(seglist[1], seglist[2]));
+            net->addComponent(new Elapsed(seglist[1]));
 
         else if(!seglist[0].compare("accum-"))
             net->addComponent(new accumulate(seglist[1], seglist[2]));
@@ -433,7 +449,7 @@ int main(int argc, char* argv[])
 
         RtAudio::StreamParameters iParams;
         iParams.deviceId = dac.getDefaultInputDevice();
-        iParams.nChannels = channs;
+        iParams.nChannels = 1;
         iParams.firstChannel = offset;
 
         options.flags = RTAUDIO_HOG_DEVICE;

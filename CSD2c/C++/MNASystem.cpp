@@ -9,7 +9,7 @@ struct MNASystem
     MNAVector   b; // This is the Z matrix since that contains our known values
 
     std::vector<unsigned char>* midiInput;
-    double* audioInput;
+    double audioInput[512];
     double      time;
     long      ticks;
 
@@ -48,20 +48,6 @@ struct MNASystem
     void stampStatic(double g, int r, int c)
     {
         A[r][c].g += g;
-    }
-
-    void getMidi(std::vector<unsigned char> &data)
-    {
-        data = *midiInput;
-    }
-
-    // this doesn't work!
-    void stampConductor(double g, int r, int c)
-    {
-        A[r][r].g += g;
-        A[r][c].g -= g;
-        A[c][r].g -= g;
-        A[c][c].g += g;
     }
 
     void setDigital(std::vector<int> outputs, double value)

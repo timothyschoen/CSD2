@@ -5,6 +5,7 @@
 </header>
 <head>
   <title>OSC test server</title>
+  <script src="https://thibaultjanbeyer.github.io/DragSelect/DragSelect.js"></script>
   <script src="console-viewer.js"></script>
   <script src="Inlet.js"></script>
   <script src="Component.js"></script>
@@ -13,10 +14,16 @@
 
 
 
+
   <style>
+  @font-face {
+  font-family: 'Entypo';
+  src: url('../assets/Entypo.otf') format('truetype');
+  }
+
   /* Add a black background color to the top navigation */
 .topnav {
-  background-color: #333;
+  background-color: #484848;
   position: fixed;
   left: 0px;
   top: 0px;
@@ -25,14 +32,17 @@
 
 /* Style the links inside the navigation bar */
 .topnav a {
+
+  /*background-image: url('../assets/open.png');  16px x 16px */
+
   float: left;
   webkitAppRegion: drag;
   color: #f2f2f2;
   text-align: center;
-  padding: 10px 16px;
+  padding: 2px 18px;
   text-decoration: none;
-  font-size: 14px;
-  font-family: sans-serif;
+  font-size: 32px;
+  font-family: 'Entypo';
 }
 
 /* Change the color of links on hover */
@@ -72,22 +82,31 @@
 </head>
 <body>
   <div class="topnav">
-  <a class="pad" href="#home"></a>
   <a href="#new" onclick="
       localStorage.setItem('load', 'new');
       window.onbeforeunload();
       location.reload(true);
-  ">New</a>
-  <a href="#open" onclick="loadfile()">Open</a>
-  <a href="#save" onclick="generatesave(1);">Save</a>
+  ">l</a>
+  <a href="#open" onclick="loadfile()">s</a>
+  <a href="#save" onclick="generatesave(1);">x</a>
   <a href="#refresh" onclick="
   generatesave(1, './lastsession.ncl');
   loadfile(undefined, './lastsession.ncl');
-  ">Refresh</a>
+  ">d</a>
   <a class="bar" href="#end"></a>
 </div>
 
   <style>
+  .button-icon {
+
+    }
+  .component {
+  }
+
+.ds-selected {
+  outline: 2px solid #229FD7;
+  outline-offset: 0px;
+}
   body {
   user-select: none;
   }

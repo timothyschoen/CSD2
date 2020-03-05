@@ -226,7 +226,7 @@ struct NetList
 
     double* getAudioOutput()
     {
-        double* output = new double[2];
+        double output[2];
         for (size_t c = 0; c < 2; c++)
         {
             for(int i = 0; i < components.size(); ++i)
@@ -238,21 +238,15 @@ struct NetList
 
     }
 
-    void setAudioInput(double input)
-    {
-        for(int i = 0; i < components.size(); ++i)
-        {
-            components[i]->setAudioInput(system, input);
-        }
-    }
     void setMidiInput(std::vector<unsigned char> &message)
     {
         system.midiInput = &message;
     }
 
-    void setAudioInput(double* buf)
+    void setAudioInput(double *buf)
     {
-        system.audioInput = buf;
+        //*system.audioInput = buf;
+        // FIX THIS
     }
 
     void simulateTick()

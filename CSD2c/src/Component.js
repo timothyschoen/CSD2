@@ -68,6 +68,7 @@ function Component(name = 'resistor 200', xin = mouseX,  yin = mouseY-100)
     var myCircle = document.createElement("div");
 
     //myCircle.style.width = "100px";
+    myCircle.className = "component";
     myCircle.style.position = "absolute";
     myCircle.style.height = "17px";
     myCircle.style.paddingLeft = "12px";
@@ -79,13 +80,13 @@ function Component(name = 'resistor 200', xin = mouseX,  yin = mouseY-100)
     myCircle.style.left = x + "px";
     myCircle.style.color = "#DCDCDC";
     myCircle.style.border = "1px solid #DCDCDC"
-                            myCircle.style.fontFamily = "sans-serif";
+    myCircle.style.fontFamily = "sans-serif";
     myCircle.style.fontSize = "12px";
     myCircle.style.fontAlign = "center";
     myCircle.style.zIndex = '-2'
-                            myCircle.x = x
-                                         myCircle.y = y
-                                                 myCircle.innerHTML = name;
+    myCircle.x = x
+    myCircle.y = y
+    myCircle.innerHTML = name;
 
     myCircle.addEventListener('contextmenu', ((ev) =>
     {
@@ -106,6 +107,7 @@ function Component(name = 'resistor 200', xin = mouseX,  yin = mouseY-100)
 
 
     dragElement(myCircle);
+    ds.addSelectables(myCircle);
 
 
 
@@ -120,9 +122,9 @@ function Component(name = 'resistor 200', xin = mouseX,  yin = mouseY-100)
         inp.style.cssText = 'background-color: #efefef; font-size:11px; font:sans-serif; text-align: center; border:none; outline:none;';
         inp.style.height = myCircle.clientHeight + 'px';
         inp.style.width = myCircle.clientWidth + 'px';
-        inp.style.top = bound.top + 'px'
-                        inp.style.left = bound.left + 'px'
-                                         inp.style.position = 'absolute';
+        inp.style.top = bound.top + window.scrollY + 'px';
+        inp.style.left = bound.left + window.scrollX + 'px';
+        inp.style.position = 'absolute';
         inp.addEventListener("focusout", this.closeinput);
         document.body.appendChild(inp);
     }
@@ -332,15 +334,30 @@ function Component(name = 'resistor 200', xin = mouseX,  yin = mouseY-100)
 
     }
 
+    this.isSelected = function()
+    {
+        let selection = ds.getSelection();
+        let selected = false;
+        for (var i = 0; i < selection.length; i++) {
+          if(selection[i].isEqualNode(myCircle)) {
+            selected = true;
+            break
+          }
+        }
+      return selected
+    }
+
+
     // function to run on backspace or delete
     // If this box is selected, delete it
     this.deleteIfSelected = function()
     {
-        if (selected)
-        {
-            this.delete();
+        if(this.isSelected()) {
+          this.delete();
         }
     }
+
+
 
 
 // If this object has no name, open an input!
