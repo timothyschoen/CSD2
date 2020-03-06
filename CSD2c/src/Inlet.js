@@ -291,10 +291,10 @@ function updateLine(off1, off2, htmlLine)
 {
 
     // bottom right
-    var x1 = off1.left + off1.width;
+    var x1 = off1.left + off1.width - 2;
     var y1 = off1.top + off1.height;
     // top right
-    var x2 = off2.left + off2.width;
+    var x2 = off2.left + off2.width - 2;
     var y2 = off2.top + off2.height;
     // distance
     var length = Math.sqrt(((x2-x1) * (x2-x1)) + ((y2-y1) * (y2-y1)));
