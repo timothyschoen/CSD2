@@ -1,10 +1,16 @@
 let dialog = require('electron').remote.dialog;
 let fs = require("fs");
+const os = require('os');
 const { spawn } = require('child_process');
 const { clipboard } = require('electron')
 
 document.body.style.backgroundColor = "#505050";
 document.head.style.height = "1500px";
+
+
+//let home = os.homedir() + "/Documents/Circuitry";
+let home = "."
+console.log(home);
 
 
 // All icons by Chanut is Industries from the Noun Project
@@ -167,7 +173,7 @@ types['opamp'] = types['op-amp'];
 
 
 
-let preset = ["ground", "output 0.3", 'input "./samples/sample-44k.wav" 0.2'];
+let preset = ["ground", "output 0.3", 'input' + home + "/media/sample-44k.wav 0.2"];
 
 let halite; // letiable for halite process
 
@@ -199,7 +205,7 @@ let histpos = 0;
 // DOESN'T ALWAYS WORK!!
 window.onbeforeunload = function()
 {
-    generatesave(1, './lastsession.ncl');
+    generatesave(1, home + '/lastsession.ncl');
     try
     {
         if (realtime_playing)
@@ -223,7 +229,7 @@ document.ondragover = document.ondrop = (ev) =>
 document.body.ondrop = (ev) => // this is not working: why?
 {
     // If we get a new file, move it to our media library
-    fs.createReadStream(ev.dataTransfer.files[0].path).pipe(fs.createWriteStream('./media/' + ev.dataTransfer.files[0].name));
+    fs.createReadStream(ev.dataTransfer.files[0].path).pipe(fs.createWriteStream(home + '/media/' + ev.dataTransfer.files[0].name));
     ev.preventDefault()
     // Update the files in the medialibrary
     sbar.libraryUpdate();
@@ -286,6 +292,7 @@ for (let i = 0; i < 3; i++)
 
     buttons[i].innerHTML = buttonpresets[i][0];
     buttons[i].style.cssText = "border-radius:100%; border:none; outline:none; font-size:32px; color:white; background-color:#303030; position:fixed;  bottom:60px;  left:x0px;".replace("x0", (cnvwidth/2)+buttonpresets[i][1]);
+    buttons[i].className = "button";
     buttons[i].style.height =  "48px";
     buttons[i].style.width = "48px";
     buttons[i].style.fontFamily = "Entypo";
@@ -384,7 +391,7 @@ function precompile(save = 1)
 
     if(save)
     {
-        fs.writeFileSync("./precompile.ncl", code);
+        fs.writeFileSync(home + "/precompile.ncl", code);
     }
 }
 

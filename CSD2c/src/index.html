@@ -5,7 +5,7 @@
 </header>
 <head>
   <title>OSC test server</title>
-  <script src="https://thibaultjanbeyer.github.io/DragSelect/DragSelect.js"></script>
+  <script src="DragSelect.js"></script>
   <script src="console-viewer.js"></script>
   <script src="Inlet.js"></script>
   <script src="Component.js"></script>
@@ -22,7 +22,7 @@
   }
 
   /* Add a black background color to the top navigation */
-.topnav {
+.nicebutton {
   background-color: #333;
   position: fixed;
   left: 0px;
@@ -30,6 +30,25 @@
   overflow: hidden;
 }
 
+.nicebutton a:hover {
+  background-color: #424242;
+  color: white;
+}
+
+/* Add a color to the active/current link */
+.nicebutton a.active {
+  background-color: #4CAF50;
+  color: white;
+}
+
+
+.topnav {
+  background-color: #333;
+  position: fixed;
+  left: 0px;
+  top: 0px;
+  overflow: hidden;
+}
 /* Style the links inside the navigation bar */
 .topnav a {
 

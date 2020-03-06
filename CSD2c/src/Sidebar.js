@@ -86,10 +86,13 @@ function Sidebar()
         if (!tab && !hidden)
         {
             buttons[0].textContent = "\xE7";
-            hidden = 1;
             sbarwidth = 38;
             cnvwidth = window.innerWidth-38
-                       _this.windowresize();
+            hidden = 1;
+            _this.windowresize();
+
+
+
         }
         else
         {
@@ -100,8 +103,10 @@ function Sidebar()
             }
             sbarwidth = 350;
             cnvwidth = window.innerWidth-350
-                       hidden = 0;
+            hidden = 0;
             _this.windowresize();
+
+
         }
         let tabs = [[], [audiosettings], [logviewer, modlabel], [medialib],  [codebox]];
         for (var i = 0; i < 5; i++)
@@ -126,7 +131,7 @@ function Sidebar()
     {
         showTab(1)
     }],
-    ['C', '50%', function()
+    ['i', '50%', function()
          {
              showTab(2)
     }], ['&', '56%', function()
@@ -174,7 +179,11 @@ function Sidebar()
 
 
         logviewer.windowResize(sbarwidth-60, window.innerHeight-50);
+    if(hidden) {
+      bg.style.width = + "0px";
+      bar.style.right =  "8px";
     }
+  }
 
     this.codeUpdate = function(ncode)
     {
@@ -210,8 +219,8 @@ function mediaLibrary()
     div.style.right = "0px";
     div.style.top = "75px";
     div.style.height = (window.innerHeight-70) +'px'
-                       div.style.width = sbarwidth-30 +'px'
-                                         div.style.overflow = "auto";
+    div.style.width = sbarwidth-30 +'px'
+    div.style.overflow = "auto";
     div.style.background = "#444";
 
 
@@ -252,9 +261,9 @@ function mediaLibrary()
         {
             let top = filebuttonlist.indexOf(_this)
 
-                      img.style.top = (11+(32*top)) + "px";
+            img.style.top = (11+(32*top)) + "px";
             img.style.right = "50px"
-                              middlebutton.style.cssText ="border:none; outline:none; font-size:14px; text-align:left; color:white; background-color:x3; position:absolute; left:32px; top:x2px; width:x1px; height:32px;".replace('x0', 30).replace('x1', sbarwidth-95).replace('x2', top*32).replace('x3', ['#303030', '#383838'][top%2]);
+            middlebutton.style.cssText ="border:none; outline:none; font-size:14px; text-align:left; color:white; background-color:x3; position:absolute; left:32px; top:x2px; width:x1px; height:32px;".replace('x0', 30).replace('x1', sbarwidth-95).replace('x2', top*32).replace('x3', ['#303030', '#383838'][top%2]);
             middlebutton.innerHTML = file;
             leftbutton.style.cssText ="border:none; outline:none; font-size:14px; text-align:left; color:white; background-color:x3; position:absolute; left:0px; top:x2px; width:32px; height:32px;".replace('x1', 30).replace('x2', top*32).replace('x3', ['#303030', '#383838'][top%2]);
             rightbutton.style.cssText ="border:none; outline:none; font-size:14px; text-align:center; color:white; background-color:x3; position:absolute; right:0px; top:x2px; width:x1px; height:32px;".replace('x1', 39).replace('x2', top*32).replace('x3', ['#303030', '#383838'][top%2]);
@@ -262,15 +271,15 @@ function mediaLibrary()
         this.show = function()
         {
             middlebutton.style.display = "block"
-                                         leftbutton.style.display = "block"
- rightbutton.style.display = "block"
+            leftbutton.style.display = "block"
+            rightbutton.style.display = "block"
         }
 
         this.hide = function()
         {
             middlebutton.style.display = "none";
             leftbutton.style.display = "none"
-                                       rightbutton.style.display = "none"
+            rightbutton.style.display = "none"
         };
         this.windowResize = function()
         {
@@ -337,8 +346,8 @@ function mediaLibrary()
             filebuttonlist[i].style.display = "block"
         }
         div.style.display = ""
-                            modlabel.style.display = "block"
-                                    hidden = 0;
+        modlabel.style.display = "block"
+        hidden = 0;
     }
     this.hide = function()
     {
@@ -347,8 +356,8 @@ function mediaLibrary()
             filebuttonlist[i].style.display = "none"
         }
         div.style.display = "none"
-                            modlabel.style.display = "none"
-                                    hidden = 1;
+        modlabel.style.display = "none"
+        hidden = 1;
     }
     this.windowresize = function()
     {
@@ -358,8 +367,8 @@ function mediaLibrary()
         }
         modlabel.style.right = sbarwidth-141 + "px";
         div.style.height = (window.innerHeight-70).toString()+'px'
-                           div.style.width = sbarwidth-30 +'px'
-                                             div.scrollTop = div.scrollHeight+200;
+        div.style.width = sbarwidth-30 +'px'
+        div.scrollTop = div.scrollHeight+200;
 
 
 
