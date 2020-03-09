@@ -1,27 +1,18 @@
-
+let fs = require("fs");
+const os = require('os');
 
 let sbarwidth;
 
-/*
-var resizeViewPort = function(width, height) {
-    var tmp = document.documentElement.style.overflow;
-    document.documentElement.style.overflow = "scroll";
+let home = os.homedir() + "/Documents/Circuitry";
 
-    if (window.outerWidth) {
-        window.resizeTo(
-            width + (window.outerWidth - document.documentElement.clientWidth),
-            height + (window.outerHeight - document.documentElement.clientHeight)
-        );
-    } else {
-        window.resizeTo(500, 500);
-        window.resizeTo(
-            width + (500 - document.documentElement.clientWidth),
-            height + (500 - document.documentElement.clientHeight)
-        );
-    }
+if (!fs.existsSync(home)) {
+    fs.mkdirSync(home);
+    fs.mkdirSync(home + "/Saves");
+    fs.mkdirSync(home + "/Saves/Examples");
+    fs.mkdirSync(home + "/Outputs");
+    fs.mkdirSync(home + "/Media");
+}
 
-    document.documentElement.style.overflow = tmp;
-}; */
 
 let scrollitem = document.createElement("div");
 scrollitem.innerHTML = '!!';

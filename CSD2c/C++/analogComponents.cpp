@@ -263,10 +263,10 @@ struct Capacitor : Component2<2, 1>
     {
 
 
-        stateVar = m.b[nets[2]].lu;
+        stateVar = m.b[nets[2]].lu; // t - 1
 
         // solve legit voltage from the pins
-        voltage = m.b[nets[0]].lu - m.b[nets[1]].lu;
+        voltage = m.b[nets[0]].lu - m.b[nets[1]].lu; // t
 
         // then we can store this for display here
         // since this value won't be used at this point
@@ -333,22 +333,16 @@ struct Inductor : Component2<2, 1>
         // since c*(v1 - v0) = (i1 + i0)/(2*t), where t = 1/T
 
 
-        // NOTE::: Capacitors doen dT/2C, inductors die 2L/dT
+        double g = l;
 
-        double g = 1/(2*l);
+        m.stampStatic(+1, nets[0], nets[2]); // Naar A->B system
+        m.stampStatic(-1, nets[1], nets[2]);
 
-        m.stampTimed(+1, nets[0], nets[2]);
-        m.stampTimed(-1, nets[1], nets[2]);
+        m.stampStatic(+1, nets[2], nets[0]);  // Naar A->C system
+        m.stampStatic(-1, nets[2], nets[1]);
 
-        m.stampTimed(-g, nets[0], nets[0]);
-        m.stampTimed(+g, nets[0], nets[1]);
-        m.stampTimed(+g, nets[1], nets[0]);
-        m.stampTimed(-g, nets[1], nets[1]);
 
-        m.stampStatic(+2*g, nets[2], nets[0]);
-        m.stampStatic(-2*g, nets[2], nets[1]);
-
-        m.stampStatic(-1, nets[2], nets[2]); // does this make something a current source or a dependent voltage source???
+        m.stampTimed(-g, nets[2], nets[2]); // Naar A->D system
 
         // see the comment about v:C[%d] below
         m.b[nets[2]].gdyn.push_back(&stateVar);
@@ -370,7 +364,7 @@ struct Inductor : Component2<2, 1>
 
         // then we can store this for display here
         // since this value won't be used at this point
-        m.b[nets[2]].lu = l*voltage;
+        m.b[nets[2]].lu = -l*voltage;
     }
 
     void scaleTime(double told_per_new) final

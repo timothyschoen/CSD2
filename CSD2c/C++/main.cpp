@@ -2,14 +2,14 @@
 #include "./rtlibs/RtAudio.h"
 #include "./rtlibs/RtMidi.h"
 
-#include "./gen/genlib.h"
+//#include "./gen/genlib.h"
 
 double* inbuffer;
 
 #include "./halite.cpp"
 #include "./digitalComponents.cpp"
 #include "./analogComponents.cpp"
-#include "./genComponents.cpp"
+//#include "./genComponents.cpp"
 
 
 
@@ -307,8 +307,8 @@ int main(int argc, char* argv[])
 
 
 
-        else if(!seglist[0].compare("phasor"))
-            net->addComponent(new genLoader("phasor", {seglist[1], seglist[2], seglist[3]}));
+        //else if(!seglist[0].compare("phasor"))
+            //net->addComponent(new genLoader("phasor", {seglist[1], seglist[2], seglist[3]}));
 
 
         else if(!seglist[0].compare("+-")  ||
@@ -450,7 +450,7 @@ int main(int argc, char* argv[])
         iParams.firstChannel = offset;
 
         options.flags = RTAUDIO_HOG_DEVICE;
-        options.flags |= RTAUDIO_SCHEDULE_REALTIME;
+        //options.flags = RTAUDIO_SCHEDULE_REALTIME;
         options.flags |= RTAUDIO_NONINTERLEAVED;
 
         try

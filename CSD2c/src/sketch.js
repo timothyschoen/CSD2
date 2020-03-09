@@ -1,6 +1,6 @@
 let dialog = require('electron').remote.dialog;
-let fs = require("fs");
-const os = require('os');
+let path = require('path');
+
 const { spawn } = require('child_process');
 const { clipboard } = require('electron')
 
@@ -8,9 +8,9 @@ document.body.style.backgroundColor = "#505050";
 document.head.style.height = "1500px";
 
 
-//let home = os.homedir() + "/Documents/Circuitry";
-let home = "."
-console.log(home);
+
+
+
 
 
 // All icons by Chanut is Industries from the Noun Project
@@ -173,7 +173,7 @@ types['opamp'] = types['op-amp'];
 
 
 
-let preset = ["ground", "output 0.3", 'input' + home + "/media/sample-44k.wav 0.2"];
+let preset = ["ground", "output 0.3", 'input ' + home + "/Media/sample-44k.wav 0.2"];
 
 let halite; // letiable for halite process
 
@@ -404,14 +404,14 @@ function startHalite(realtime)
     }
     console.log(params);
     let haliteappendix;
-    let halitecmd = 'compiled/Halite'
+    let halitecmd = __dirname + '/../compiled/Halite'
 
                     // Write our patch to a file that Halite can read
                     precompile(1);
 
     if(realtime)
     {
-        haliteappendix = ['-r'];
+        haliteappendix = ['-r', '-i ' + home + '/precompile.ncl'];
         buttons[1].style.color = "red";
     }
     else
@@ -424,13 +424,13 @@ name: "Audio",
 extensions: ['wav', 'aif']
             }]
         });
-        haliteappendix = ['-o x0'.replace('x0', savepath)]; // this doesn't contain everything yet...
+        haliteappendix = ['-o ' + savepath, '-i ' + home + '/precompile.ncl']; // this doesn't contain everything yet...
     }
 
     if(!(realtime && (realtime_playing)))
     {
-
-        halite = spawn('compiled/Halite',  haliteappendix);
+        console.log(haliteappendix)
+        halite = spawn(path.join(__dirname, '/../compiled/Halite'),  haliteappendix);
 
         halite.stdout.on('data', function (data)
         {
@@ -445,7 +445,7 @@ extensions: ['wav', 'aif']
         halite.on('close', function (code)
         {
             buttons[1].style.color = "white"
-                                     console.log('Halite closed with code ' + code);
+            console.log('Halite closed with code ' + code);
             realtime_playing = false;
         });
         realtime_playing = true;
@@ -543,6 +543,9 @@ function loadfile(e, path)
 
 document.addEventListener("keydown", function(event)
 {
+    var key = event.which || event.keyCode; // keyCode detection
+    var ctrl = event.ctrlKey ? event.ctrlKey : ((key === 17) ? true : false); // ctrl detection
+
     if(!typing)   //ignore shortcuts when typing
     {
         switch(event.keyCode)
@@ -572,13 +575,13 @@ document.addEventListener("keydown", function(event)
             }
             break;
             case (67): // ctrl-c
-                if(event.metaKey)
+                if(event.metaKey || ctrl)
                 {
                     clipboard.writeText(JSON.stringify(copySelection()));
                 }
                 break;
             case (88): // ctrl-x
-                if(event.metaKey)
+                if(event.metaKey || ctrl)
                 {
                     clipboard.writeText(JSON.stringify(copySelection()));
                     for (let i = boxes.length-1; i >= 0; i--)
@@ -588,14 +591,14 @@ document.addEventListener("keydown", function(event)
                 }
                 break;
             case (68): // ctrl-d
-                if(event.metaKey)
+                if(event.metaKey || ctrl)
                 {
                     pasteSelection(copySelection()); // nice
 
                 }
                 break;
             case (86):
-                if(event.metaKey)
+                if(event.metaKey || ctrl)
                 {
                     pasteSelection(JSON.parse(clipboard.readText()));
                 }

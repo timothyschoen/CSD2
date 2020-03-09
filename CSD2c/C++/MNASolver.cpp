@@ -1,6 +1,6 @@
 
 #ifdef __linux__
-#include </opt/intel/compilers_and_libraries_2020.0.166/linux/mkl/include/mkl.h>
+//#include </opt/intel/compilers_and_libraries_2020.0.166/linux/mkl/include/mkl.h>
 
 #elif __APPLE__
 #include </opt/intel/compilers_and_libraries_2020.0.166/mac/mkl/include/mkl.h>
@@ -233,6 +233,7 @@ public:
             }
     */
 
+/*
 
     void solve5(std::vector<IComponent*> &components, MNASystem & m)
     {
@@ -254,6 +255,7 @@ public:
         //e = 'F';
     }
 
+*/
 
     void solve6(std::vector<IComponent*> &components, MNASystem & m)
     {

@@ -36,7 +36,7 @@ resizable: true
         app.quit();
     });
 
-
+    window.setMenu(null);
     window.loadURL(url.format(
     {
 pathname: path.join(__dirname, 'index.html'),

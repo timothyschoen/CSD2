@@ -240,7 +240,7 @@ function mediaLibrary()
     this.update = function()
     {
         filebuttonlist = [];
-        fs.readdir("./media", this.addItem);
+        fs.readdir(home + "/Media", this.addItem);
         if (!hidden)
         {
             setTimeout(function()
@@ -290,7 +290,7 @@ function mediaLibrary()
         };
         this.onclick = function()
         {
-            boxes.push(new Component('input ./media/file 0.2'.replace('file', file), window.innerWidth/2, window.innerHeight/2-250));
+            boxes.push(new Component('input file 0.2'.replace('file', home + "/Media/" + file), window.innerWidth/2, window.innerHeight/2-250));
         };
 
 

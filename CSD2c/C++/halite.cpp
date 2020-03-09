@@ -172,10 +172,10 @@ struct Component2 : IComponent
 struct NetList
 {
     typedef std::vector<IComponent*> ComponentList;
-
+    double* output;
     NetList(int nodes, int diginodes) : nets(nodes), states(0), diginets(diginodes)
     {
-
+        output = new double[2];
     }
 
     void addComponent(IComponent * c)
@@ -226,9 +226,10 @@ struct NetList
 
     double* getAudioOutput()
     {
-        double output[2];
+    
         for (size_t c = 0; c < 2; c++)
         {
+            output[c] = 0;
             for(int i = 0; i < components.size(); ++i)
             {
                 output[c] += components[i]->getAudioOutput(system, c);
