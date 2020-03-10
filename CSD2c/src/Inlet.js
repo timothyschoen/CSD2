@@ -56,13 +56,14 @@ function dragElement(elmnt, sidebar)
         pos2 = pos4 - e.clientY;
         pos3 = e.clientX;
         pos4 = e.clientY;
-        ds.addSelection(elmnt);
-        ds.break();
+
+
         // set the element's new position:
         //elmnt.style.right = "0px";
 
         if(sidebar == undefined)
         {
+            ds.addSelection(elmnt);
             let elements = ds.getSelection();
             for (var i = 0; i < elements.length; i++) {
               elements[i].style.left = (elements[i].offsetLeft - pos1) + "px";
@@ -87,6 +88,7 @@ function dragElement(elmnt, sidebar)
 
             sidebar.windowresize();
         }
+        ds.break();
 
     }
 

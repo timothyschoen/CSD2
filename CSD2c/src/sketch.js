@@ -8,14 +8,6 @@ document.body.style.backgroundColor = "#505050";
 document.head.style.height = "1500px";
 
 
-
-
-
-
-
-// All icons by Chanut is Industries from the Noun Project
-
-
 // All our objects, plus the data that we need to convert it to halite
 let types =
 {
@@ -280,7 +272,7 @@ else
 initializing = false;
 changed();
 
-ds.addSelectables(document.getElementsByClassName('component'));
+//ds.addSelectables(document.getElementsByClassName('component'));
 
 
 // set up main buttons at the bottom
