@@ -95,7 +95,7 @@ constexpr const char* unitValueSuffixes[] =
 
 
 template <int nPins = 0, int nInternalNets = 0, int nDigipins = 0>
-struct Component2 : IComponent
+struct Component : IComponent
 {
     static const int nNets = nPins + nInternalNets;
 
@@ -226,7 +226,7 @@ struct NetList
 
     double* getAudioOutput()
     {
-    
+
         for (size_t c = 0; c < 2; c++)
         {
             output[c] = 0;

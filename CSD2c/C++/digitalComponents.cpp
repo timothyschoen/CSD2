@@ -1,7 +1,7 @@
-// Digital Component2s
+// Digital Components
 
 // Basic arithmetics
-struct digitalArithmetic : Component2<0, 0, 3>
+struct digitalArithmetic : Component<0, 0, 3>
 {
     double  outvalue;
     double  value;
@@ -73,7 +73,7 @@ struct digitalArithmetic : Component2<0, 0, 3>
     }
 };
 
-struct digitalSignal : Component2<0, 0, 1>
+struct digitalSignal : Component<0, 0, 1>
 {
     double  value;
 
@@ -93,7 +93,7 @@ struct digitalSignal : Component2<0, 0, 1>
     }
 };
 
-struct digitalOutput : Component2<0, 0, 2>
+struct digitalOutput : Component<0, 0, 2>
 {
     double value[2];
     float amplitude;
@@ -125,7 +125,7 @@ struct digitalOutput : Component2<0, 0, 2>
 };
 
 
-struct digitalAnalogConverter : Component2<2,1,1>
+struct digitalAnalogConverter : Component<2,1,1>
 {
 
     double  v;
@@ -159,7 +159,7 @@ struct digitalAnalogConverter : Component2<2,1,1>
 
 };
 
-struct analogDigitalConverter : Component2<2, 1, 1>
+struct analogDigitalConverter : Component<2, 1, 1>
 {
     float impedance = 1;
     double x = 0;
@@ -193,7 +193,7 @@ struct analogDigitalConverter : Component2<2, 1, 1>
 
 };
 
-struct dcBlock : Component2<0, 0, 2>
+struct dcBlock : Component<0, 0, 2>
 {
     double x = 0;
     double y = 0;
@@ -225,7 +225,7 @@ struct dcBlock : Component2<0, 0, 2>
 
 };
 
-struct Changed : Component2<0, 0, 2>
+struct Changed : Component<0, 0, 2>
 {
     double old;
     double in;
@@ -256,7 +256,7 @@ struct Changed : Component2<0, 0, 2>
 
 };
 
-struct History : Component2<0, 0, 2>
+struct History : Component<0, 0, 2>
 {
     double old;
     double in;
@@ -287,7 +287,7 @@ struct History : Component2<0, 0, 2>
 
 };
 
-struct getDelta : Component2<0, 0, 2>
+struct getDelta : Component<0, 0, 2>
 {
     double old;
     double in;
@@ -319,7 +319,7 @@ struct getDelta : Component2<0, 0, 2>
 };
 
 
-struct accumulate : Component2<0, 0, 2>
+struct accumulate : Component<0, 0, 2>
 {
     long double accum;
 
@@ -349,7 +349,7 @@ struct accumulate : Component2<0, 0, 2>
 };
 
 
-struct absol : Component2<0, 0, 2>
+struct absol : Component<0, 0, 2>
 {
     double input;
 
@@ -378,7 +378,7 @@ struct absol : Component2<0, 0, 2>
     }
 
 };
-struct flor : Component2<0, 0, 2>
+struct flor : Component<0, 0, 2>
 {
     double input;
 
@@ -406,7 +406,7 @@ struct flor : Component2<0, 0, 2>
     }
 };
 
-struct ceiling : Component2<0, 0, 2>
+struct ceiling : Component<0, 0, 2>
 {
     double input;
 
@@ -436,7 +436,7 @@ struct ceiling : Component2<0, 0, 2>
 
 };
 
-struct Gate : Component2<0, 0, 3>
+struct Gate : Component<0, 0, 3>
 {
     double output;
 
@@ -467,7 +467,7 @@ struct Gate : Component2<0, 0, 3>
 
 };
 
-struct Scale : Component2<0, 0, 6>
+struct Scale : Component<0, 0, 6>
 {
     double input;
     double inMin;
@@ -524,7 +524,7 @@ struct Scale : Component2<0, 0, 6>
 };
 
 
-struct Elapsed : Component2<0, 0, 1>
+struct Elapsed : Component<0, 0, 1>
 {
 
 
@@ -550,7 +550,7 @@ struct Elapsed : Component2<0, 0, 1>
 
 
 
-struct digitalInput : Component2<0, 0, 1>
+struct digitalInput : Component<0, 0, 1>
 {
 
     double amplitude;
@@ -579,7 +579,7 @@ struct digitalInput : Component2<0, 0, 1>
 
 };
 
-struct rtDigitalInput : Component2<0, 0, 1>
+struct rtDigitalInput : Component<0, 0, 1>
 {
 
     double amplitude;
@@ -604,16 +604,19 @@ struct rtDigitalInput : Component2<0, 0, 1>
 
 };
 
-struct MidiInput : Component2<0, 0, 3>
+struct midiCtlIn : Component<0, 0, 3>
 {
 
-    int input;
+    int cc;
+    int value;
+    std::vector<unsigned char> copy;
 
-    MidiInput(std::string d0, std::string d1)
+    midiCtlIn(std::string d0, std::string d1)
     {
         digiPins[0] = d0;
         digiPins[1] = d1;
-        input = 0;
+        cc = 0;
+        value = 0;
 
     }
 
@@ -621,19 +624,32 @@ struct MidiInput : Component2<0, 0, 3>
     { }
     void update(MNASystem & m) final
     {
+      m.setDigital(digiNets[0], cc);
+      m.setDigital(digiNets[1], value);
+
     }
 
-    void setMidiInput(MNASystem & m, std::vector<unsigned char> &message) final
+    void updateInput(MNASystem & m) final
     {
-        //input = message;
+              copy = *m.midiInput;
+
+              if(copy.size() > 0)
+              {
+                  if ((int)copy[0] == 176) {
+                  {
+                      cc = (int)copy[1];
+                      value = (int)copy[2];
+                  }
+              }
 
 
 
     }
+  }
 
 };
 
-struct mToF : Component2<0, 0, 2>
+struct mToF : Component<0, 0, 2>
 {
 
     double input;
@@ -662,7 +678,7 @@ struct mToF : Component2<0, 0, 2>
 };
 
 
-struct midiNoteIn : Component2<0, 0, 2>
+struct midiNoteIn : Component<0, 0, 2>
 {
 
     int note;
@@ -688,16 +704,8 @@ struct midiNoteIn : Component2<0, 0, 2>
         m.setDigital(digiNets[0], note);
         m.setDigital(digiNets[1], velocity);
 
-        m.setDigital(digiNets[0], note);
-        m.setDigital(digiNets[1], velocity);
     }
 
-    void setMidiInput(MNASystem & m, std::vector<unsigned char> &midimess) final
-    {
-        //message = &midimess;
-        //copy = *message;
-
-    }
     void updateInput(MNASystem & m)
     {
 
@@ -720,7 +728,7 @@ struct midiNoteIn : Component2<0, 0, 2>
 
 };
 
-struct stereoDigitalInput : Component2<0,0,2>
+struct stereoDigitalInput : Component<0,0,2>
 {
 
     double amplitude;
@@ -753,12 +761,12 @@ struct stereoDigitalInput : Component2<0,0,2>
 
 
 
-struct digitalCycle : Component2<0, 0, 2>
+struct sineGenerator : Component<0, 0, 2>
 {
     double  freq;
     double phase;
 
-    digitalCycle(std::vector<std::string> a_args, std::string d0, std::string d1)
+    sineGenerator(std::vector<std::string> a_args, std::string d0, std::string d1)
     {
         digiPins[0] = d0;
         digiPins[1] = d1;
@@ -786,7 +794,113 @@ struct digitalCycle : Component2<0, 0, 2>
     }
 };
 
-struct digitalDelay : Component2<0, 0, 3>
+struct squareGenerator : Component<0, 0, 2>
+{
+    double  freq;
+    double phase;
+    double sample = 0;
+
+    squareGenerator(std::vector<std::string> a_args, std::string d0, std::string d1)
+    {
+        digiPins[0] = d0;
+        digiPins[1] = d1;
+        if(a_args.size() > 0)
+            freq = std::stof(a_args[0]);
+        else
+            freq = 0;
+
+        phase = 0;
+    }
+
+    void stamp(MNASystem & m) final
+    {  }
+
+    void updateInput(MNASystem & m) final
+    {
+        freq = m.getDigital(digiNets[0], freq);
+        phase += freq / 44100.;
+        if(phase >= 1) phase = phase - 1;
+    }
+
+    void update(MNASystem & m) final
+    {
+        if(phase >= 0.5) sample = 1; // 1 and -1 makes it significantly louder than the sine and saw
+        else sample = -1;
+        m.setDigital(digiNets[1], sample);
+    }
+};
+
+struct triangleGenerator : Component<0, 0, 2>
+{
+    double  freq;
+    double phase;
+    double sample = 0;
+
+    triangleGenerator(std::vector<std::string> a_args, std::string d0, std::string d1)
+    {
+        digiPins[0] = d0;
+        digiPins[1] = d1;
+        if(a_args.size() > 0)
+            freq = std::stof(a_args[0]);
+        else
+            freq = 0;
+
+        phase = 0;
+    }
+
+    void stamp(MNASystem & m) final
+    {  }
+
+    void updateInput(MNASystem & m) final
+    {
+        freq = m.getDigital(digiNets[0], freq);
+        phase += freq / 44100.;
+        if(phase >= 1) phase = phase - 1;
+    }
+
+    void update(MNASystem & m) final
+    {
+        sample = -1.0 + (2.0 * phase);
+        sample = 0.9 * (fabs(sample) - 0.5);
+        m.setDigital(digiNets[1], sample);
+    }
+};
+
+struct sawGenerator : Component<0, 0, 2>
+{
+    double  freq;
+    double phase;
+    double sample = 0;
+
+    sawGenerator(std::vector<std::string> a_args, std::string d0, std::string d1)
+    {
+        digiPins[0] = d0;
+        digiPins[1] = d1;
+        if(a_args.size() > 0)
+            freq = std::stof(a_args[0]);
+        else
+            freq = 0;
+
+        phase = 0;
+    }
+
+    void stamp(MNASystem & m) final
+    {  }
+
+    void updateInput(MNASystem & m) final
+    {
+        freq = m.getDigital(digiNets[0], freq);
+        phase += freq / 44100.;
+        if(phase >= 1) phase = phase - 1;
+    }
+
+    void update(MNASystem & m) final
+    {
+        m.setDigital(digiNets[1], (1-phase)-0.5);
+    }
+};
+
+struct digitalDelay : Component<0, 0, 3>
 {
     int t = 10000;
     int bufSize;

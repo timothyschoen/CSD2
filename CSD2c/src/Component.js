@@ -243,16 +243,15 @@ function Component(name = 'resistor 200', xin = mouseX, yin = mouseY - 100) {
         boxes.move(boxes.indexOf(this), 0);
       }
       valid = true;
+      myCircle.style.backgroundColor = '#424242'
       _this.changetype();
-      /*
-      if(!initializing) {
-      changed() // Update our code
-      } */
     } else {
+      myCircle.innerHTML = name;
+      myCircle.style.backgroundColor = '#ff6961'
       valid = false;
     }
     // Resize width according to length of name
-    w = ((name.length) * 6) + 15
+    //w = ((name.length) * 6) + 15
 
   }
 

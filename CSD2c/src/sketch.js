@@ -308,13 +308,13 @@ let types = {
   },
 
 
-  'midiin-': {
+  'ctlin-': {
     'inlets': 0,
     'outlets': 2,
     'datatypes': ['digital', 'digital'],
     'args': 0,
     'colors': ['#229FD7', '#229FD7'],
-    'code': " midiin-, d0, d1"
+    'code': " ctlin-, d0, d1"
   },
   'notein-': {
     'inlets': 0,
@@ -342,6 +342,31 @@ let types = {
     'args': 0,
     'code': " cycle-, d0, d1"
   },
+  'saw-': {
+    'inlets': 1,
+    'outlets': 1,
+    'datatypes': ['digital', 'digital'],
+    'colors': ['#229FD7', '#229FD7'],
+    'args': 0,
+    'code': " saw-, d0, d1"
+  },
+  'rect-': {
+    'inlets': 1,
+    'outlets': 1,
+    'datatypes': ['digital', 'digital'],
+    'colors': ['#229FD7', '#229FD7'],
+    'args': 0,
+    'code': " rect-, d0, d1"
+  },
+  'triangle-': {
+    'inlets': 1,
+    'outlets': 1,
+    'datatypes': ['digital', 'digital'],
+    'colors': ['#229FD7', '#229FD7'],
+    'args': 0,
+    'code': " triangle-, d0, d1"
+  },
+
   'sig-': {
     'inlets': 0,
     'outlets': 1,
@@ -495,6 +520,13 @@ types['i'] = types['inductor'];
 types['v'] = types['voltage'];
 types['opamp'] = types['op-amp'];
 
+// Max, PD en Gendsp have different names
+// We accept all these names so you don't need to search for the right one
+types['osc-'] = types['cycle-'];
+types['sine-'] = types['cycle-'];
+types['train-'] = types['rect-'];
+types['square-'] = types['rect-'];
+types['saw-'] = types['phasor-']; // even though they arent exactly the same
 
 
 

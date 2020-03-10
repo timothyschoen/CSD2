@@ -1,7 +1,7 @@
 #include <math.h>
 // Analog components
 
-struct Resistor : Component2<2>
+struct Resistor : Component<2>
 {
     double  r;
 
@@ -22,7 +22,7 @@ struct Resistor : Component2<2>
     }
 };
 
-struct AnalogDelay : Component2<2, 1, 1>
+struct AnalogDelay : Component<2, 1, 1>
 {
     double  v;
     int t;
@@ -73,7 +73,7 @@ struct AnalogDelay : Component2<2, 1, 1>
     }
 
 };
-struct VariableResistor : Component2<2, 0, 1>
+struct VariableResistor : Component<2, 0, 1>
 {
     double  r;
     double  g;
@@ -130,7 +130,7 @@ struct VariableResistor : Component2<2, 0, 1>
 
 
 
-struct Potentiometer : Component2<3, 0, 1>
+struct Potentiometer : Component<3, 0, 1>
 {
     double  r;
 
@@ -189,7 +189,7 @@ struct Potentiometer : Component2<3, 0, 1>
     }
 };
 
-struct Capacitor : Component2<2, 1>
+struct Capacitor : Component<2, 1>
 {
     double c;
     double stateVar;
@@ -295,7 +295,7 @@ struct Capacitor : Component2<2, 1>
 };
 
 
-struct Inductor : Component2<2, 1>
+struct Inductor : Component<2, 1>
 {
     double l;
     double stateVar;
@@ -388,7 +388,7 @@ struct Inductor : Component2<2, 1>
     }
 };
 
-struct VariableCapacitor : Component2<2, 1, 1> // doesn't seem to do anything atm
+struct VariableCapacitor : Component<2, 1, 1> // doesn't seem to do anything atm
 {
     double max;
     double c;
@@ -462,7 +462,7 @@ struct VariableCapacitor : Component2<2, 1, 1> // doesn't seem to do anything at
     }
 };
 
-struct Voltage : Component2<2, 1>
+struct Voltage : Component<2, 1>
 {
     double v;
 
@@ -486,7 +486,7 @@ struct Voltage : Component2<2, 1>
     }
 };
 
-struct Click : Component2<2, 1>
+struct Click : Component<2, 1>
 {
     double v;
 
@@ -521,7 +521,7 @@ struct Click : Component2<2, 1>
 
 // probe a differential voltage
 // also forces this voltage to actually get solved :)
-struct Probe : Component2<2, 1>
+struct Probe : Component<2, 1>
 {
     float impedance = 1;
 
@@ -555,7 +555,7 @@ struct Probe : Component2<2, 1>
 };
 
 
-struct Printer : Component2<2>
+struct Printer : Component<2>
 {
     float g = 2;
     Printer(int l0, int l1)
@@ -588,7 +588,7 @@ struct Printer : Component2<2>
 };
 
 // function voltage generator
-struct Function : Component2<2,1>
+struct Function : Component<2,1>
 {
     typedef double (*FuncPtr)(double t);
 
@@ -625,7 +625,7 @@ struct Function : Component2<2,1>
 };
 
 
-struct InputSample : Component2<2,1>
+struct InputSample : Component<2,1>
 {
 
     double v;
@@ -722,7 +722,7 @@ bool newtonJunctionPN(JunctionPN & pn, double v)
     return false;
 }
 
-struct Diode : Component2<2, 2>
+struct Diode : Component<2, 2>
 {
     JunctionPN  pn;
 
@@ -807,7 +807,7 @@ struct Diode : Component2<2, 2>
     }
 };
 
-struct BJT : Component2<3, 4>
+struct BJT : Component<3, 4>
 {
     // emitter and collector junctions
     JunctionPN  pnC, pnE;
@@ -954,7 +954,7 @@ struct BJT : Component2<3, 4>
 };
 
 
-struct OPA : Component2<3, 1>
+struct OPA : Component<3, 1>
 {
 
     double amp;
