@@ -69,7 +69,8 @@ int inout( void *outputBuffer, void *inputBuffer, unsigned int nBufferFrames,
         net->simulateTick();
         output = net->getAudioOutput();
         *buffer++ = output[0]*outamp;
-        *(buffer+nBufferFrames) = output[1]*outamp;
+        *buffer++ = output[1]*outamp;
+
     }
 
 
@@ -451,7 +452,7 @@ int main(int argc, char* argv[])
 
         options.flags = RTAUDIO_HOG_DEVICE;
         //options.flags = RTAUDIO_SCHEDULE_REALTIME;
-        options.flags |= RTAUDIO_NONINTERLEAVED;
+        //options.flags |= RTAUDIO_NONINTERLEAVED;
 
         try
         {

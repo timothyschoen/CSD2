@@ -184,9 +184,6 @@ struct analogDigitalConverter : Component<2, 1, 1>
     void update(MNASystem & m) final
     {
         x = m.b[nets[2]].lu;
-        y = x - xm1 + 0.995 * ym1;
-        xm1 = x;
-        ym1 = y;
         m.setDigital(digiNets[0], x);
 
     }
@@ -909,7 +906,7 @@ struct digitalDelay : Component<0, 0, 3>
     int readHead;
     double prevTime;
     std::vector<double> buf;
-    float a = 0.05;
+    float a = 0.00005;
 
     digitalDelay(std::vector<std::string> init, std::string d0, std::string d1, std::string d2)
     {
@@ -917,7 +914,7 @@ struct digitalDelay : Component<0, 0, 3>
         digiPins[1] = d1;
         digiPins[2] = d2;
 
-        int offset = 0; // sometimes a space slips inbetween here, this offset is a fix
+        int offset = 0; // sometimes a space slips inbetween here, this offset is a fix (might not be necessary anymore?)
 
         if(init[0].empty()) {
           offset = 1;
@@ -939,7 +936,7 @@ struct digitalDelay : Component<0, 0, 3>
     {
         t = (int)m.getDigital(digiNets[1]);
 
-        if (t>bufSize-1) t = bufSize-1;
+        if (t>=bufSize) t = bufSize;
 
         //Write current value
         buf[currentSample] = m.getDigital(digiNets[0]);
@@ -952,13 +949,12 @@ struct digitalDelay : Component<0, 0, 3>
         currentSample++;
 
         if (currentSample >= bufSize) currentSample = currentSample-bufSize;
-        if(m.ticks < t) t = 0;
+        //if(m.ticks < t) t = 0;
 
-        smoothTime = ((1-a)*prevTime + a * t);
-        prevTime = smoothTime;
+        smoothTime = ((1-a)*smoothTime + a * t);
 
-        if (currentSample-smoothTime < 0) readHead = currentSample-smoothTime+bufSize;
-        else readHead = currentSample-smoothTime;
+        if (currentSample-smoothTime < 0) readHead = (int)currentSample-smoothTime+bufSize;
+        else readHead = (int)currentSample-smoothTime;
 
         m.setDigital(digiNets[2], buf[readHead]);
 
