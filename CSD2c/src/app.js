@@ -42,8 +42,8 @@ app.once('ready', () => {
     // No menu bar! We handle all settings in the sidebar
   window.setMenu(null);
   window.setMenuBarVisibility(false)
-  
-  if(os == "darwin") {
+
+  if(os.platform() == "darwin") {
   systemPreferences.setAppLevelAppearance('dark');
   systemPreferences.appLevelAppearance = 'dark';
   }
