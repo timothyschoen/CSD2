@@ -369,7 +369,7 @@ struct absol : Component<0, 0, 2>
     void updateInput(MNASystem & m) final
     {
 
-        input = abs(m.getDigital(digiNets[0]));
+        input = std::abs((int)m.getDigital(digiNets[0]));
 
     }
     void update(MNASystem & m) final
