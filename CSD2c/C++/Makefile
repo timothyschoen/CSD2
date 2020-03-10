@@ -1,6 +1,6 @@
 CC = clang++
-CFLAGS = -Wall -std=c++17 -lm
-AUFLAGS= -lpthread
+CFLAGS = -Wall -std=c++17
+AUFLAGS= -lpthread -lm
 GENDEPS=
 
 # Extra flags for different kinds of solvers
@@ -38,14 +38,12 @@ Halite : RtMidi.o, RtAudio.o # $(GENDEPS)
 	mv Halite ../compiled/
 
 RtMidi.o, RtAudio.o:
-	$(CC) -c $< $(CFLAGS) $(AUFLAGS) ./rtlibs/RtMidi.cpp ./rtlibs/RtAudio.cpp 
-
-
-
+	$(CC) -c $< $(CFLAGS) ./rtlibs/RtMidi.cpp ./rtlibs/RtAudio.cpp 
 
 
 
 clean:
+	mkdir -p ../compiled
 	rm -f *.o
 	rm -f example
 	rm -f genHeaders.h
