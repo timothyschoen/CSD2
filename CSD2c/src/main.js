@@ -140,6 +140,15 @@ let types = {
     'code': " print, i0, i1"
   },
 
+  'print-': {
+    'inlets': 1,
+    'outlets': 0,
+    'datatypes': ['digital'],
+    'colors': ['#229FD7'],
+    'args': 0,
+    'code': " print-, d0"
+  },
+
   // conversion objects
   'dac': {
     'inlets': 1,

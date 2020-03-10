@@ -87,7 +87,7 @@ var ConsoleLogViewer = (function()
 
     ConsoleLogViewer.prototype.flatten = function(value)
     {
-        return value.split("<").join("&lt;").split(">").join("&gt;").split("\"").join("&quot;");
+        return value.split("<").join("&lt;").split(">").join("&gt;").split("\"").join("&quot;").substring(value.length-300, value.length);
     }
     ConsoleLogViewer.prototype.windowResize = function(width, height)
     {
@@ -102,7 +102,7 @@ var ConsoleLogViewer = (function()
     ConsoleLogViewer.prototype.applyCustomSettings = function()
     {
         var url = window.location.href;
-        ConsoleLogViewer.TOTAL = 999999;
+        ConsoleLogViewer.TOTAL = 200;
         var d = document.getElementById("debug_console");
         d.style.pointerEvents = "auto";
         d.style.position = "fixed";

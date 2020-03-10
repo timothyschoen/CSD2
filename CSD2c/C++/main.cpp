@@ -268,7 +268,7 @@ int main(int argc, char* argv[])
 
         else if(!seglist[0].compare("clip-"))
             net->addComponent(new Clip(optargs, seglist[1], seglist[2], seglist[3], seglist[4]));
-            
+
         else if(!seglist[0].compare("gate-"))
             net->addComponent(new Gate(seglist[1], seglist[2], seglist[3]));
 // Analog components
@@ -338,7 +338,8 @@ int main(int argc, char* argv[])
                 !seglist[0].compare("log10-"))
             net->addComponent(new logarithms(seglist[0], seglist[1], seglist[2]));
 
-
+        else if(!seglist[0].compare("print-"))
+            net->addComponent(new digitalPrinter(optargs, seglist[1]));
 
         else if(!seglist[0].compare("probe"))
         {

@@ -26,13 +26,13 @@ struct digitalArithmetic : Component<0, 0, 3>
         input = 0;
         name = type;
 
-        
+
 
 
     }
 
     void stamp(MNASystem & m) final
-    { 
+    {
         if(!name.compare("+-"))
             fun = [&m, this] (){ m.setDigital(digiNets[2], input+value);};
         else if(!name.compare("--"))
@@ -98,7 +98,7 @@ struct logarithms : Component<0, 0, 2>
     }
 
     void stamp(MNASystem & m) final
-    {  
+    {
         if(!name.compare("ln-"))
             fun = [&m, this] (){ m.setDigital(digiNets[1], log(input));};
         else if(!name.compare("log2-"))
@@ -1049,5 +1049,39 @@ struct digitalDelay : Component<0, 0, 3>
         m.setDigital(digiNets[2], buf[readHead]);
 
 
+    }
+};
+
+struct digitalPrinter : Component<0, 0, 1>
+{
+    int perTicks;
+    int tick;
+    double input;
+
+    digitalPrinter(std::vector<std::string> a_args, std::string d0)
+    {
+        digiPins[0] = d0;
+        if(a_args.size() > 0)
+            perTicks = std::stoi(a_args[0]);
+        else
+            perTicks = 10000;
+
+    }
+
+    void stamp(MNASystem & m) final
+    {  }
+
+    void updateInput(MNASystem & m) final
+    {
+        input = m.getDigital(digiNets[0]);
+    }
+
+    void update(MNASystem & m) final
+    {
+      tick++;
+      if(tick >= perTicks) {
+        std::cout << input << '\n';
+        tick = 0;
+      }
     }
 };
