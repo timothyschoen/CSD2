@@ -56,6 +56,7 @@ if (!fs.existsSync(home)) {
 }
 
 
+// Add invisibe below the sidebar so we can make room for scrolling
 let scrollitem = document.createElement("div");
 scrollitem.innerHTML = '!!';
 scrollitem.style.position = "absolute";
@@ -99,10 +100,6 @@ function dragElement(elmnt, sidebar)
         pos3 = e.clientX;
         pos4 = e.clientY;
 
-
-        // set the element's new position:
-        //elmnt.style.right = "0px";
-
         if(sidebar == undefined)
         {
             ds.addSelection(elmnt);
@@ -125,7 +122,7 @@ function dragElement(elmnt, sidebar)
         else
         {
             sbarwidth = window.innerWidth - (elmnt.offsetLeft - pos1);
-            elmnt.style.right = sbarwidth + "px";
+            elmnt.style.right = sbarwidth-30 + "px";
 
             sidebar.windowresize();
         }
