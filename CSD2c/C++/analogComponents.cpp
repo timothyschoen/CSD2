@@ -78,18 +78,26 @@ struct VariableResistor : Component2<2, 0, 1>
     double  r;
     double  g;
     double  ng;
-    double scale;
+
 
     double smoothscale = 1;
     double previousscale = 1;
     double a = 0.9; // smoothing factor
 
-    VariableResistor(double r, int l0, int l1, std::string d0) : r(r)
+    VariableResistor(int l0, int l1, std::string d0, std::vector<std::string> init)
     {
         pinLoc[0] = l0;
         pinLoc[1] = l1;
         digiPins[0] = d0;
-        scale = r;
+        if (init.size() > 0)
+        {
+            r = std::stod(init[0]);
+        }
+        else
+        {
+            r = 10000;
+        }
+        std::cout << r << '\n';
         g = 1. / r;
         ng = -g;
 
@@ -108,13 +116,13 @@ struct VariableResistor : Component2<2, 0, 1>
     }
     void updateInput(MNASystem & m) final
     {
-        scale = m.getDigital(digiNets[0], 1);
-        scale += scale == 0; // cant have 0
+        r = m.getDigital(digiNets[0], 1);
+        r += r == 0; // cant have 0
 
     }
     void update(MNASystem & m) final
     {
-        g = 1. / scale;
+        g = 1. / r;
         ng = -g;
 
     }

@@ -97,8 +97,8 @@ let types = {
     'outlets': 1,
     'datatypes': ['analog', 'digital', 'analog'],
     'colors': ['#229FD7', '#229FD7', '#229FD7'],
-    'args': 1,
-    'code': " varres, a0, i0, i2, d1"
+    'args': 0,
+    'code': " varres, i0, i2, d1"
   },
   'varcap': {
     'inlets': 2,

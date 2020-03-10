@@ -263,7 +263,7 @@ int main(int argc, char* argv[])
             net->addComponent(new Resistor(stof(seglist[1]), std::stoi(seglist[2]), std::stoi(seglist[3])));
 
         else if(!seglist[0].compare("varres"))
-            net->addComponent(new VariableResistor(stod(seglist[1]), std::stoi(seglist[2]), std::stoi(seglist[3]), seglist[4]));
+            net->addComponent(new VariableResistor(std::stoi(seglist[1]), std::stoi(seglist[2]), seglist[3], optargs));
 
         else if(!seglist[0].compare("capacitor"))
             net->addComponent(new Capacitor(stod(seglist[1]), std::stoi(seglist[2]), std::stoi(seglist[3])));
