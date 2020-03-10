@@ -5,7 +5,6 @@
 let bar;
 
 sbarwidth = 350;
-let cnvwidth = window.innerWidth-300; // Width of our canvas without the sidebar
 
 let code = '';
 
@@ -87,7 +86,6 @@ function Sidebar()
         {
             buttons[0].textContent = "\xE7";
             sbarwidth = 38;
-            cnvwidth = window.innerWidth-38
             hidden = 1;
             _this.windowresize();
 
@@ -102,7 +100,6 @@ function Sidebar()
                 tab = 2;
             }
             sbarwidth = 350;
-            cnvwidth = window.innerWidth-350
             hidden = 0;
             _this.windowresize();
 
@@ -296,7 +293,7 @@ function mediaLibrary()
 
         this.deleteFile = function()
         {
-            fs.unlinkSync('./media/'+file, function (err)
+            fs.unlinkSync(home + "/Media/" +file, function (err)
             {
                 if (err) throw err;
             });
@@ -322,7 +319,7 @@ function mediaLibrary()
 
 
         let img = new Image(10, 10);
-        img.src = "../assets/audio-symbol.png";
+        img.src = __dirname + "/../assets/audio-symbol.png";
         img.style.position = 'absolute';
         img.style.left = '10px';
 

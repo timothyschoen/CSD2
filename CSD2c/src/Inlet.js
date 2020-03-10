@@ -11,6 +11,21 @@ if (!fs.existsSync(home)) {
     fs.mkdirSync(home + "/Saves/Examples");
     fs.mkdirSync(home + "/Outputs");
     fs.mkdirSync(home + "/Media");
+
+
+    fs.copyFile(__dirname + '/../media/Solo.wav', home + '/Media/Solo.wav', (err) => {
+  if (err) throw err;
+  });
+
+  fs.copyFile(__dirname + '/../media/sample-44k.wav', home + '/Media/sample-44k.wav', (err) => {
+  if (err) throw err;
+  });
+
+  fs.copyFile(__dirname + '/../saves/examples/Midisynth.ncl', home + '/Saves/Examples/Midisynth.ncl', (err) => {
+  if (err) throw err;
+  });
+
+
 }
 
 
@@ -82,8 +97,7 @@ function dragElement(elmnt, sidebar)
         }
         else
         {
-            cnvwidth = elmnt.offsetLeft - pos1;
-            sbarwidth = window.innerWidth - cnvwidth;
+            sbarwidth = window.innerWidth - (elmnt.offsetLeft - pos1);
             elmnt.style.right = sbarwidth + "px";
 
             sidebar.windowresize();
