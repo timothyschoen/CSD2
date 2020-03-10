@@ -41,7 +41,8 @@ app.once('ready', () => {
     // No menu bar! We handle all settings in the sidebar
   window.setMenu(null);
   window.setMenuBarVisibility(false)
-
+  systemPreferences.setAppLevelAppearance('dark');
+  systemPreferences.appLevelAppearance = 'dark';
   window.loadURL(url.format({
     pathname: path.join(__dirname, 'index.html'),
     protocol: 'file:',
