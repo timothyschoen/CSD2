@@ -609,8 +609,11 @@ for (let i = 0; i < 3; i++) {
 }
 
 function convertMetric(str) {
-  if (!str.includes('/')) { // filter out links and stuff
+  if (!str.includes('/')) { // filter out links
     str = str.replace('p', 'e-12').replace('n', 'e-9').replace('u', 'e-6').replace('m', 'e-3').replace('k', 'e3');
+  }
+  else if(str.includes('./')) { //for shorter filenames
+    str = str.replace('./', home + '/');
   }
   return str;
 }

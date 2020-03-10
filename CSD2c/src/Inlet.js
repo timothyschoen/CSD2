@@ -21,10 +21,37 @@ if (!fs.existsSync(home)) {
   if (err) throw err;
   });
 
-  fs.copyFile(__dirname + '/../saves/examples/Midisynth.ncl', home + '/Saves/Examples/Midisynth.ncl', (err) => {
+  fs.copyFile(__dirname + '/../saves/examples/Fuzzface.ncl', home + '/Saves/Examples/Fuzzface.ncl', (err) => {
   if (err) throw err;
   });
 
+  fs.copyFile(__dirname + '/../saves/examples/BigMuff.ncl', home + '/Saves/Examples/BigMuff.ncl', (err) => {
+  if (err) throw err;
+  });
+
+  fs.copyFile(__dirname + '/../saves/examples/ActiveLowpass.ncl', home + '/Saves/Examples/ActiveLowpass.ncl', (err) => {
+  if (err) throw err;
+  });
+
+  fs.copyFile(__dirname + '/../saves/examples/ChorusDelay.ncl', home + '/Saves/Examples/ChorusDelay.ncl', (err) => {
+  if (err) throw err;
+  });
+
+  fs.copyFile(__dirname + '/../saves/examples/RCLowpass.ncl', home + '/Saves/Examples/RCLowpass.ncl', (err) => {
+  if (err) throw err;
+  });
+
+  fs.copyFile(__dirname + '/../saves/examples/Octaver.ncl', home + '/Saves/Examples/Octaver.ncl', (err) => {
+  if (err) throw err;
+  });
+
+  fs.copyFile(__dirname + '/../saves/examples/SimpleOscillator.ncl', home + '/Saves/Examples/SimpleOscillator.ncl', (err) => {
+  if (err) throw err;
+  });
+
+  fs.copyFile(__dirname + '/../saves/examples/MidiSynth.ncl', home + '/Saves/Examples/MidiSynth.ncl', (err) => {
+  if (err) throw err;
+  });
 
 }
 

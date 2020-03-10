@@ -97,7 +97,6 @@ struct VariableResistor : Component2<2, 0, 1>
         {
             r = 10000;
         }
-        std::cout << r << '\n';
         g = 1. / r;
         ng = -g;
 

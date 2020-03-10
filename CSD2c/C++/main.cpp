@@ -57,7 +57,7 @@ int inout( void *outputBuffer, void *inputBuffer, unsigned int nBufferFrames,
     unsigned int i;
     extern unsigned int channs;
     double *buffer = (double *) outputBuffer;
-    unsigned int *bytes = (unsigned int *) data;
+    //unsigned int *bytes = (unsigned int *) data;
 
     inbuffer = (double *) inputBuffer;
 
