@@ -266,6 +266,9 @@ int main(int argc, char* argv[])
         else if(!seglist[0].compare("scale-"))
             net->addComponent(new Scale(optargs, seglist[1], seglist[2], seglist[3], seglist[4], seglist[5], seglist[6]));
 
+        else if(!seglist[0].compare("clip-"))
+            net->addComponent(new Clip(optargs, seglist[1], seglist[2], seglist[3], seglist[4]));
+            
         else if(!seglist[0].compare("gate-"))
             net->addComponent(new Gate(seglist[1], seglist[2], seglist[3]));
 // Analog components
@@ -325,8 +328,16 @@ int main(int argc, char* argv[])
                 !seglist[0].compare("==-") ||
                 !seglist[0].compare("!=-") ||
                 !seglist[0].compare("%-")  ||
-                !seglist[0].compare("!%-"))
+                !seglist[0].compare("!%-") ||
+                !seglist[0].compare("pow-")  ||
+                !seglist[0].compare("sqrt-"))
             net->addComponent(new digitalArithmetic(seglist[0], optargs, seglist[1], seglist[2],seglist[3]));
+
+        else if(!seglist[0].compare("ln-")  ||
+                !seglist[0].compare("log2-")  ||
+                !seglist[0].compare("log10-"))
+            net->addComponent(new logarithms(seglist[0], seglist[1], seglist[2]));
+
 
 
         else if(!seglist[0].compare("probe"))

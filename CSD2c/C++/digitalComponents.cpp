@@ -1,3 +1,4 @@
+#include <functional>
 // Digital Components
 
 // Basic arithmetics
@@ -7,6 +8,7 @@ struct digitalArithmetic : Component<0, 0, 3>
     double  value;
     std::string name;
     double input;
+    std::function<void()> fun;
 
     digitalArithmetic(std::string type, std::vector<std::string> init, std::string d0, std::string d1, std::string d2)
     {
@@ -23,10 +25,51 @@ struct digitalArithmetic : Component<0, 0, 3>
         }
         input = 0;
         name = type;
+
+        
+
+
     }
 
     void stamp(MNASystem & m) final
-    {  }
+    { 
+        if(!name.compare("+-"))
+            fun = [&m, this] (){ m.setDigital(digiNets[2], input+value);};
+        else if(!name.compare("--"))
+            fun = [&m, this] () { m.setDigital(digiNets[2], input-value);};
+        else if(!name.compare("!--"))
+            fun = [&m, this] () { m.setDigital(digiNets[2], value-input);};
+        else if(!name.compare("*-"))
+            fun = [&m, this] () { m.setDigital(digiNets[2], input*value);};
+        else if(!name.compare("/-"))
+            fun = [&m, this] () { m.setDigital(digiNets[2], input/value);};
+        else if(!name.compare("!/-"))
+            fun = [&m, this] () { m.setDigital(digiNets[2], value/input);};
+        else if(!name.compare(">-"))
+            fun = [&m, this] () { m.setDigital(digiNets[2], input>value);};
+        else if(!name.compare("<-"))
+            fun = [&m, this] () { m.setDigital(digiNets[2], input<value);};
+        else if(!name.compare(">=-"))
+            fun = [&m, this] () { m.setDigital(digiNets[2], input>=value);};
+        else if(!name.compare("<=-"))
+            fun = [&m, this] () { m.setDigital(digiNets[2], input<=value);};
+        else if(!name.compare("==-"))
+            fun = [&m, this] () { m.setDigital(digiNets[2], input==value);};
+        else if(!name.compare("!=-"))
+            fun = [&m, this] () { m.setDigital(digiNets[2], input!=value);};
+        else if(!name.compare("%-"))
+            fun = [&m, this] () { m.setDigital(digiNets[2], fmod(input, value));};
+        else if(!name.compare("!%-"))
+            fun = [&m, this] () {  m.setDigital(digiNets[2], fmod(value, input));};
+        else if(!name.compare("&&-") || !name.compare("and-"))
+            fun = [&m, this] () { m.setDigital(digiNets[2], input && value);};
+        else if(!name.compare("||") || !name.compare("or-"))
+            fun = [&m, this] () { m.setDigital(digiNets[2], input || value);};
+        else if(!name.compare("sqrt-"))
+            fun = [&m, this] () { m.setDigital(digiNets[2], pow(input, 1/value));};
+        else if(!name.compare("pow-"))
+            fun = [&m, this] () { m.setDigital(digiNets[2], pow(input, value));};
+     }
 
     void updateInput(MNASystem & m) final
     {
@@ -36,42 +79,41 @@ struct digitalArithmetic : Component<0, 0, 3>
 
     void update(MNASystem & m) final
     {
-        m.setDigital(digiNets[2], input+value);
+        fun();
 
-        if(!name.compare("+-"))
-            m.setDigital(digiNets[2], input+value);
-        else if(!name.compare("--"))
-            m.setDigital(digiNets[2], input-value);
-        else if(!name.compare("!--"))
-            m.setDigital(digiNets[2], value-input);
-        else if(!name.compare("*-"))
-            m.setDigital(digiNets[2], input*value);
-        else if(!name.compare("/-"))
-            m.setDigital(digiNets[2], input/value);
-        else if(!name.compare("!/-"))
-            m.setDigital(digiNets[2], value/input);
-        else if(!name.compare(">-"))
-            m.setDigital(digiNets[2], input>value);
-        else if(!name.compare("<-"))
-            m.setDigital(digiNets[2], input<value);
-        else if(!name.compare(">=-"))
-            m.setDigital(digiNets[2], input>=value);
-        else if(!name.compare("<=-"))
-            m.setDigital(digiNets[2], input<=value);
-        else if(!name.compare("==-"))
-            m.setDigital(digiNets[2], input==value);
-        else if(!name.compare("!=-"))
-            m.setDigital(digiNets[2], input!=value);
-        else if(!name.compare("%-"))
-            m.setDigital(digiNets[2], fmod(input, value));
-        else if(!name.compare("!%-"))
-            m.setDigital(digiNets[2], fmod(value, input));
-        else if(!name.compare("&&-") || !name.compare("and-"))
-            m.setDigital(digiNets[2], input || value);
-        else if(!name.compare("||") || !name.compare("or-"))
-            m.setDigital(digiNets[2], input && value);
     }
 };
+
+struct logarithms : Component<0, 0, 2>
+{
+    double input;
+    std::string name;
+    std::function<void()> fun;
+
+    logarithms(std::string type, std::string d0, std::string d1)
+    {
+        digiPins[0] = d0;
+        digiPins[1] = d1;
+        name = type;
+    }
+
+    void stamp(MNASystem & m) final
+    {  
+        if(!name.compare("ln-"))
+            fun = [&m, this] (){ m.setDigital(digiNets[1], log(input));};
+        else if(!name.compare("log2-"))
+            fun = [&m, this] () { m.setDigital(digiNets[1], log2(input));};
+        else if(!name.compare("log10-"))
+            fun = [&m, this] () { m.setDigital(digiNets[1], log10(input));};
+    }
+
+
+    void update(MNASystem & m) final
+    {
+        fun();
+    }
+};
+
 
 struct digitalSignal : Component<0, 0, 1>
 {
@@ -520,6 +562,54 @@ struct Scale : Component<0, 0, 6>
 
 };
 
+struct Clip : Component<0, 0, 4>
+{
+    double input;
+    double minimum;
+    double maximum;
+
+
+    Clip(std::vector<std::string> init, std::string d0, std::string d1, std::string d2, std::string d3)
+    {
+
+        digiPins[0] = d0;
+        digiPins[1] = d1;
+        digiPins[2] = d2;
+        digiPins[3] = d3;
+
+
+        input = 0;
+        if(init.size() > 0) minimum = stof(init[0]);
+        else minimum = -1;
+
+        if(init.size() > 1) maximum = stof(init[1]);
+        else maximum = 1;
+
+
+    }
+
+    void stamp(MNASystem & m) final
+    {
+
+    }
+
+    void updateInput(MNASystem & m) final
+    {
+        input = m.getDigital(digiNets[0]);
+        minimum = m.getDigital(digiNets[1], minimum);
+        maximum = m.getDigital(digiNets[2], maximum);
+
+
+
+
+    }
+    void update(MNASystem & m) final
+    {
+        m.setDigital(digiNets[5], fmax(fmin(input, maximum), minimum));
+
+    }
+
+};
 
 struct Elapsed : Component<0, 0, 1>
 {

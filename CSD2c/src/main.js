@@ -296,6 +296,14 @@ let types = {
     'colors': ['#229FD7'],
     'code': " scale-, d0, d1, d2, d3, d4, d5"
   },
+  'clip-': {
+    'inlets': 5,
+    'outlets': 1,
+    'datatypes': ['digital', 'digital', 'digital', 'digital', 'digital', 'digital'],
+    'args': 0,
+    'colors': ['#229FD7'],
+    'code': " clip-, d0, d1, d2, d3"
+  },
 
 
   'elapsed-': {
@@ -489,7 +497,7 @@ let types = {
     'datatypes': ['digital', 'digital', 'digital'],
     'colors': ['#229FD7', '#229FD7', '#229FD7'],
     'args': 0,
-    'code': " %, d0, d1, d2"
+    'code': " %-, d0, d1, d2"
   },
   '!%-': {
     'inlets': 2,
@@ -497,17 +505,47 @@ let types = {
     'datatypes': ['digital', 'digital', 'digital'],
     'colors': ['#229FD7', '#229FD7', '#229FD7'],
     'args': 0,
-    'code': " !%, d0, d1, d2"
+    'code': " !%-, d0, d1, d2"
   },
-
-  // Components from Gen
-  'phasor-': {
+    'pow-': {
     'inlets': 2,
     'outlets': 1,
     'datatypes': ['digital', 'digital', 'digital'],
     'colors': ['#229FD7', '#229FD7', '#229FD7'],
     'args': 0,
-    'code': " phasor, d0, d1, d2"
+    'code': " pow-, d0, d1, d2"
+  },
+    'sqrt-': {
+    'inlets': 2,
+    'outlets': 1,
+    'datatypes': ['digital', 'digital', 'digital'],
+    'colors': ['#229FD7', '#229FD7', '#229FD7'],
+    'args': 0,
+    'code': " sqrt-, d0, d1, d2"
+  },
+    'ln-': {
+    'inlets': 1,
+    'outlets': 1,
+    'datatypes': ['digital', 'digital', 'digital'],
+    'colors': ['#229FD7', '#229FD7', '#229FD7'],
+    'args': 0,
+    'code': " ln-, d0, d1"
+  },
+    'log2-': {
+    'inlets': 1,
+    'outlets': 1,
+    'datatypes': ['digital', 'digital', 'digital'],
+    'colors': ['#229FD7', '#229FD7', '#229FD7'],
+    'args': 0,
+    'code': " log2-, d0, d1"
+  },
+    'log10-': {
+    'inlets': 1,
+    'outlets': 1,
+    'datatypes': ['digital', 'digital', 'digital'],
+    'colors': ['#229FD7', '#229FD7', '#229FD7'],
+    'args': 0,
+    'code': " log10-, d0, d1"
   },
 
 }
