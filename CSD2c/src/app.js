@@ -10,9 +10,6 @@ const os = require('os')
 let window = null
 
 
-//exec('node '.concat(path.join(__dirname, 'oscServer.js')));
-
-
 // Wait until the app is ready
 app.once('ready', () => {
   // Create a new window
@@ -27,6 +24,8 @@ app.once('ready', () => {
     minHeight: 450,
     // set the title bar style
     //titleBarStyle: 'hiddenInset',
+
+    // Dark theme for linux/GTK
     darkTheme: true,
     // set the background color to black
     backgroundColor: "#FFFFF",
@@ -43,6 +42,7 @@ app.once('ready', () => {
   window.setMenu(null);
   window.setMenuBarVisibility(false)
 
+  //Dark theme for macOS
   if(os.platform() == "darwin") {
   systemPreferences.setAppLevelAppearance('dark');
   systemPreferences.appLevelAppearance = 'dark';

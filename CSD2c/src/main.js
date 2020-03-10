@@ -7,6 +7,7 @@ const {clipboard} = require('electron')
 document.body.style.backgroundColor = "#505050";
 document.head.style.height = "1500px";
 
+// Our main code manages instances of all our other classes, handles spawning C++ and preparing the code
 
 // All our objects, plus the data that we need to convert it to halite
 let types = {
@@ -564,27 +565,19 @@ types['osc-'] = types['cycle-'];
 types['sine-'] = types['cycle-'];
 types['train-'] = types['rect-'];
 types['square-'] = types['rect-'];
-types['saw-'] = types['phasor-']; // even though they arent exactly the same
+types['saw-'] = types['phasor-']; // for now, even though they arent exactly the same
 
 
-
+// default preset
 let preset = ["ground", "output 0.3", 'input ' + home + "/Media/sample-44k.wav 0.2"];
 
-let halite; // letiable for halite process
+let halite; // variable for halite process
 
 let realtime_playing = false; // Checks if we are playing in realtime
 
 let sbar = new Sidebar; // Sidebar (see sidebar.js)
-//let sbarwidth = 350;
-
-
-//let code = ''; // letiable to store code to use for exporting and displaying
 
 let draginstance = -1; // Is any component being dragged? -1 means no, otherwise it contains the index number
-
-let selectX, selectY, selwidth, selheight; // X, Y, W, H of our selection
-
-let selecting = false; // Are we selecting?
 
 let halsettings = [44100, 44100, 24, '.WAV', 1024]; // Export and audio settings for halite
 
@@ -592,8 +585,6 @@ let typing = false; // Check if we're typing, if so, disable keyboard shortcuts
 
 let initializing = true;
 
-let history = [];
-let histpos = 0;
 
 
 // Close background processes when quitting or reloading
@@ -659,7 +650,6 @@ if (state == undefined || state == 'new') {
   openSavedFile(state);
 }
 initializing = false;
-changed();
 
 
 // set up buttons at the bottom
@@ -912,18 +902,6 @@ document.addEventListener("keydown", function(event) {
       case 78: // 'n' is pressed
         boxes.push(new Component(undefined, 500, 500));
         break;
-      case (90): // ctrl-z
-        if (event.metaKey) {
-          console.log("Undo/redo has been disabled for stability")
-          //unredo(-1);
-        }
-        break;
-      case (82): // ctrl-R??/
-        if (event.metaKey) {
-          console.log("Undo/redo has been disabled for stability")
-          //unredo(1);
-        }
-        break;
       case (67): // ctrl-c
         if (event.metaKey || ctrl) {
           clipboard.writeText(JSON.stringify(copySelection()));
@@ -1014,42 +992,4 @@ function pasteSelection(pasted) {
     console.log("Invalid clipboard content");
   }
 
-}
-
-//TODO: use this for undo/redo
-function changed() {
-  if (!initializing) {
-
-    //console.log(history.length)
-    //history.splice(histpos, history.length-histpos)
-    history[histpos] = generatesave(0);
-    histpos++;
-    //console.log(history.length)
-    //console.log('histpos', histpos)
-    //precompile(0);
-  }
-}
-
-
-// temporarily disabled because it's glitchy
-function unredo(step) {
-  //console.log('histpos', histpos)
-  histpos = histpos - 2;
-  histpos = histpos * (histpos >= 0);
-  let input = history[histpos];
-
-  initializing = true;
-  for (var i = boxes.length - 1; i >= 0; i--) {
-    boxes[i].delete();
-  }
-  //console.log(history);
-  //connections = new Proxy( connectionsprox, arrayChangeHandler );
-  //boxes = new Proxy( boxesprox, arrayChangeHandler );
-  for (let i = 0; i < input[0].length; i++) {
-    boxes[input[0][i][0]] = new Component(input[0][i][1], input[0][i][2][0], input[0][i][2][1]);
-  }
-  for (let i = 0; i < input[1].length; i++) {
-    connections.push(new Connection([boxes[input[1][i][0][0]], input[1][i][1][0]], [boxes[input[1][i][0][1]], input[1][i][1][1]]));
-  }
-  initializing = false;
 }

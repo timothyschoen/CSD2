@@ -1,8 +1,8 @@
-// COMPONENT FUNCTION
+// COMPONENT CLASS
 // Represents 1 electrical component
 
-let boxesprox = []; // Where we store our components
-let connectionsprox = []; // Where we store our connections
+let connections = []; // Where we store our components
+let boxes = []; // Where we store our connections
 let connecting = -1; // Is any inlet currently in the connecting state?
 
 // Change array order (used to make sure ground is at 0)
@@ -10,28 +10,8 @@ Array.prototype.move = function(from, to) {
   this.splice(to, 0, this.splice(from, 1)[0]);
 };
 
-var arrayChangeHandler = {
-  get: function(target, property) {
-    // property is index in this case
-    return target[property];
-  },
-  set: function(target, property, value, receiver) {
-    target[property] = value;
-    if (property == 'length' && !initializing) {
-      // disabeled for now because it's too glitchy
-      //changed();
 
-    }
-    // you have to return true to accept the changes
-    return true;
-  }
-};
-
-
-var connections = new Proxy(connectionsprox, arrayChangeHandler);
-var boxes = new Proxy(boxesprox, arrayChangeHandler);
-
-function Component(name = 'resistor 200', xin = mouseX, yin = mouseY - 100) {
+function Component(name, xin = mouseX, yin = mouseY - 100) {
   let x, y, w, h; // Location and size
   let inp; // letiable for input field
   let inputting = false; // Check if we have an active input field
@@ -57,47 +37,48 @@ function Component(name = 'resistor 200', xin = mouseX, yin = mouseY - 100) {
   w = 70;
   h = 20;
 
-  var myCircle = document.createElement("div");
+  var divComponent = document.createElement("div");
 
-  //myCircle.style.width = "100px";
-  myCircle.className = "component";
-  myCircle.style.position = "absolute";
-  myCircle.style.height = "17px";
-  myCircle.style.paddingLeft = "12px";
-  myCircle.style.paddingTop = "2px";
-  myCircle.style.paddingBottom = "0px";
-  myCircle.style.paddingRight = "12px";
-  myCircle.style.background = "#424242";
-  myCircle.style.top = y + h + "px";
-  myCircle.style.left = x + "px";
-  myCircle.style.color = "#DCDCDC";
-  myCircle.style.border = "1px solid #DCDCDC"
-  myCircle.style.fontFamily = "sans-serif";
-  myCircle.style.fontSize = "12px";
-  myCircle.style.fontAlign = "center";
-  myCircle.style.zIndex = '-2'
-  myCircle.x = x
-  myCircle.y = y
-  myCircle.innerHTML = name;
+  // Make a nicely styled box with padding around the text
+  divComponent.className = "component";
+  divComponent.style.position = "absolute";
+  divComponent.style.height = "17px";
+  divComponent.style.paddingLeft = "12px";
+  divComponent.style.paddingTop = "2px";
+  divComponent.style.paddingBottom = "0px";
+  divComponent.style.paddingRight = "12px";
+  divComponent.style.background = "#424242";
+  divComponent.style.top = y + h + "px";
+  divComponent.style.left = x + "px";
+  divComponent.style.color = "#DCDCDC";
+  divComponent.style.border = "1px solid #DCDCDC"
+  divComponent.style.fontFamily = "sans-serif";
+  divComponent.style.fontSize = "12px";
+  divComponent.style.fontAlign = "center";
+  divComponent.style.zIndex = '-2'
+  divComponent.x = x
+  divComponent.y = y
+  divComponent.innerHTML = name;
 
-  myCircle.addEventListener('contextmenu', ((ev) => {
+  // Delete on right click
+  divComponent.addEventListener('contextmenu', ((ev) => {
     ev.preventDefault();
     this.delete();
     return false;
   }), false);
 
-  myCircle.addEventListener('dblclick', ((ev) => {
+  // Input name after doubleclick
+  divComponent.addEventListener('dblclick', ((ev) => {
     ev.preventDefault();
     this.inputname(name);
     return false;
   }), false);
 
+  document.body.appendChild(divComponent);
 
-  document.body.appendChild(myCircle);
-
-
-  dragElement(myCircle);
-  ds.addSelectables(myCircle);
+  // Make it draggable and selectable
+  dragElement(divComponent);
+  ds.addSelectables(divComponent);
 
 
 
@@ -107,10 +88,11 @@ function Component(name = 'resistor 200', xin = mouseX, yin = mouseY - 100) {
     inp.value = text;
     inputting = true;
     typing = true;
-    var bound = myCircle.getBoundingClientRect();
+    // Display it over the bounds of the component
+    var bound = divComponent.getBoundingClientRect();
     inp.style.cssText = 'background-color: #efefef; font-size:11px; font:sans-serif; text-align: center; border:none; outline:none;';
-    inp.style.height = myCircle.clientHeight + 'px';
-    inp.style.width = myCircle.clientWidth + 'px';
+    inp.style.height = divComponent.clientHeight + 'px';
+    inp.style.width = divComponent.clientWidth + 'px';
     inp.style.top = bound.top + window.scrollY + 'px';
     inp.style.left = bound.left + window.scrollX + 'px';
     inp.style.position = 'absolute';
@@ -119,7 +101,6 @@ function Component(name = 'resistor 200', xin = mouseX, yin = mouseY - 100) {
   }
 
   //Bunch of getters and setters to interact and get info from these boxes
-
   this.getinlets = function() {
     return inlets;
   }
@@ -133,7 +114,7 @@ function Component(name = 'resistor 200', xin = mouseX, yin = mouseY - 100) {
   }
 
   this.getdiv = function() {
-    return myCircle;
+    return divComponent;
   }
 
   this.getargs = function() {
@@ -149,7 +130,7 @@ function Component(name = 'resistor 200', xin = mouseX, yin = mouseY - 100) {
   }
 
   this.getposition = function() {
-    return [myCircle.x, myCircle.y];
+    return [divComponent.x, divComponent.y];
   }
   this.getsize = function() {
     return [w, h];
@@ -195,7 +176,7 @@ function Component(name = 'resistor 200', xin = mouseX, yin = mouseY - 100) {
 
   // When the name changes or the object is being created, add the inlets
   this.changetype = function() {
-    myCircle.innerHTML = name;
+    divComponent.innerHTML = name;
     for (let i = 0; i < inlets.length; i++) {
       inlets[i].remove();
     }
@@ -243,15 +224,14 @@ function Component(name = 'resistor 200', xin = mouseX, yin = mouseY - 100) {
         boxes.move(boxes.indexOf(this), 0);
       }
       valid = true;
-      myCircle.style.backgroundColor = '#424242'
+      divComponent.style.backgroundColor = '#424242'
       _this.changetype();
     } else {
-      myCircle.innerHTML = name;
-      myCircle.style.backgroundColor = '#ff6961'
+      divComponent.innerHTML = name;
+      divComponent.style.backgroundColor = '#ff6961'
       valid = false;
     }
     // Resize width according to length of name
-    //w = ((name.length) * 6) + 15
 
   }
 
@@ -274,18 +254,19 @@ function Component(name = 'resistor 200', xin = mouseX, yin = mouseY - 100) {
       inlets[i].remove();
     }
     inlets = [];
-    myCircle.parentNode.removeChild(myCircle);
+    divComponent.parentNode.removeChild(divComponent);
 
     // Then remove the box
     boxes.splice(boxes.indexOf(this), 1);
 
   }
 
+  // Check if box is currently selected
   this.isSelected = function() {
     let selection = ds.getSelection();
     let selected = false;
     for (var i = 0; i < selection.length; i++) {
-      if (selection[i].isEqualNode(myCircle)) {
+      if (selection[i].isEqualNode(divComponent)) {
         selected = true;
         break
       }
@@ -301,9 +282,6 @@ function Component(name = 'resistor 200', xin = mouseX, yin = mouseY - 100) {
       this.delete();
     }
   }
-
-
-
 
   // If this object has no name, open an input!
   if (name == undefined) {
