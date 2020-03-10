@@ -17,7 +17,6 @@ struct MNASystem
 
     void setSize(int n, int d)
     {
-        std::cout << "size: " << n << '\n';
         A.resize(n);
         b.resize(n);
         digiValues.resize(d);

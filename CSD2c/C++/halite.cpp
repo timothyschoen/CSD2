@@ -194,10 +194,6 @@ struct NetList
         {
             components[i]->stamp(system);
         }
-        printf("Prepare for DC analysis..\n");
-
-        // TODO: doe die begin time skip hier!!!!
-
 
         setStepScale((double)1/44100);
         tStep = (double)1/44100;
@@ -215,7 +211,6 @@ struct NetList
 
         tStep = tStepSize;
         double stepScale = 1. / tStep;
-        printf("timeStep changed to %.2g (%.2g Hz)\n", tStep, stepScale);
         setStepScale(stepScale);
     }
 
@@ -351,7 +346,7 @@ protected:
                         || system.A[i][j].gdyn.size()) ++fill;
             }
         }
-        printf("MNA density %.1f%%\n", 100 * fill / ((nets-1.)*(nets-1.)));
+        //printf("MNA density %.1f%%\n", 100 * fill / ((nets-1.)*(nets-1.)));
     }
 
 

@@ -3,13 +3,15 @@
 #include "./rtlibs/RtMidi.h"
 
 //#include "./gen/genlib.h"
+//#include "./genComponents.cpp"
 
-double* inbuffer;
+
+double* inbuffer; // ugly, fix this
 
 #include "./halite.cpp"
 #include "./digitalComponents.cpp"
 #include "./analogComponents.cpp"
-//#include "./genComponents.cpp"
+
 
 
 
@@ -31,8 +33,6 @@ std::vector<unsigned char> message;
 
 void errorCallback( RtAudioError::Type type, const std::string &errorText )
 {
-    // This example error handling function does exactly the same thing
-    // as the embedded RtAudio::error() function.
     std::cout << "in errorCallback" << std::endl;
     if ( type == RtAudioError::WARNING )
         std::cerr << '\n' << errorText << "\n\n";
@@ -96,6 +96,7 @@ int main(int argc, char* argv[])
     double initarr[512] = {0};
     inbuffer = initarr;
 
+    // register all our parameters
     try
     {
         TCLAP::CmdLine cmd("Halite", ' ', "0.9");
@@ -118,6 +119,8 @@ int main(int argc, char* argv[])
         cmd.add(format);
         cmd.parse(argc, argv);
 
+
+        // assign them to variables
         outputformat = format.getValue();
         bitdepth = bd.getValue();
         buffersize = bs.getValue();
@@ -134,9 +137,10 @@ int main(int argc, char* argv[])
     }
 
 
+    // Here we start parsing out input file that we generate in JS
 
     std::ifstream t(inputpath);
-    std::string str; // = "output, 0.3, 2 \n input, ./samples/sample-44k.wav, 0.2, 1, 0 \n resistor, 200, 1, 2 \n ";
+    std::string str;
 
 
     t.seekg(0, std::ios::end);
@@ -150,7 +154,7 @@ int main(int argc, char* argv[])
     std::stringstream ss(str);
     std::string obj;
 
-
+    // first we split by newline
     while(std::getline(ss,obj,'\n'))
     {
         std::vector<std::string> seglist;
@@ -158,7 +162,7 @@ int main(int argc, char* argv[])
         std::string segment;
         std::stringstream inputcode(obj);
 
-
+        // then we split by commas
         while(std::getline(inputcode, segment, ','))
         {
             segment.erase(0,1);
@@ -169,7 +173,7 @@ int main(int argc, char* argv[])
         std::stringstream argstream(seglist[seglist.size()-1]);
         std::string parsedargs;
 
-
+        // and then our final list of optional arguments is splitted with :
         while(std::getline(argstream, parsedargs, ':'))
         {
             parsedargs.erase(0, 1);
@@ -177,7 +181,6 @@ int main(int argc, char* argv[])
             optargs.push_back(parsedargs);
         }
 
-        std::cout << seglist[0] << '\n';
 
         if(!seglist[0].compare("setup"))
         {
@@ -352,8 +355,7 @@ int main(int argc, char* argv[])
     net->buildSystem();
 
 // sets amount of time that is simulated between ticks (1/samplerate)
-    std::cout << enginesamplerate << std::endl;
-    std::cout << (double)1/enginesamplerate << std::endl;
+    std::cout << "Sample Rate = " << enginesamplerate << std::endl;
 
     net->setMidiInput(message);
     net->setAudioInput(inbuffer);
@@ -384,18 +386,16 @@ int main(int argc, char* argv[])
             net->simulateTick();
 
             output = net->getAudioOutput();
-            //std::cout << *output << '\n';
 
             audioFile.samples[0][i] = *(output)*outamp;
             audioFile.samples[1][i] = *(output+1)*outamp;
         }
 
-        //audioFile.samples[0][i] = output;
 
         audioFile.setBitDepth (bitdepth);
         audioFile.setSampleRate (outputsamplerate);
 
-        std::cout << "OK";
+        std::cout << "Saved as: " << outputpath << std::endl;
         if (!outputformat.compare(".AIF") || !outputformat.compare(".AIFF") || !outputformat.compare(".aif") || !outputformat.compare(".aiff"))
             audioFile.save(outputpath, AudioFileFormat::Aiff);
         else
@@ -407,32 +407,6 @@ int main(int argc, char* argv[])
 
         midiin->openVirtualPort("Halite Input Port 1");
         midiin->ignoreTypes( false, false, false );
-
-        /*
-                JackModule jack;
-                jack.init("halite");
-
-
-                jack.onProcess = [&net, &output, &outamp, &midiin, &message](jack_default_audio_sample_t *inBuf,
-                                 jack_default_audio_sample_t *outBufR, jack_default_audio_sample_t *outBufL, jack_nframes_t nframes)
-                {
-                    midiin->getMessage( &message ); // get midi once per buffer
-                    //loop through frames, retrieve sample of sine per frame
-                    for(int i = 0; i < nframes; i++) {
-
-                        net->setAudioInput(inBuf[i]);
-                        net->simulateTick();
-                        output = net->getAudioOutput();
-
-                        outBufL[i] = *(output)*outamp;
-                        outBufR[i] = *(output+1)*outamp;
-                    }
-
-
-                    return 0;
-                };
-                jack.autoConnect(); */
-
 
 
         RtAudio dac;
@@ -464,7 +438,6 @@ int main(int argc, char* argv[])
 
         options.flags = RTAUDIO_HOG_DEVICE;
         //options.flags = RTAUDIO_SCHEDULE_REALTIME;
-        //options.flags |= RTAUDIO_NONINTERLEAVED;
 
         try
         {
@@ -483,10 +456,11 @@ int main(int argc, char* argv[])
         }
         else
         {
-            char input;
-            //std::cout << "Stream latency = " << dac.getStreamLatency() << "\n" << std::endl;
-            std::cout << "\nPlaying ... press <enter> to quit (buffer size = " << bufferFrames << ").\n";
-            std::cin.get( input );
+            std::cout << "Stream latency = " << dac.getStreamLatency() << "\n" << std::endl;
+
+            while(true) {
+              usleep(10000);
+            }
 
             try
             {

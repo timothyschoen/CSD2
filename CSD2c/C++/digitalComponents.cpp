@@ -800,15 +800,15 @@ struct midiNoteIn : Component<0, 0, 2>
 
         if(copy.size() > 0)
         {
-            if ((int)copy[0] == 144 && (int)copy[2] != 0)
+            if ((int)copy[0] == 144)
             {
                 note = (int)copy[1];
                 velocity = (int)copy[2];
             }
-            else if ((int)copy[0] == 128 || ((int)copy[0] == 144 && (int)copy[2] != 0))
+            else if ((int)copy[0] == 128)
             {
                 note = 0;
-                velocity = 0;
+                velocity = (int)copy[2];
             }
         }
     }
@@ -1064,7 +1064,7 @@ struct digitalPrinter : Component<0, 0, 1>
         if(a_args.size() > 0)
             perTicks = std::stoi(a_args[0]);
         else
-            perTicks = 10000;
+            perTicks = 20;
 
     }
 
@@ -1081,7 +1081,7 @@ struct digitalPrinter : Component<0, 0, 1>
       tick++;
       if(tick >= perTicks) {
         std::cout << input << '\n';
-        tick = 0;
+        tick = tick - perTicks;
       }
     }
 };

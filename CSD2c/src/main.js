@@ -779,7 +779,6 @@ function startHalite(realtime) {
   for (var i = 0; i < halsettings.length; i++) {
     params.push(prefixes[i] + halsettings[i]);
   }
-  console.log(params);
   let haliteappendix;
   let halitecmd = __dirname + '/../compiled/Halite'
 
@@ -801,7 +800,6 @@ function startHalite(realtime) {
   }
 
   if (!(realtime && (realtime_playing))) {
-    console.log(haliteappendix)
     halite = spawn(path.join(__dirname, '/../compiled/Halite'), haliteappendix);
 
     halite.stdout.on('data', function(data) {
@@ -974,7 +972,6 @@ function copySelection() {
   }
 
   let savefile = [boxnames, conns];
-  console.log(JSON.stringify(savefile));
   return savefile;
 
 
@@ -993,7 +990,6 @@ function pasteSelection(pasted) {
 
 
     for (let i = 0; i < pasted[1].length; i++) {
-      console.log(JSON.stringify(pasted[1][i]));
       let newconn = new Connection([tempboxes[pasted[1][i][0][0]], pasted[1][i][1][0]], [tempboxes[pasted[1][i][0][1]], pasted[1][i][1][1]], pasted[1][i][2]);
       connections.push(newconn);
     }
