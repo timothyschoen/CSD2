@@ -5,7 +5,7 @@ GENDEPS=
 
 # Extra flags for different kinds of solvers
 #AFFLAGS= -I/opt/arrayfire/include -rpath /opt/arrayfire/lib -lafcpu -L/opt/arrayfire/lib -framework Accelerate
-#MKLFLAGS=  -lm -ldl -llapack
+MKLFLAGS=  -lm -ldl -llapack
 
 
 UNAME_S := $(shell uname -s)
@@ -13,7 +13,7 @@ ifeq ($(UNAME_S),Linux)
 	AUFLAGS += -D__LINUX_ALSA__ -lasound
 endif
 ifeq ($(UNAME_S),Darwin)
-	AUFLAGS += -D__MACOSX_CORE__ -framework CoreMIDI -framework CoreAudio -framework CoreFoundation
+	AUFLAGS += -D__MACOSX_CORE__ -framework CoreMIDI -framework CoreAudio -framework CoreFoundation $(MKLFLAGS)
 	#GENDEPS += genlib.o phasor.o json.o json_builder.o     for gen support
 endif
 

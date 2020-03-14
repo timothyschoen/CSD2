@@ -57,15 +57,15 @@ int inout( void *outputBuffer, void *inputBuffer, unsigned int nBufferFrames,
     unsigned int i;
     extern unsigned int channs;
     double *buffer = (double *) outputBuffer;
-    //unsigned int *bytes = (unsigned int *) data;
 
-    inbuffer = (double *) inputBuffer;
+    //inbuffer = (double *) inputBuffer;
 
     double *output;
     midiin->getMessage( &message );
 
     for ( i=0; i<nBufferFrames; i++ )
     {
+        inbuffer[i] = ((double *)inputBuffer)[i];
         net->simulateTick();
         output = net->getAudioOutput();
         *buffer++ = output[0]*outamp;
@@ -358,7 +358,7 @@ int main(int argc, char* argv[])
     std::cout << "Sample Rate = " << enginesamplerate << std::endl;
 
     net->setMidiInput(message);
-    net->setAudioInput(inbuffer);
+    //net->setAudioInput(inbuffer);
 
     net->simulateTick();
     net->setTimeStep((double)1/enginesamplerate);
@@ -437,7 +437,7 @@ int main(int argc, char* argv[])
         iParams.firstChannel = offset;
 
         options.flags = RTAUDIO_HOG_DEVICE;
-        //options.flags = RTAUDIO_SCHEDULE_REALTIME;
+        options.flags = RTAUDIO_SCHEDULE_REALTIME;
 
         try
         {

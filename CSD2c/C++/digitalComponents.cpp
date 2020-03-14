@@ -671,25 +671,37 @@ struct rtDigitalInput : Component<0, 0, 1>
 
     double amplitude;
     double inputvalue;
+    int tick;
 
     rtDigitalInput(double inamp, std::string d0)
     {
         digiPins[0] = d0;
         amplitude = inamp;
         inputvalue = 0;
+        tick = 0;
 
     }
 
     void stamp(MNASystem & m) final
-    { }
+    {
+    }
     void update(MNASystem & m) final
     {
-        m.setDigital(digiNets[0], inbuffer[m.ticks%512]);
+      m.setDigital(digiNets[0], (inbuffer)[tick]);
+      tick++;
+      if(tick >= 512)  {
+        tick = tick - 512;
+      }
+
+
 
     }
 
 
 };
+
+
+
 
 struct midiCtlIn : Component<0, 0, 3>
 {

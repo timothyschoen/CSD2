@@ -234,7 +234,7 @@ struct Capacitor : Component<2, 1>
         // since c*(v1 - v0) = (i1 + i0)/(2*t), where t = 1/T
         double g = 2*c;
 
-        // Stamp timed vermenigvuldigd de weerstand met 1/timeStep
+        // Stamp timed vermenigvuldigd de weerstand met 1/sr (bijv 1/44100)
         // De conductance is gelijk aan 2*c
         // R = 1/(2*c)
         // Trapezoidal formule stelt dat R = dT/2C = dT * 1/(2*C)
@@ -270,7 +270,7 @@ struct Capacitor : Component<2, 1>
     {
 
 
-        stateVar = m.b[nets[2]].lu; // t - 1
+        stateVar = m.b[nets[2]].lu; // t - h
 
         // solve legit voltage from the pins
         voltage = m.b[nets[0]].lu - m.b[nets[1]].lu; // t
@@ -294,10 +294,92 @@ struct Capacitor : Component<2, 1>
     }
 };
 
+struct Inductor2 : Component<2, 1>
+{
+    double l;
+    double stateVar;
+    double voltage;
+
+    Inductor2(double l, int l0, int l1) : l(l)
+    {
+        pinLoc[0] = l0;
+        pinLoc[1] = l1;
+
+        stateVar = 0;
+        voltage = 0;
+    }
+
+    void stamp(MNASystem & m) final
+    {
+
+        // we can use a trick here, to get the capacitor to
+        // work on it's own line with direct trapezoidal:
+        //
+        // | -g*t  +g*t  +t | v+
+        // | +g*t  -g*t  -t | v-
+        // | +2*g  -2*g  -1 | state
+        //
+        // the logic with this is that for constant timestep:
+        //
+        //  i1 = g*v1 - s0   , s0 = g*v0 + i0
+        //  s1 = 2*g*v1 - s0 <-> s0 = 2*g*v1 - s1
+        //
+        // then if we substitute back:
+        //  i1 = g*v1 - (2*g*v1 - s1)
+        //     = s1 - g*v1
+        //
+        // this way we just need to copy the new state to the
+        // next timestep and there's no actual integration needed
+        //
+        // the "half time-step" error here means that our state
+        // is 2*c*v - i/t but we fix this for display in update
+        // and correct the current-part on time-step changes
+
+        // trapezoidal needs another factor of two for the g
+        // since c*(v1 - v0) = (i1 + i0)/(2*t), where t = 1/T
+        double g = 2*l;
+
+        m.stampTimed(+1, nets[0], nets[2]); // Naar A->B system
+        m.stampTimed(-1, nets[1], nets[2]);
+
+        // Weerstand parallel aan spanningsbron
+        m.stampTimed(-g, nets[0], nets[0]);
+        m.stampTimed(+g, nets[0], nets[1]);
+        m.stampTimed(+g, nets[1], nets[0]);
+        m.stampTimed(-g, nets[1], nets[1]);
+
+        m.stampStatic(+2*g, nets[2], nets[0]);  // Naar A->C system
+        m.stampStatic(-2*g, nets[2], nets[1]);
+
+
+        m.stampStatic(-1, nets[2], nets[2]); // Naar A->D system
+
+        // see the comment about v:C[%d] below
+        m.b[nets[2]].gdyn.push_back(&stateVar);
+
+    }
+
+    void update(MNASystem & m) final
+    {
+
+
+        stateVar = m.b[nets[2]].lu; // t - h
+
+        // solve legit voltage from the pins
+        voltage = m.b[nets[0]].lu - m.b[nets[1]].lu; // t
+
+        // then we can store this for display here
+        // since this value won't be used at this point
+        m.b[nets[2]].lu = l*voltage;
+    }
+
+};
+
 
 struct Inductor : Component<2, 1>
 {
     double l;
+    double g;
     double stateVar;
     double voltage;
 
@@ -340,18 +422,23 @@ struct Inductor : Component<2, 1>
         // since c*(v1 - v0) = (i1 + i0)/(2*t), where t = 1/T
 
 
-        double g = l;
+        g = 1/((2.*l)/m.tStep);
 
         m.stampStatic(+1, nets[0], nets[2]); // Naar A->B system
         m.stampStatic(-1, nets[1], nets[2]);
 
-        m.stampStatic(+1, nets[2], nets[0]);  // Naar A->C system
-        m.stampStatic(-1, nets[2], nets[1]);
+        m.stampStatic(-1, nets[2], nets[0]);  // Naar A->C system
+        m.stampStatic(+1, nets[2], nets[1]);
+
+        //m.stampTimed(g, nets[2], nets[2]);
 
 
-        m.stampTimed(-g, nets[2], nets[2]); // Naar A->D system
+        m.A[nets[2]][nets[2]].gdyn.push_back(&g);
 
+        //m.stampTimed(-(1/g), nets[2], nets[2]); // Naar A->D system
         // see the comment about v:C[%d] below
+
+
         m.b[nets[2]].gdyn.push_back(&stateVar);
 
         // this isn't quite right as state stores 2*c*v - i/t
@@ -363,15 +450,25 @@ struct Inductor : Component<2, 1>
     void update(MNASystem & m) final
     {
 
-
-        stateVar = m.b[nets[2]].lu;
+        g = 1/((2.*l)/m.tStep);
 
         // solve legit voltage from the pins
-        voltage = m.b[nets[0]].lu - m.b[nets[1]].lu;
+
+
+        stateVar = voltage + g * m.b[nets[2]].lu;
+
+        voltage = (m.b[nets[0]].lu - m.b[nets[1]].lu);
+        //std::cout << g << '\n';
+        //std::cout << stateVar << '\n';
+        //m.b[nets[2]].lu = stateVar;
+
+
+
+
 
         // then we can store this for display here
         // since this value won't be used at this point
-        m.b[nets[2]].lu = -l*voltage;
+        //m.b[nets[2]].lu = -l*(1/voltage);
     }
 
     void scaleTime(double told_per_new) final
@@ -383,8 +480,8 @@ struct Inductor : Component<2, 1>
         // note that this also works if the old rate is infinite
         // (ie. t0=0) when going from DC analysis to transient
         //
-        double qq = 2*l*voltage;
-        stateVar = qq + (stateVar - qq)*told_per_new;
+        //double qq = 2*l*voltage;
+        //stateVar = qq + (stateVar - qq)*told_per_new;
     }
 };
 

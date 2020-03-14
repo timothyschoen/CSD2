@@ -12,6 +12,7 @@ struct MNASystem
     double audioInput[512];
     double      time;
     long      ticks;
+    double      tStep;
 
     std::vector<double> digiValues;
 
@@ -36,6 +37,7 @@ struct MNASystem
 
         time = 0;
         ticks = 0;
+        tStep = 1./44100.; // set to samplerate as default to prevent dividing by 0
     }
 
     void stampTimed(double g, int r, int c)

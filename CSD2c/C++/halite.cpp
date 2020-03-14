@@ -212,6 +212,7 @@ struct NetList
         tStep = tStepSize;
         double stepScale = 1. / tStep;
         setStepScale(stepScale);
+        system.tStep = stepScale;
     }
 
     void resetTicks()
@@ -264,6 +265,9 @@ struct NetList
 
         //t1 = std::chrono::high_resolution_clock::now();
         solver.solve3(components, system);
+        //solver.solve5(components, system);
+        //solver.GS(system);
+        //solver.solve7(components, system);
 
         //t2 = std::chrono::high_resolution_clock::now();
         //duration = std::chrono::duration_cast<std::chrono::microseconds>( t2 - t1 ).count();
