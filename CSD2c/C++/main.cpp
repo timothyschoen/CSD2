@@ -293,6 +293,10 @@ int main(int argc, char* argv[])
         else if(!seglist[0].compare("voltage"))
             net->addComponent(new Voltage(stof(seglist[1]), std::stoi(seglist[2]), std::stoi(seglist[3])));
 
+        else if(!seglist[0].compare("transformer"))
+            net->addComponent(new Transformer(stod(seglist[1]), std::stoi(seglist[2]), std::stoi(seglist[3]), std::stoi(seglist[4]), std::stoi(seglist[5])));
+
+
         else if(!seglist[0].compare("click"))
             net->addComponent(new Click(stof(seglist[1]), std::stoi(seglist[2]), std::stoi(seglist[3])));
 

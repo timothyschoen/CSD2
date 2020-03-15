@@ -55,6 +55,14 @@ let types = {
     'colors': ['#229FD7', '#229FD7'],
     'code': " inductor, a0, i0, i1"
   },
+  'transformer': {
+    'inlets': 2,
+    'outlets': 2,
+    'args': 1,
+    'colors': ['#ff0000', '#000000', '#ff0000', '#000000'],
+    'code': " transformer, a0, i0, i1, i2, i3"
+  },
+
   'diode': {
     'inlets': 1,
     'outlets': 1,

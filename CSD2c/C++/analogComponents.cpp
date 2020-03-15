@@ -501,6 +501,43 @@ struct Voltage : Component<2, 1>
     }
 };
 
+struct Transformer : Component<4, 2>
+{
+    double b;
+    double nb;
+
+    Transformer(double ratio, int inP, int inN, int outP, int outN) : b(ratio)
+    {
+        pinLoc[0] = inN;
+        pinLoc[1] = inP;
+        pinLoc[2] = outN;
+        pinLoc[3] = outP;
+
+        double nb = -b;
+    }
+
+    void stamp(MNASystem & m) final
+    {
+
+
+        m.stampStatic(1, nets[5], nets[3]);
+        m.stampStatic(-1, nets[5], nets[4]);
+        m.stampStatic(1, nets[4], nets[4]);
+
+        m.stampStatic(1, nets[0], nets[4]);
+        m.stampStatic(-1, nets[1], nets[4]);
+        m.stampStatic(1, nets[2], nets[5]);
+        m.stampStatic(-1, nets[3], nets[5]);
+
+        m.A[nets[5]][nets[0]].gdyn.push_back(&nb);
+        m.A[nets[5]][nets[1]].gdyn.push_back(&b);
+
+        m.A[nets[4]][nets[5]].gdyn.push_back(&nb);
+    }
+
+};
+
+
 struct Click : Component<2, 1>
 {
     double v;
