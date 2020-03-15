@@ -10,7 +10,7 @@ MKLFLAGS=  -lm -ldl -llapack
 
 UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Linux)
-	AUFLAGS += -D__LINUX_ALSA__ -lasound
+	AUFLAGS += -D__LINUX_ALSA__ -lasound $(MKLFLAGS)
 endif
 ifeq ($(UNAME_S),Darwin)
 	AUFLAGS += -D__MACOSX_CORE__ -framework CoreMIDI -framework CoreAudio -framework CoreFoundation $(MKLFLAGS)
@@ -33,15 +33,13 @@ all: Halite
 
 #endif
 
-Halite : RtMidi.o, RtAudio.o csparse.o # $(GENDEPS)
-	$(CC) -o $@ $(CFLAGS) main.cpp csparse.o RtMidi.o RtAudio.o $(AUFLAGS)
+Halite : RtMidi.o, RtAudio.o # $(GENDEPS)
+	$(CC) -o $@ $(CFLAGS) main.cpp RtMidi.o RtAudio.o $(AUFLAGS)
 	mv Halite ../compiled/
 
 RtMidi.o, RtAudio.o: #AUflags shouldn't be necessary but it won't work on mac without
 	$(CC) -c $< $(CFLAGS) $(AUFLAGS) ./rtlibs/RtMidi.cpp ./rtlibs/RtAudio.cpp
 
-csparse.o:
-	gcc -c ./csparse/csparse.c
 
 clean:
 	mkdir -p ../compiled
