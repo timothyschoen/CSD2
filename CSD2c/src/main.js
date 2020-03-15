@@ -33,6 +33,15 @@ let types = {
     'colors': ['#ff0000', '#000000'],
     'code': " voltage, a0, i0, i1"
   },
+
+  'current': {
+    'inlets': 1,
+    'outlets': 1,
+    'args': 1,
+    'colors': ['#000000', '#ff0000'],
+    'code': " current, a0, i0, i1"
+  },
+
   'click': {
     'inlets': 0,
     'outlets': 2,

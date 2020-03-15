@@ -689,6 +689,7 @@ struct rtDigitalInput : Component<0, 0, 1>
     {
       m.setDigital(digiNets[0], (inbuffer)[tick]);
       tick++;
+
       if(tick >= 512)  {
         tick = tick - 512;
       }

@@ -63,17 +63,14 @@ struct MNASystem
     double getDigital(std::vector<int> inputs, double fallback = 0)
     {
         double accum = 0;
-        if (inputs.size() > 0)
-        {
+
             for (size_t i = 0; i < inputs.size(); i++)
             {
                 accum += digiValues[inputs[i]];
             }
-        }
-        else
-        {
-            accum = fallback;
-        }
+
+        accum += fallback*(inputs.size() == 0);
+
         return accum;
     }
 

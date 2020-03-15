@@ -501,10 +501,29 @@ struct Voltage : Component<2, 1>
     }
 };
 
+struct Current : Component<2>
+{
+    double a;
+
+    Current(double a, int l0, int l1) : a(a)
+    {
+        pinLoc[0] = l0;
+        pinLoc[1] = l1;
+    }
+
+    void stamp(MNASystem & m) final
+    {
+
+        m.b[nets[0]].g = -a;
+        m.b[nets[1]].g = a;
+
+    }
+};
+
+
 struct Transformer : Component<4, 2>
 {
     double b;
-    double nb;
 
     Transformer(double ratio, int inP, int inN, int outP, int outN) : b(ratio)
     {
@@ -512,8 +531,6 @@ struct Transformer : Component<4, 2>
         pinLoc[1] = inP;
         pinLoc[2] = outN;
         pinLoc[3] = outP;
-
-        double nb = -b;
     }
 
     void stamp(MNASystem & m) final
@@ -533,10 +550,6 @@ struct Transformer : Component<4, 2>
         m.stampStatic(b, nets[5], nets[1]);
         m.stampStatic(-b, nets[4], nets[5]);
 
-        //m.A[nets[5]][nets[0]].gdyn.push_back(&nb);
-        //m.A[nets[5]][nets[1]].gdyn.push_back(&b);
-
-        //m.A[nets[4]][nets[5]].gdyn.push_back(&nb);
     }
 
 };
@@ -627,57 +640,16 @@ struct Printer : Component<2>
         m.stampStatic(+g, nets[1], nets[1]);
 
     }
-    //current = voltage/resistance
+    //current = voltagedrop/resistance
     void update(MNASystem & m)
     {
         if(m.ticks % 4410 == 0)
         {
             std::cout << "Voltage: " << m.b[nets[0]].lu << "V" << std::endl;
-            std::cout << "Ampere: " << m.A[nets[0]][nets[1]].lu << "A" << std::endl;
-            //prelu waardes zijn altijd 1... m.A.lu is altijd 0, 1 of -1 (dit is vergelijkbaar met een bepaald mna systeem!!)
-            // Overweeg dat de LU solution een vector zou moeten zijn (met voltage en current)
-            // Waarom is lu hier een int en geen vector? Systems zijn wel matrices en vectors, maar zijn onopgelost...
+
         }
     }
 };
-
-// function voltage generator
-struct Function : Component<2,1>
-{
-    typedef double (*FuncPtr)(double t);
-
-    FuncPtr fn;
-    double  v;
-
-    Function(FuncPtr fn, int l0, int l1) : fn(fn)
-    {
-        pinLoc[0] = l0;
-        pinLoc[1] = l1;
-
-        v = fn(0);
-    }
-
-    void stamp(MNASystem & m) final
-    {
-        // this is identical to voltage source
-        // except voltage is dynanic
-        m.stampStatic(-1, nets[0], nets[2]);
-        m.stampStatic(+1, nets[1], nets[2]);
-
-        m.stampStatic(+1, nets[2], nets[0]);
-        m.stampStatic(-1, nets[2], nets[1]);
-
-        m.b[nets[2]].gdyn.push_back(&v);
-
-    }
-
-    void update(MNASystem & m) final
-    {
-        v = fn(m.time);
-    }
-
-};
-
 
 struct InputSample : Component<2,1>
 {
@@ -713,8 +685,7 @@ struct InputSample : Component<2,1>
 
     void update(MNASystem & m) final
     {
-        if(m.ticks > 0)
-            v = audioFile.samples[0][fmod(m.ticks, numSamples)]*amplitude;
+        v = audioFile.samples[0][fmod(m.ticks, numSamples)]*amplitude;
 
 
 
