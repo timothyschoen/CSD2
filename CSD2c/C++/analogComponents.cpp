@@ -490,7 +490,7 @@ struct InputSample : Component<2,1>
 
     void update(MNASystem & m) final
     {
-
+        currentSample++;
         if (currentSample >= numSamples) currentSample = currentSample - numSamples;
 
         v = audioFile.samples[0][currentSample]*amplitude;

@@ -61,6 +61,10 @@ if (!fs.existsSync(home)) {
     if (err) throw err;
   });
 
+  fs.copyFile(__dirname + '/../saves/Examples/RIHighpass.ncl', home + '/Saves/Examples/RIHighpass.ncl', (err) => {
+    if (err) throw err;
+  });
+
 }
 
 
