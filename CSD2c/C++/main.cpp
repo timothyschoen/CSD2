@@ -284,9 +284,6 @@ int main(int argc, char* argv[])
         else if(!seglist[0].compare("capacitor"))
             net->addComponent(new Capacitor(stod(seglist[1]), std::stoi(seglist[2]), std::stoi(seglist[3])));
 
-        else if(!seglist[0].compare("varcap"))
-            net->addComponent(new VariableCapacitor(stof(seglist[1]), std::stoi(seglist[2]), std::stoi(seglist[3]), seglist[4]));
-
         else if(!seglist[0].compare("inductor"))
             net->addComponent(new Inductor(stod(seglist[1]), std::stoi(seglist[2]), std::stoi(seglist[3])));
 
@@ -317,12 +314,6 @@ int main(int argc, char* argv[])
 
         else if(!seglist[0].compare("potentiometer"))
             net->addComponent(new Potentiometer(stof(seglist[1]), stoi(seglist[2]), stoi(seglist[3]), stoi(seglist[4]), seglist[5]));
-
-        else if(!seglist[0].compare("print"))
-            net->addComponent(new Printer(std::stoi(seglist[1]), std::stoi(seglist[2])));
-
-        else if(!seglist[0].compare("delay"))
-            net->addComponent(new AnalogDelay(std::stoi(seglist[1]), std::stof(seglist[2]), std::stoi(seglist[3]), seglist[4], std::stoi(seglist[5])));
 
 
         else if(!seglist[0].compare("+-")  ||

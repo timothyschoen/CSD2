@@ -118,14 +118,6 @@ let types = {
     'args': 0,
     'code': " varres, i0, i2, d1"
   },
-  'varcap': {
-    'inlets': 2,
-    'outlets': 1,
-    'datatypes': ['analog', 'digital', 'analog'],
-    'colors': ['#229FD7', '#229FD7'],
-    'args': 1,
-    'code': " varcap, a0, i0, i2, d1"
-  },
 
   'pot': {
     'inlets': 2,
@@ -148,13 +140,6 @@ let types = {
     'args': 1,
     'colors': ['#229FD7'],
     'code': " probe, i0, i1, a0"
-  },
-  'print': {
-    'inlets': 1,
-    'outlets': 1,
-    'colors': ['#229FD7', '#229FD7'],
-    'args': 0,
-    'code': " print, i0, i1"
   },
 
   'print-': {
@@ -860,6 +845,7 @@ function generatesave(save, path) {
       }]
     });
   }
+  if(path != undefined && !path.length == 0) {
   let boxnames = [];
   for (let i = 0; i < boxes.length; i++) {
     boxnames.push([i, boxes[i].getname(), boxes[i].getposition()])
@@ -873,7 +859,9 @@ function generatesave(save, path) {
   if (save) {
     fs.writeFileSync(path, JSON.stringify(savefile));
   }
+
   return savefile;
+}
 
 }
 
@@ -907,9 +895,11 @@ function loadfile(e, path) {
       properties: ['openFile', 'multiSelections']
     });
   }
+  if (path != undefined && !path.length == 0) {
   localStorage.setItem("load", path);
   window.onbeforeunload();
   location.reload(true);
+}
 }
 
 // Process keyboard commands and shortcuts

@@ -22,57 +22,7 @@ struct Resistor : Component<2>
     }
 };
 
-struct AnalogDelay : Component<2, 1, 1>
-{
-    double  v;
-    int t;
-    float dw;
-    int currentSample;
-    double buf[88200];
 
-    AnalogDelay(int time, float balance, int l0, std::string d0, int l1)
-    {
-        //digiPins[0] = d0;
-        pinLoc[0] = l0;
-        pinLoc[1] = l1;
-        t = time;
-        dw = balance;
-        currentSample = 0;
-        v = 0;
-    }
-
-    void stamp(MNASystem & m) final
-    {
-
-        m.stampStatic(-dw, nets[0], nets[2]);
-        m.stampStatic(+1, nets[1], nets[2]);
-
-        m.stampStatic(+dw, nets[2], nets[0]);
-        m.stampStatic(-1, nets[2], nets[1]);
-
-        m.b[nets[2]].gdyn.push_back(&v);
-
-    }
-
-    void update(MNASystem & m) final
-    {
-        currentSample = m.ticks;
-        // Don't delay while loading
-        if (currentSample >= 88200) currentSample = currentSample-88200;
-
-
-
-        //digiNets[0] += currentSample;
-
-        //Write current value
-        buf[currentSample] = m.b[nets[0]].lu;
-
-        // Read buffered value
-        v = buf[(currentSample-t+88200)%88200];
-
-    }
-
-};
 struct VariableResistor : Component<2, 0, 1>
 {
     double  r;
@@ -313,31 +263,7 @@ struct Inductor : Component<2, 1>
     void stamp(MNASystem & m) final
     {
 
-        // we can use a trick here, to get the capacitor to
-        // work on it's own line with direct trapezoidal:
-        //
-        // | -g*t  +g*t  +t | v+
-        // | +g*t  -g*t  -t | v-
-        // | +2*g  -2*g  -1 | state
-        //
-        // the logic with this is that for constant timestep:
-        //
-        //  i1 = g*v1 - s0   , s0 = g*v0 + i0
-        //  s1 = 2*g*v1 - s0 <-> s0 = 2*g*v1 - s1
-        //
-        // then if we substitute back:
-        //  i1 = g*v1 - (2*g*v1 - s1)
-        //     = s1 - g*v1
-        //
-        // this way we just need to copy the new state to the
-        // next timestep and there's no actual integration needed
-        //
-        // the "half time-step" error here means that our state
-        // is 2*c*v - i/t but we fix this for display in update
-        // and correct the current-part on time-step changes
 
-        // trapezoidal needs another factor of two for the g
-        // since c*(v1 - v0) = (i1 + i0)/(2*t), where t = 1/T
 
 
         g = 1/((2.*l)/m.tStep);
@@ -348,21 +274,11 @@ struct Inductor : Component<2, 1>
         m.stampStatic(-1, nets[2], nets[0]);  // Naar A->C system
         m.stampStatic(+1, nets[2], nets[1]);
 
-        //m.stampTimed(g, nets[2], nets[2]);
-
-
         m.A[nets[2]][nets[2]].gdyn.push_back(&g);
-
-        //m.stampTimed(-(1/g), nets[2], nets[2]); // Naar A->D system
-        // see the comment about v:C[%d] below
 
 
         m.b[nets[2]].gdyn.push_back(&stateVar);
 
-        // this isn't quite right as state stores 2*c*v - i/t
-        // however, we'll fix this in updateFull() for display
-
-        //m.nodes[nets[2]].scale = 1 / c;
     }
 
     void update(MNASystem & m) final
@@ -370,23 +286,12 @@ struct Inductor : Component<2, 1>
 
         g = 1/((2.*l)/m.tStep);
 
-        // solve legit voltage from the pins
-
 
         stateVar = voltage + g * m.b[nets[2]].lu;
 
+        // solve legit voltage from the pins
         voltage = (m.b[nets[0]].lu - m.b[nets[1]].lu);
-        //std::cout << g << '\n';
-        //std::cout << stateVar << '\n';
-        //m.b[nets[2]].lu = stateVar;
 
-
-
-
-
-        // then we can store this for display here
-        // since this value won't be used at this point
-        //m.b[nets[2]].lu = -l*(1/voltage);
     }
 
     void scaleTime(double told_per_new) final
@@ -397,83 +302,9 @@ struct Inductor : Component<2, 1>
         //
         // note that this also works if the old rate is infinite
         // (ie. t0=0) when going from DC analysis to transient
-        //
+        // ?????????
         //double qq = 2*l*voltage;
         //stateVar = qq + (stateVar - qq)*told_per_new;
-    }
-};
-
-struct VariableCapacitor : Component<2, 1, 1> // doesn't seem to do anything atm
-{
-    double max;
-    double c;
-    double g;
-    double ng;
-    double twog;
-    double ntwog;
-
-    double stateVar;
-    double voltage;
-
-    VariableCapacitor(double c, int l0, int l1, std::string d0) : c(c)
-    {
-        pinLoc[0] = l0;
-        pinLoc[1] = l1;
-        digiPins[0] = d0;
-        max = c;
-
-        stateVar = 0;
-        voltage = 0;
-    }
-
-    void stamp(MNASystem & m) final
-    {
-
-
-        m.stampTimed(+1, nets[0], nets[2]);
-        m.stampTimed(-1, nets[1], nets[2]);
-
-        m.A[0][0].gdyntimed.push_back(&ng);
-        m.A[0][1].gdyntimed.push_back(&g);
-        m.A[1][0].gdyntimed.push_back(&g);
-        m.A[1][1].gdyntimed.push_back(&ng);
-
-        m.A[2][0].gdyntimed.push_back(&twog);
-        m.A[2][1].gdyntimed.push_back(&ntwog);
-
-
-        m.stampStatic(-1, nets[2], nets[2]);
-
-        m.b[nets[2]].gdyn.push_back(&stateVar);
-
-
-    }
-
-    void updateInput(MNASystem & m)
-    {
-        c = max * m.getDigital(digiNets[0]);
-        g = 2. * c;
-        ng = -g;
-        twog = 2. * g;
-        ntwog = 2. * ng;
-
-    }
-
-    void update(MNASystem & m) final
-    {
-        //m.nodes[nets[2]].scale = 1. / c;
-
-        stateVar = m.b[nets[2]].lu;
-
-        voltage = m.b[nets[0]].lu - m.b[nets[1]].lu;
-
-        m.b[nets[2]].lu = c*voltage;
-    }
-
-    void scaleTime(double told_per_new) final
-    {
-        double qq = 2*c*voltage;
-        stateVar = qq + (stateVar - qq)*told_per_new;
     }
 };
 
@@ -622,34 +453,6 @@ struct Probe : Component<2, 1>
 };
 
 
-struct Printer : Component<2>
-{
-    float g = 2;
-    Printer(int l0, int l1)
-    {
-        pinLoc[0] = l0;
-        pinLoc[1] = l1;
-    }
-
-    void stamp(MNASystem & m) final
-    {
-
-        m.stampStatic(+g, nets[0], nets[0]);
-        m.stampStatic(-g, nets[0], nets[1]);
-        m.stampStatic(-g, nets[1], nets[0]);
-        m.stampStatic(+g, nets[1], nets[1]);
-
-    }
-    //current = voltagedrop/resistance
-    void update(MNASystem & m)
-    {
-        if(m.ticks % 4410 == 0)
-        {
-            std::cout << "Voltage: " << m.b[nets[0]].lu << "V" << std::endl;
-
-        }
-    }
-};
 
 struct InputSample : Component<2,1>
 {
@@ -657,6 +460,7 @@ struct InputSample : Component<2,1>
     double v;
     double amplitude;
     int numSamples;
+    int currentSample;
     AudioFile<double> audioFile;
 
     InputSample(std::string path, double inamp, int l0, int l1)
@@ -666,6 +470,7 @@ struct InputSample : Component<2,1>
         amplitude = inamp;
         audioFile.load(path);
         numSamples = audioFile.getNumSamplesPerChannel();
+        currentSample = 0;
         v = 0;
     }
 
@@ -685,9 +490,10 @@ struct InputSample : Component<2,1>
 
     void update(MNASystem & m) final
     {
-        v = audioFile.samples[0][fmod(m.ticks, numSamples)]*amplitude;
 
+        if (currentSample >= numSamples) currentSample = currentSample - numSamples;
 
+        v = audioFile.samples[0][currentSample]*amplitude;
 
     }
 
@@ -998,27 +804,23 @@ struct OPA : Component<3, 1>
         // the DC voltage gain
         amp = 1;
         vmax = 0.02;
-
-
-
     }
 
 
     void stamp(MNASystem & m)
     {
 
-        // This is a way faster method to simulate op-amps
-        m.A[nets[3]][nets[0]].gdyn.push_back(&g);
-        m.A[nets[3]][nets[1]].gdyn.push_back(&ng);
-        m.stampStatic(-1, nets[3], nets[2]);
+      m.stampStatic(-1, nets[3], nets[2]);
+      m.stampStatic(1, nets[2], nets[3]);
 
-        m.stampStatic(1, nets[2], nets[3]);
+      // This is a way faster method to simulate op-amps
+      m.A[nets[3]][nets[0]].gdyn.push_back(&g);
+      m.A[nets[3]][nets[1]].gdyn.push_back(&ng);
 
-        m.b[nets[3]].gdyn.push_back(&v);
+
+      m.b[nets[3]].gdyn.push_back(&v);
 
         // http://qucs.sourceforge.net/tech/node67.html  !!!!!!!!!!!
-
-
 
     }
     void update(MNASystem & m) final
@@ -1026,9 +828,7 @@ struct OPA : Component<3, 1>
         g = amp/(1 + pow(((2*M_PI)/2*vmax*amp*(m.b[0].lu-m.b[1].lu)), 2));
         ng = -g;
 
-        // Alternatively, we can set the voltage at m.b[nets[3]] to 0 but that doesn't allow self-oscillation to happen
         v = g * (m.b[0].lu-m.b[1].lu) - (vmax*(2/M_PI)*atan((M_PI/(2*vmax))*amp*(m.b[0].lu-m.b[1].lu)));
-
 
     }
 

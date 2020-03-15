@@ -689,10 +689,8 @@ struct rtDigitalInput : Component<0, 0, 1>
     {
       m.setDigital(digiNets[0], (inbuffer)[tick]);
       tick++;
+      tick = tick & 511;
 
-      if(tick >= 512)  {
-        tick = tick - 512;
-      }
 
 
 
@@ -1029,6 +1027,9 @@ struct digitalDelay : Component<0, 0, 3>
         else t = 10000;
         currentSample = 0;
         smoothTime = t;
+
+        bufSize = pow(2, ceil(log(bufSize)/log(2)))-1; //prepare for bitwise AND
+
         buf.assign(bufSize, 0);
     }
 
@@ -1037,9 +1038,7 @@ struct digitalDelay : Component<0, 0, 3>
 
     void updateInput(MNASystem & m) final
     {
-        t = (int)m.getDigital(digiNets[1]);
-
-        if (t>=bufSize) t = bufSize;
+        t = (int)m.getDigital(digiNets[1]) + (t>=bufSize)*bufSize; // trying to avoid if statements
 
         //Write current value
         buf[currentSample] = m.getDigital(digiNets[0]);
@@ -1050,14 +1049,12 @@ struct digitalDelay : Component<0, 0, 3>
     {
 
         currentSample++;
+        currentSample = currentSample & bufSize; // Bitwise AND, faster than modulo or if-statements
 
-        if (currentSample >= bufSize) currentSample = currentSample-bufSize;
-        //if(m.ticks < t) t = 0;
+        smoothTime = ((1-a)*smoothTime + a * t); // smoothing readhead movement
 
-        smoothTime = ((1-a)*smoothTime + a * t);
-
-        if (currentSample-smoothTime < 0) readHead = (int)currentSample-smoothTime+bufSize;
-        else readHead = (int)currentSample-smoothTime;
+        readHead = (int)currentSample-smoothTime;
+        readHead += (readHead<=0)*bufSize;
 
         m.setDigital(digiNets[2], buf[readHead]);
 
@@ -1077,7 +1074,7 @@ struct digitalPrinter : Component<0, 0, 1>
         if(a_args.size() > 0)
             perTicks = std::stoi(a_args[0]);
         else
-            perTicks = 20;
+            perTicks = 22050;
 
     }
 
