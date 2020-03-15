@@ -33,14 +33,15 @@ all: Halite
 
 #endif
 
-Halite : RtMidi.o, RtAudio.o # $(GENDEPS)
-	$(CC) -o $@ $(CFLAGS) main.cpp RtMidi.o RtAudio.o $(AUFLAGS)
+Halite : RtMidi.o, RtAudio.o csparse.o # $(GENDEPS)
+	$(CC) -o $@ $(CFLAGS) main.cpp csparse.o RtMidi.o RtAudio.o $(AUFLAGS)
 	mv Halite ../compiled/
 
 RtMidi.o, RtAudio.o: #AUflags shouldn't be necessary but it won't work on mac without
 	$(CC) -c $< $(CFLAGS) $(AUFLAGS) ./rtlibs/RtMidi.cpp ./rtlibs/RtAudio.cpp
 
-
+csparse.o:
+	gcc -c ./csparse/csparse.c
 
 clean:
 	mkdir -p ../compiled

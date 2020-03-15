@@ -1,8 +1,40 @@
 
-//#include <Accelerate/Accelerate.h>
-#include </opt/intel/compilers_and_libraries_2020.0.166/mac/mkl/include/mkl.h>
+#ifdef __linux__
+  #if __has_include("/opt/intel/compilers_and_libraries_2020.0.166/linux/mkl/include/mkl.h")
+    #include </opt/intel/compilers_and_libraries_2020.0.166/linux/mkl/include/mkl.h>
+  #endif
+
+#elif __APPLE__
+  #if __has_include("/opt/intel/compilers_and_libraries_2020.0.166/mac/mkl/include/mkl.h")
+    #include </opt/intel/compilers_and_libraries_2020.0.166/mac/mkl/include/mkl.h>
+  #endif
+#endif
+
+
 #include <iostream>
+#include <assert.h>
+
 #include "./IterativeLinearSolvers.h"
+#include "SparseLU"
+
+// prerequisites
+#include "./freeaml/Matrix.h"
+#include "./freeaml/Vector.h"
+#include "./freeaml/SparseMatrix.h"
+
+// Solvers
+#include "./freeaml/IncompleteCholeskyConjugateGradient.h"
+#include "./freeaml/SuccessiveOverRelaxation.h"
+#include "./freeaml/GaussianElimination.h"
+#include "./freeaml/BidiagonalFactorization.h"
+#include "./freeaml/GeneralizedMinimumResidual.h"
+#include "./freeaml/HessenbergFactorization.h"
+#include "./freeaml/MinimumResidual.h"
+#include "./freeaml/PLUFactorization.h"
+#include "./freeaml/SteepestDescent.h"
+#include "./freeaml/WeightedJacobi.h"
+
+#include "./ilupp/iluplusplus.h"
 
 
 
@@ -10,18 +42,102 @@
 
 
 
-struct MNASolver
+
+extern "C" {    // another way
+      #include "csparse.h"
+    };
+
+void settozero(double *vec,int size){
+	int i;
+	for(i = 0; i < size ; i++)
+		vec[i] = 0.0;
+}
+
+
+int matrix_symmetric(double *mat, int size)
 {
+	int i = 0;
+	int j = 0;
 
+	for ( i=0; i<size; i++ )
+		for ( j=0; j<i; j++ )
+			if ( fabs(mat[i*size+j]- mat[j*size+i]) > 1e-10 )
+				return 0;
+	return 1;
+}
+
+double linear_interpolate(double x, double x0, double y0, double x1, double y1)
+{
+  return y0 + ((x-x0)*y1 - (x-x0)*y0)/(x1-x0);
+}
+
+void multiply_vector_scalar(double *vec, double scalar, double* output, int size)
+{
+	int i =0;
+
+	for (i=0; i<size; i++ )
+		output[i] = vec[i] * scalar;
+}
+
+
+double dot_vectors(double *v1, double *v2, int size ) {
+	int i =0;
+	double output = 0;
+
+	for (i=0; i<size; i++ )
+		output+= v1[i] * v2[i];
+	return output;
+}
+
+void multiply_vector_vector(double *v1, double *v2, double *output, int size)
+{
+	int i=0;
+
+	for (i=0; i<size; i++ )
+		output[i] = v1[i] * v2[i];
+}
+
+void sub_vectors(double *v1, double *v2, double *output, int size) {
+	int i=0;
+
+	for (i=0; i<size; i++ )
+		output[i] = v1[i] - v2[i];
+}
+
+void add_vectors(double *v1, double *v2, double *output, int size) {
+	int i=0;
+
+	for (i=0; i<size; i++ )
+		output[i] = v1[i] + v2[i];
+}
+
+void multiply_matrix_vector(double *mat, double *vector, double *output, int size )
+{
+	int i, j;
+
+	for (i=0; i<size; i++ ) {
+		output[i] = 0;
+
+		for (j=0; j<size; j++ )
+			output[i]+= mat[i*size+j] * vector[j];
+	}
+}
+
+
+
+
+class MNASolver
+{
+public:
     int nets;
     int rNets;
     int maxIter = 20;
     double tStep;
-    float *systemA;
+    double *systemA;
     float *systemA_lu;
     int *pivot;
-    float *systemB;
-    float *systemX;
+    double *systemB;
+    double *systemX;
     float *r;
     float *c;
     float *work;
@@ -36,8 +152,36 @@ struct MNASolver
     int zero = 0;
     int one = 1;
     float room;
-    Eigen::BiCGSTAB<Eigen::MatrixXd> solver;
-    Eigen::ConjugateGradient<Eigen::MatrixXd, Eigen::Lower|Eigen::Upper> cg;
+    double *diag;
+    double *_r;
+    double *_p;
+    double *_temp;
+    double *_Ap ;
+    double *_z ;
+
+		freeaml::Vector<double> sysA;
+
+		freeaml::SparseMatrix<double> A;
+
+		freeaml::Vector<double> x;
+
+		freeaml::Vector<double> b;
+
+    void (*fcnPtr)(std::vector<IComponent*> &, MNASystem &) {};
+
+    //static void (MNASolver::*solverPtr)(std::vector<IComponent*> &components, MNASystem & m);
+
+    //Eigen::SparseLU<Eigen::SparseMatrix<double>> solver;
+    //Eigen::IncompleteLUT<Eigen::SparseMatrix<double> > solver;
+    Eigen::BiCGSTAB<Eigen::SparseMatrix<double>, Eigen::IncompleteLUT<double> >  solver;
+    //Eigen::ConjugateGradient<Eigen::MatrixXd, Eigen::Lower|Eigen::Upper> cg;
+
+		//freeaml::SuccessiveOverRelaxation<double> lss(20, 1e-2, 0.4);
+		//freeaml::IncompleteCholeskyConjugateGradient lss(5, 1e-9);
+		//freeaml::BiconjugateGradientStabilized<double> lss(50, 1e-12);
+
+
+
     /*
       MNASolver(int size) : nets(size-1)
       {
@@ -55,73 +199,55 @@ public:
         rNets = size-1;
         tStep = timestep;
 
-         systemA = new float[rNets*rNets];
+
+         systemA = new double[rNets*rNets];
+				 diag = new double[rNets];
          systemA_lu = new float[rNets*rNets];
          pivot = new int[rNets*rNets];
-         systemB = new float[rNets];
-         systemX = new float[rNets];
+         systemB = new double[rNets];
+         systemX = new double[rNets];
          r = new float[rNets];
          c = new float[rNets];
          work = new float[rNets*rNets];
          iwork = new int[rNets*rNets];
 
+         solver.setMaxIterations(1);
+         solver.setTolerance(1e-4);
+
+
+					 _z = (double* ) malloc(rNets* sizeof(double));
+					 _temp = (double* ) malloc(rNets* sizeof(double));
+					 _Ap = (double* ) malloc(rNets* sizeof(double));
+					 _p = (double* ) malloc(rNets* sizeof(double));
+					 _r = (double* ) malloc(rNets* sizeof(double));
+
+					 sysA = freeaml::Vector<double>(systemA, systemA+(rNets*rNets));
+	 				A = freeaml::SparseMatrix<double>(rNets, rNets, sysA);
+	 				x = freeaml::Vector<double>(systemX, systemX+rNets);
+	 				b = freeaml::Vector<double>(systemB, systemB+rNets);
+
 
          for (int i = 0; i < rNets; i++ ) {
-             systemB[i] = (float)m.b[i+1].lu;
+             systemB[i] = m.b[i+1].lu;
+             systemX[i] = 0;
              for (int j = 0; j < rNets; j++ ) {
-                 systemA[(i*(rNets))+j] = (float)m.A[j+1][i+1].lu; //klopt dit??
+                 systemA[(i*(rNets))+j] = m.A[j+1][i+1].lu; //klopt dit??
              }
          }
 
+				 for (int i = 0; i < rNets; i++) {
+						 diag[i] = m.A[i+1][i+1].lu; // diagonal
+					 }
 
 
-
-
-    }
-
-
-    void solve(MNASystem & m)
-    {
-
-        updatePre(tStep, m);
-
-
-        std::vector<double> systemA((rNets)*(rNets));
-        std::vector<double> systemB(rNets);
-
-        for (int i = 0; i < rNets; i++ ) {
-            systemB[i] = m.b[i+1].lu;
-            for (int j = 0; j < rNets; j++ ) {
-                systemA[(i*(rNets))+j] = m.A[j+1][i+1].lu; //klopt dit??
-            }
-        }
 
 
 
     }
 
 
-    void solve2(MNASystem & m)
-    {
-        updatePre(tStep, m);
 
-
-        std::vector<double> systemA((rNets)*(rNets));
-        std::vector<double> systemB(rNets);
-
-        for (int i = 0; i < rNets; i++ ) {
-            systemB[i] = m.b[i+1].lu;
-            for (int j = 0; j < rNets; j++ ) {
-                systemA[(i*(rNets))+j] = m.A[j+1][i+1].lu; //klopt dit??
-            }
-        }
-
-
-
-
-    }
-
-    void solve3(std::vector<IComponent*> &components, MNASystem & m)
+    void solve(std::vector<IComponent*> &components, MNASystem & m)
     {
         int iter;
 
@@ -149,79 +275,112 @@ public:
 
 
 
-    void solve4(MNASystem & m)
-        {
-          updatePre(tStep, m);
 
-          Eigen::VectorXd x(nets);
-          //Eigen::Map<Eigen::MatrixXf> mA(systemA, rNets, rNets);
-
-          //Eigen::Map<Eigen::VectorXf> mB(systemB, rNets);
-
-          Eigen::MatrixXd mA(nets, nets);
-          Eigen::VectorXd mB(nets);
-
-          for (size_t i = 1; i < nets; i++) {
-            mB(i-1) = m.b[i].lu;
-            x(i) = 0;
-            for (size_t j = 1; j < nets; j++) {
-              mA(i-1, j-1) = m.A[j][i].lu;
-            }
-          }
-
-          cg.compute(mA);
-          x = cg.solve(mB);
-          //solver.compute(mA);
-          //x = solver.solve(mB);
-
-          for (size_t i = 0; i < nets; i++) {
-            std::cout << x(i) << '\n';
-            m.b[i+1].lu = x(i);
-          }
-
-        }
-
-
-
-        void solve5(std::vector<IComponent*> &components, MNASystem & m)
+        void solveMKL(std::vector<IComponent*> &components, MNASystem & m)
         {
 
                   int iter;
 
-                  for(iter = 0; iter < maxIter; ++iter)
+                  for(iter = 0; iter < 1; ++iter)
                   {
 
-                    updatePre(tStep, m);
+
+											updatePre(tStep, m);
 
 
+											for (int i = 0; i < rNets; i++ ) {
+													systemB[i] = m.b[i+1].lu;
+													for (int j = 0; j < rNets; j++ ) {
+															systemA[(i*(rNets))+j] = m.A[j+1][i+1].lu;
+													}
+											}
 
-                      //sgesv_(&rNets, &one, systemA, &rNets, pivot, systemB, &rNets, &info);
+												dgesv_(&rNets, &one, systemA, &rNets, pivot, systemB, &rNets, &info);
+												m.b[0].lu = 0;
+												for (size_t i = 1; i < nets; i++) {
+													 m.b[i].lu = systemB[i-1];
 
-
-
-
-                     //ssysv_rk_("UPPER", &rNets, &one, systemA, &rNets, &room, pivot, systemB, &rNets, work, iwork, &info);
-
-                       //la_solve();
-
-                       m.b[0].lu = 0;
-                       for (size_t i = 1; i < nets; i++) {
-                          m.b[i].lu = systemB[i-1];
-
-                      }
-                      //std::cout << "nieuwe iter "<< iter << '\n';
+											 }
 
                       if(newton(components, m)) break;
 
-                      e = 'E';
                 }
 
-                  //e = 'F';
       }
 
 
-      void solve6(std::vector<IComponent*> &components, MNASystem & m)
+      void solveEigen(std::vector<IComponent*> &components, MNASystem & m)
       {
+
+          Eigen::VectorXd mX(rNets);
+
+
+          Eigen::SparseMatrix<double> mA(rNets, rNets);
+          Eigen::VectorXd mB(rNets);
+
+          for (size_t i = 0; i < rNets; i++) {
+            mX(i) = m.b[i+1].lu;
+          }
+
+          updatePre(tStep, m);
+
+          for (int i = 0; i < rNets; i++ ) {
+              mB(i) = m.b[i+1].lu;
+              for (int j = 0; j < rNets; j++ ) {
+                  mA.coeffRef(i, j) = m.A[j+1][i+1].lu; //klopt dit??
+              }
+          }
+
+          solver.compute(mA);
+
+          mX = solver.solve(mB);
+
+          for (size_t i = 0; i < rNets; i++) {
+            m.b[i+1].lu = mX(i);
+          }
+        }
+
+
+
+      void solveAML(std::vector<IComponent*> &components, MNASystem & m)
+      {
+
+				for (int i = 0; i < rNets; i++ ) {
+						x[i] = m.b[i+1].lu;
+				}
+				//std::vector<double> sysA(rNets);
+				updatePre(tStep, m);
+
+        //
+
+        luFactor(m);
+
+        freeaml::GeneralizedMinimumResidual<double> lss(1, 1e-5);
+        //freeaml::GaussianElimination lss;
+
+				for (int i = 0; i < rNets; i++ ) {
+						b[i] = m.b[i+1].lu;
+						for (int j = 0; j < rNets; j++ ) {
+								systemA[(i*(rNets))+j] = m.A[i+1][j+1].lu;
+						}
+				}
+
+				sysA = freeaml::Vector<double>(systemA, systemA+(rNets*rNets));
+				A = freeaml::SparseMatrix<double>(rNets, rNets, sysA);
+				//x = freeaml::Vector<double>(systemX, systemX+rNets);
+				//b = freeaml::Vector<double>(systemB, systemB+rNets);
+
+
+				lss.solve(A, x, b);
+
+				for (int i = 0; i < rNets; i++ ) {
+							 m.b[i+1].lu = x[i];
+
+				}
+
+
+				double residual = (A * x - b).l2_norm();
+
 
     }
 

@@ -173,6 +173,7 @@ struct NetList
 {
     typedef std::vector<IComponent*> ComponentList;
     double* output;
+
     NetList(int nodes, int diginodes) : nets(nodes), states(0), diginets(diginodes)
     {
         output = new double[2];
@@ -198,6 +199,8 @@ struct NetList
         setStepScale((double)1/44100);
         tStep = (double)1/44100;
         solver.setSize(nets, tStep, system);
+
+
     }
 
 
@@ -264,10 +267,11 @@ struct NetList
 
 
         //t1 = std::chrono::high_resolution_clock::now();
-        solver.solve3(components, system);
+        //if(system.ticks < 44100) solver.solve3(components, system);
+
+        solver.solveMKL(components, system);
         //solver.solve5(components, system);
-        //solver.GS(system);
-        //solver.solve7(components, system);
+        //solver.solve3(components, system);
 
         //t2 = std::chrono::high_resolution_clock::now();
         //duration = std::chrono::duration_cast<std::chrono::microseconds>( t2 - t1 ).count();
@@ -304,8 +308,8 @@ protected:
     ComponentList   components;
 
     MNASystem       system;
-    MNASystem       system2;
     MNASolver       solver;
+
 
     void update()
     {
