@@ -14,6 +14,7 @@
 #include <iostream>
 #include <assert.h>
 
+/*
 #include "./IterativeLinearSolvers.h"
 #include "SparseLU"
 
@@ -46,84 +47,7 @@
 extern "C" {    // another way
       #include "csparse.h"
     };
-
-void settozero(double *vec,int size){
-	int i;
-	for(i = 0; i < size ; i++)
-		vec[i] = 0.0;
-}
-
-
-int matrix_symmetric(double *mat, int size)
-{
-	int i = 0;
-	int j = 0;
-
-	for ( i=0; i<size; i++ )
-		for ( j=0; j<i; j++ )
-			if ( fabs(mat[i*size+j]- mat[j*size+i]) > 1e-10 )
-				return 0;
-	return 1;
-}
-
-double linear_interpolate(double x, double x0, double y0, double x1, double y1)
-{
-  return y0 + ((x-x0)*y1 - (x-x0)*y0)/(x1-x0);
-}
-
-void multiply_vector_scalar(double *vec, double scalar, double* output, int size)
-{
-	int i =0;
-
-	for (i=0; i<size; i++ )
-		output[i] = vec[i] * scalar;
-}
-
-
-double dot_vectors(double *v1, double *v2, int size ) {
-	int i =0;
-	double output = 0;
-
-	for (i=0; i<size; i++ )
-		output+= v1[i] * v2[i];
-	return output;
-}
-
-void multiply_vector_vector(double *v1, double *v2, double *output, int size)
-{
-	int i=0;
-
-	for (i=0; i<size; i++ )
-		output[i] = v1[i] * v2[i];
-}
-
-void sub_vectors(double *v1, double *v2, double *output, int size) {
-	int i=0;
-
-	for (i=0; i<size; i++ )
-		output[i] = v1[i] - v2[i];
-}
-
-void add_vectors(double *v1, double *v2, double *output, int size) {
-	int i=0;
-
-	for (i=0; i<size; i++ )
-		output[i] = v1[i] + v2[i];
-}
-
-void multiply_matrix_vector(double *mat, double *vector, double *output, int size )
-{
-	int i, j;
-
-	for (i=0; i<size; i++ ) {
-		output[i] = 0;
-
-		for (j=0; j<size; j++ )
-			output[i]+= mat[i*size+j] * vector[j];
-	}
-}
-
-
+ */
 
 
 class MNASolver
@@ -159,6 +83,8 @@ public:
     double *_Ap ;
     double *_z ;
 
+    /*
+
 		freeaml::Vector<double> sysA;
 
 		freeaml::SparseMatrix<double> A;
@@ -166,14 +92,11 @@ public:
 		freeaml::Vector<double> x;
 
 		freeaml::Vector<double> b;
-
-    void (*fcnPtr)(std::vector<IComponent*> &, MNASystem &) {};
-
-    //static void (MNASolver::*solverPtr)(std::vector<IComponent*> &components, MNASystem & m);
+*/
 
     //Eigen::SparseLU<Eigen::SparseMatrix<double>> solver;
     //Eigen::IncompleteLUT<Eigen::SparseMatrix<double> > solver;
-    Eigen::BiCGSTAB<Eigen::SparseMatrix<double>, Eigen::IncompleteLUT<double> >  solver;
+    //Eigen::BiCGSTAB<Eigen::SparseMatrix<double>, Eigen::IncompleteLUT<double> >  solver;
     //Eigen::ConjugateGradient<Eigen::MatrixXd, Eigen::Lower|Eigen::Upper> cg;
 
 		//freeaml::SuccessiveOverRelaxation<double> lss(20, 1e-2, 0.4);
@@ -211,17 +134,9 @@ public:
          work = new float[rNets*rNets];
          iwork = new int[rNets*rNets];
 
-         solver.setMaxIterations(1);
-         solver.setTolerance(1e-4);
 
-
-					 _z = (double* ) malloc(rNets* sizeof(double));
-					 _temp = (double* ) malloc(rNets* sizeof(double));
-					 _Ap = (double* ) malloc(rNets* sizeof(double));
-					 _p = (double* ) malloc(rNets* sizeof(double));
-					 _r = (double* ) malloc(rNets* sizeof(double));
-
-					 sysA = freeaml::Vector<double>(systemA, systemA+(rNets*rNets));
+         /*
+					sysA = freeaml::Vector<double>(systemA, systemA+(rNets*rNets));
 	 				A = freeaml::SparseMatrix<double>(rNets, rNets, sysA);
 	 				x = freeaml::Vector<double>(systemX, systemX+rNets);
 	 				b = freeaml::Vector<double>(systemB, systemB+rNets);
@@ -233,11 +148,7 @@ public:
              for (int j = 0; j < rNets; j++ ) {
                  systemA[(i*(rNets))+j] = m.A[j+1][i+1].lu; //klopt dit??
              }
-         }
-
-				 for (int i = 0; i < rNets; i++) {
-						 diag[i] = m.A[i+1][i+1].lu; // diagonal
-					 }
+         } */
 
 
 
@@ -309,6 +220,7 @@ public:
       }
 
 
+/*
       void solveEigen(std::vector<IComponent*> &components, MNASystem & m)
       {
 
@@ -384,7 +296,7 @@ public:
 
     }
 
-
+ */
 
 protected:
 
