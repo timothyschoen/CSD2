@@ -1,0 +1,87 @@
+
+Standard components
+  'resistor'
+  'ground'
+  'voltage'
+  'capacitor'
+  'diode'
+  'bjt'
+
+
+
+New analog Components
+  'varres'
+  'pot'
+  'opamp'
+  ‘inductor’
+  ‘transformer’
+  'input'
+  'output'
+  'print'
+
+   Conversion objects
+  'dac'
+  'adc'
+
+
+Digital objects (marked with -)
+
+   I/O
+  'input-'
+  'stinput-'
+  'rtinput-'
+  'output-'
+  ‘dcblock-‘
+
+   MIDI
+  'ctlin-‘
+  'notein-'
+  'mtof-'
+
+ Signal generators
+  'cycle-'
+  'sig-'
+  ‘rect-‘
+  ‘phasor-‘
+  ‘triangle-‘
+
+   Other
+  'delay-'  -> ruis!
+  ‘change-‘
+  ‘celta-‘
+  ‘history-‘
+  ‘elapsed-‘
+  ‘clip-’
+
+
+ Arithmetic
+  '+-'
+  '--'
+  '!--'
+  '*-'
+  '/-'
+  '!/-'
+  '>-'
+  '<-'
+  '>=-'
+  '<=-'
+  '==-'
+  '!=-'
+  '%-'
+  '!%-'
+
+  ‘Pow-‘
+  ‘Sqrt-‘
+
+  ‘ln-‘
+  ‘log10-‘
+  ‘log2-‘
+
+  ‘&&- / and-‘
+  ‘||- / or-‘
+  ‘accum-‘
+  ‘abs-‘
+  ‘ceil-‘
+  ‘floor-‘
+  ‘gate-‘
+  ‘scale-‘
