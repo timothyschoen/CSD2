@@ -529,10 +529,14 @@ struct Transformer : Component<4, 2>
         m.stampStatic(1, nets[2], nets[5]);
         m.stampStatic(-1, nets[3], nets[5]);
 
-        m.A[nets[5]][nets[0]].gdyn.push_back(&nb);
-        m.A[nets[5]][nets[1]].gdyn.push_back(&b);
+        m.stampStatic(-b, nets[5], nets[0]);
+        m.stampStatic(b, nets[5], nets[1]);
+        m.stampStatic(-b, nets[4], nets[5]);
 
-        m.A[nets[4]][nets[5]].gdyn.push_back(&nb);
+        //m.A[nets[5]][nets[0]].gdyn.push_back(&nb);
+        //m.A[nets[5]][nets[1]].gdyn.push_back(&b);
+
+        //m.A[nets[4]][nets[5]].gdyn.push_back(&nb);
     }
 
 };
@@ -541,8 +545,9 @@ struct Transformer : Component<4, 2>
 struct Click : Component<2, 1>
 {
     double v;
+    double amp;
 
-    Click(double v, int l0, int l1) : v(v)
+    Click(double amp, int l0, int l1) : amp(amp)
     {
         pinLoc[0] = l0;
         pinLoc[1] = l1;
@@ -563,10 +568,7 @@ struct Click : Component<2, 1>
     void update(MNASystem & m) final
     {
 
-        if(m.ticks > 2)
-        {
-            v = 0;
-        }
+        v = (m.ticks == 1)*amp;
 
     }
 };
