@@ -1,4 +1,4 @@
-
+#pragma once
 #ifdef __linux__
   #if __has_include("/opt/intel/compilers_and_libraries_2020.0.166/linux/mkl/include/mkl.h")
     #include </opt/intel/compilers_and_libraries_2020.0.166/linux/mkl/include/mkl.h>
@@ -12,7 +12,8 @@
 
 
 #include <iostream>
-#include <assert.h>
+#include <cmath>
+#include "IComponent.h"
 
 /*
 #include "./IterativeLinearSolvers.h"

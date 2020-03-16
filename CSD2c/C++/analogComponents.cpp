@@ -1,4 +1,15 @@
 #include <math.h>
+// gMin for diodes etc..
+constexpr double gMin = 1e-12;
+
+// voltage tolerance
+constexpr double vTolerance = 5e-5;
+
+// thermal voltage for diodes/transistors
+constexpr double vThermal = 0.026;
+
+constexpr unsigned maxIter = 20;
+
 // Analog components
 
 struct Resistor : Component<2>

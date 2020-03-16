@@ -1,6 +1,6 @@
 #include <sstream>
-#include "./rtlibs/RtAudio.h"
-#include "./rtlibs/RtMidi.h"
+#include "rtlibs/RtAudio.h"
+#include "rtlibs/RtMidi.h"
 
 //#include "./gen/genlib.h"
 //#include "./genComponents.cpp"
@@ -8,9 +8,17 @@
 
 double* inbuffer; // ugly, fix this
 
-#include "./halite.cpp"
-#include "./digitalComponents.cpp"
-#include "./analogComponents.cpp"
+
+#include "MNASystem.h"
+#include "IComponent.h"
+#include "NetList.h"
+
+#include "MNASolver.cpp"
+#include "AudioFile.h"
+#include "IComponent.h"
+#include "Component.cpp"
+#include "digitalComponents.cpp"
+#include "analogComponents.cpp"
 
 
 

@@ -33,12 +33,24 @@ all: Halite
 
 #endif
 
-Halite : RtMidi.o, RtAudio.o # $(GENDEPS)
-	$(CC) -o $@ $(CFLAGS) main.cpp RtMidi.o RtAudio.o $(AUFLAGS)
+Halite : RtMidi.o RtAudio.o MNASystem.o MNACell.o NetList.o # $(GENDEPS)
+	$(CC) -o $@ $(CFLAGS) main.cpp RtMidi.o RtAudio.o MNASystem.o MNACell.o NetList.o $(AUFLAGS)
 	mv Halite ../compiled/
 
-RtMidi.o, RtAudio.o: #AUflags shouldn't be necessary but it won't work on mac without
-	$(CC) -c $< $(CFLAGS) $(AUFLAGS) ./rtlibs/RtMidi.cpp ./rtlibs/RtAudio.cpp
+RtMidi.o: #AUflags shouldn't be necessary but it won't work on mac without
+	$(CC) -c $< $(CFLAGS) $(AUFLAGS) ./rtlibs/RtMidi.cpp
+
+RtAudio.o: #AUflags shouldn't be necessary but it won't work on mac without
+	$(CC) -c $< $(CFLAGS) $(AUFLAGS) ./rtlibs/RtAudio.cpp
+
+NetList.o:
+	$(CC) -c $< $(CFLAGS) $(AUFLAGS) NetList.cpp MNASystem.o
+
+MNASystem.o: MNACell.o
+	$(CC) -c $< $(CFLAGS) $(AUFLAGS) MNASystem.cpp MNACell.o
+
+MNACell.o:
+	$(CC) -c $< $(CFLAGS) $(AUFLAGS) MNACell.cpp
 
 
 clean:

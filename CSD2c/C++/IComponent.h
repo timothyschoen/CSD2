@@ -1,3 +1,5 @@
+#pragma once
+#include "MNASystem.h"
 
 struct IComponent
 {
@@ -6,8 +8,7 @@ struct IComponent
     // return the number of pins for this component
     virtual int pinCount() = 0;
 
-    // return a pointer to array of pin locations
-    // NOTE: these will eventually be GUI locations to be unified
+
     virtual const int* getPinLocs() const = 0;
     virtual const std::vector<std::string> getDigiLocs() const = 0;
 
@@ -19,7 +20,7 @@ struct IComponent
     //
     virtual void setupNets(int & netSize, int & states, const int* pins, const std::vector<std::string> digiPins) = 0;
 
-    virtual void digitalReset(const int* digiPins) = 0;
+
 
 
     // stamp constants into the matrix

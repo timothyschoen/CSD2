@@ -171,32 +171,43 @@ function Component(name, xin = mouseX, yin = mouseY - 100) {
   }
 
 
-  // When the name changes or the object is being created, add the inlets
-  this.changetype = function() {
+  // When the name changes or the object is being created, display the new name and update the inlets
+  this.changetype = function(oldtype) {
     if(type === 'comment') {
       divComponent.innerHTML = name.replace(type, "");
     }
     else {
     divComponent.innerHTML = name;
     }
-    for (let i = 0; i < inlets.length; i++) {
-      inlets[i].remove();
-    }
-    inlets = [];
+    let newinlets, newoutlets, oldinlets, oldoutlets;
 
-    for (let i = 0; i < parseInt(types[type]['inlets']); i++) {
+    newinlets = parseInt(types[type]['inlets']);
+    newoutlets = parseInt(types[type]['outlets']);
+    if(oldinlets !== undefined) {
+    let oldinlets = parseInt(types[oldtype]['inlets']);
+    let oldoutlets = parseInt(types[oldtype]['outlets']);
+    }
+    else {
+      oldinlets = oldoutlets = 0
+    }
+
+    for (let i = 0; i < newinlets; i++) {
       let datatype = 'analog';
       if (types[type]['datatypes'] !== undefined) {
         datatype = types[type]['datatypes'][i]
       }
-      inlets.push(new Inlet((11 * i) + 6, -4, [this, i], 'inlet', datatype, types[type]['colors'][i]));
+
+      inlets[i] = new Inlet((11 * i) + 6, -4, [this, i], 'inlet', datatype, types[type]['colors'][i])
+
+
     }
-    for (let i = 0; i < parseInt(types[type]['outlets']); i++) {
+    for (let i = 0; i < newoutlets; i++) {
       let datatype = 'analog';
       if (types[type]['datatypes'] !== undefined) {
-        datatype = types[type]['datatypes'][i + types[type]['inlets']]
+        datatype = types[type]['datatypes'][i + newinlets]
       }
-      inlets.push(new Inlet((11 * i) + 6, 16, [this, types[type]['inlets'] + i], 'outlet', datatype, types[type]['colors'][i + types[type]['inlets']]));
+        inlets[newinlets + i] = new Inlet((11 * i) + 6, 16, [this, newinlets + i], 'outlet', datatype, types[type]['colors'][i + newinlets]);
+
     }
   }
 
@@ -212,6 +223,7 @@ function Component(name, xin = mouseX, yin = mouseY - 100) {
     // Arguments
     args = name.replace("  ", " ").split(" ");
     // type of object
+    let oldtype = type;
     type = args.shift();
     // Check if type is existing
     if (type in types && types[type]['args'] <= args.length) {
@@ -227,7 +239,7 @@ function Component(name, xin = mouseX, yin = mouseY - 100) {
       }
       valid = true;
       divComponent.style.backgroundColor = '#424242'
-      _this.changetype();
+      _this.changetype(oldtype);
     } else {
       divComponent.innerHTML = name;
       divComponent.style.backgroundColor = '#ff6961'

@@ -1,22 +1,9 @@
-struct MNASystem
-{
-    typedef std::vector<MNACell>    MNAVector;
-    typedef std::vector<MNAVector>  MNAMatrix;
+
+#include <iostream>
+#include "MNASystem.h"
 
 
-
-    MNAMatrix   A; // A matrix
-    MNAVector   b; // This is the Z matrix since that contains our known values
-
-    std::vector<unsigned char>* midiInput;
-    double audioInput[512];
-    double      time;
-    long      ticks;
-    double      tStep;
-
-    std::vector<double> digiValues;
-
-    void setSize(int n, int d)
+    void MNASystem::setSize(int n, int d)
     {
         A.resize(n);
         b.resize(n);
@@ -40,18 +27,18 @@ struct MNASystem
         tStep = 1./44100.; // set to samplerate as default to prevent dividing by 0
     }
 
-    void stampTimed(double g, int r, int c)
+    void MNASystem::stampTimed(double g, int r, int c)
     {
         A[r][c].gtimed += g;
     }
 
 
-    void stampStatic(double g, int r, int c)
+    void MNASystem::stampStatic(double g, int r, int c)
     {
         A[r][c].g += g;
     }
 
-    void setDigital(std::vector<int> outputs, double value)
+    void MNASystem::setDigital(std::vector<int> outputs, double value)
     {
         for (size_t i = 0; i < outputs.size(); i++)
         {
@@ -60,7 +47,7 @@ struct MNASystem
 
     }
 
-    double getDigital(std::vector<int> inputs, double fallback = 0)
+    double MNASystem::getDigital(std::vector<int> inputs, double fallback)
     {
         double accum = 0;
 
@@ -73,6 +60,3 @@ struct MNASystem
 
         return accum;
     }
-
-
-};
