@@ -2,7 +2,7 @@
 #include <vector>
 #include <iostream>
 #include "MNASystem.h"
-#include "MNASolver.cpp"
+#include "MNASolver.h"
 #include "IComponent.h"
 
 

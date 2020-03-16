@@ -1,4 +1,3 @@
-#pragma once
 #ifdef __linux__
   #if __has_include("/opt/intel/compilers_and_libraries_2020.0.166/linux/mkl/include/mkl.h")
     #include </opt/intel/compilers_and_libraries_2020.0.166/linux/mkl/include/mkl.h>
@@ -14,6 +13,7 @@
 #include <iostream>
 #include <cmath>
 #include "IComponent.h"
+#include "MNASolver.h"
 
 /*
 #include "./IterativeLinearSolvers.h"
@@ -51,22 +51,6 @@ extern "C" {    // another way
  */
 
 
-struct MNASolver
-{
-public:
-    int nets;
-    int rNets;
-    int maxIter = 20;
-    double tStep;
-    double *systemA;
-    float *systemA_lu;
-    int *pivot;
-    double *systemB;
-    double *systemX;
-
-    int info;
-    int one = 1;
-
 
     /*
 
@@ -89,7 +73,7 @@ public:
 		//freeaml::BiconjugateGradientStabilized<double> lss(50, 1e-12);
 
 
-    void setSize(int size, double timestep, MNASystem & m)
+    void MNASolver::setSize(int size, double timestep, MNASystem & m)
     {
 
         nets = size;
@@ -128,7 +112,7 @@ public:
 
 
 
-    void solve(std::vector<IComponent*> &components, MNASystem & m)
+    void MNASolver::solve(std::vector<IComponent*> &components, MNASystem & m)
     {
         int iter;
 
@@ -157,7 +141,7 @@ public:
 
 
 
-        void solveMKL(std::vector<IComponent*> &components, MNASystem & m)
+        void MNASolver::solveMKL(std::vector<IComponent*> &components, MNASystem & m)
         {
 
                   int iter;
@@ -268,10 +252,9 @@ public:
 
  */
 
-protected:
 
     // return true if we're done
-    bool newton(std::vector<IComponent*> &components, MNASystem & m)
+    bool MNASolver::newton(std::vector<IComponent*> &components, MNASystem & m)
     {
         bool done = 1;
         for(int i = 0; i < components.size(); ++i)
@@ -282,7 +265,7 @@ protected:
     }
 
 
-    void updatePre(double stepScale, MNASystem & m)
+    void MNASolver::updatePre(double stepScale, MNASystem & m)
     {
         for(int i = 0; i < nets; ++i)
         {
@@ -294,7 +277,7 @@ protected:
         }
     }
 
-    void luFactor( MNASystem & m)
+    void MNASolver::luFactor( MNASystem & m)
     {
         int p;
         for(p = 1; p < nets; ++p)
@@ -347,7 +330,7 @@ protected:
     }
 
     // this does forward substitution for the solution vector
-    int luForward( MNASystem & m)
+    int MNASolver::luForward( MNASystem & m)
     {
         int p;
         for(p = 1; p < nets; ++p)
@@ -365,7 +348,7 @@ protected:
     }
 
     // solves nodes backwards from limit-1
-    int luSolve( MNASystem & m)
+    int MNASolver::luSolve( MNASystem & m)
     {
         for(int r = nets; --r;)
         {
@@ -379,7 +362,3 @@ protected:
         }
         return 1;
     }
-
-
-
-};

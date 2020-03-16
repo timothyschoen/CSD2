@@ -1,11 +1,11 @@
 CC = clang++
 CFLAGS = -Wall -std=c++17
-AUFLAGS= -lpthread -lm
-GENDEPS=
+AUFLAGS := -lpthread -lm
+GENDEPS :=
 
 # Extra flags for different kinds of solvers
 #AFFLAGS= -I/opt/arrayfire/include -rpath /opt/arrayfire/lib -lafcpu -L/opt/arrayfire/lib -framework Accelerate
-MKLFLAGS=  -lm -ldl -llapack
+MKLFLAGS=  -ldl -llapack
 
 
 UNAME_S := $(shell uname -s)
@@ -33,24 +33,27 @@ all: Halite
 
 #endif
 
-Halite : RtMidi.o RtAudio.o MNASystem.o MNACell.o NetList.o # $(GENDEPS)
-	$(CC) -o $@ $(CFLAGS) main.cpp RtMidi.o RtAudio.o MNASystem.o MNACell.o NetList.o $(AUFLAGS)
+Halite : RtMidi.o RtAudio.o MNASystem.o MNACell.o NetList.o MNASolver.o # $(GENDEPS)
+	$(CC) -o $@ $(CFLAGS) main.cpp RtMidi.o RtAudio.o MNASystem.o MNACell.o NetList.o MNASolver.o $(AUFLAGS)
 	mv Halite ../compiled/
 
 RtMidi.o: #AUflags shouldn't be necessary but it won't work on mac without
-	$(CC) -c $< $(CFLAGS) $(AUFLAGS) ./rtlibs/RtMidi.cpp
+	$(CC) -c -Wno-everything $(CFLAGS) $(AUFLAGS) ./rtlibs/RtMidi.cpp
 
-RtAudio.o: #AUflags shouldn't be necessary but it won't work on mac without
-	$(CC) -c $< $(CFLAGS) $(AUFLAGS) ./rtlibs/RtAudio.cpp
+RtAudio.o: # We mute the warnings that this library throws, which are all related to using -l to make a .o file (required by the library though)
+	$(CC) -c -Wno-everything $(CFLAGS) $(AUFLAGS) ./rtlibs/RtAudio.cpp
 
 NetList.o:
-	$(CC) -c $< $(CFLAGS) $(AUFLAGS) NetList.cpp MNASystem.o
+	$(CC) -c $(CFLAGS) NetList.cpp
 
-MNASystem.o: MNACell.o
-	$(CC) -c $< $(CFLAGS) $(AUFLAGS) MNASystem.cpp MNACell.o
+MNASystem.o:
+	$(CC) -c $(CFLAGS) MNASystem.cpp
 
 MNACell.o:
-	$(CC) -c $< $(CFLAGS) $(AUFLAGS) MNACell.cpp
+	$(CC) -c $(CFLAGS) MNACell.cpp
+
+MNASolver.o:
+	$(CC) -c $(CFLAGS) MNASolver.cpp
 
 
 clean:

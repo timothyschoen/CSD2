@@ -1,9 +1,6 @@
 #include "NetList.h"
 
 
-
-
-
     NetList::NetList(int nodes, int diginodes) : nets(nodes), states(0), diginets(diginodes)
     {
         output = new double[2];

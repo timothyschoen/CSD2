@@ -13,7 +13,7 @@ double* inbuffer; // ugly, fix this
 #include "IComponent.h"
 #include "NetList.h"
 
-#include "MNASolver.cpp"
+#include "MNASolver.h"
 #include "AudioFile.h"
 #include "IComponent.h"
 #include "Component.cpp"
