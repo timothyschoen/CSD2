@@ -1,10 +1,6 @@
 // COMPONENT CLASS
 // Represents 1 electrical component
 
-let connections = []; // Where we store our components
-let boxes = []; // Where we store our connections
-let connecting = -1; // Is any inlet currently in the connecting state?
-
 // Change array order (used to make sure ground is at 0)
 Array.prototype.move = function(from, to) {
   this.splice(to, 0, this.splice(from, 1)[0]);
@@ -87,6 +83,7 @@ function Component(name, xin = mouseX, yin = mouseY - 100) {
     inp = document.createElement("INPUT");
     inp.value = text;
     inputting = true;
+    blocked = true;
     typing = true;
     // Display it over the bounds of the component
     var bound = divComponent.getBoundingClientRect();
@@ -176,7 +173,12 @@ function Component(name, xin = mouseX, yin = mouseY - 100) {
 
   // When the name changes or the object is being created, add the inlets
   this.changetype = function() {
+    if(type === 'comment') {
+      divComponent.innerHTML = name.replace(type, "");
+    }
+    else {
     divComponent.innerHTML = name;
+    }
     for (let i = 0; i < inlets.length; i++) {
       inlets[i].remove();
     }
@@ -202,6 +204,7 @@ function Component(name, xin = mouseX, yin = mouseY - 100) {
   this.closeinput = function() {
     if (inputting == true) {
       inputting = false;
+      blocked = false
       typing = false;
       name = inp.value;
       inp.remove();
@@ -220,7 +223,7 @@ function Component(name, xin = mouseX, yin = mouseY - 100) {
         optargs[i] = parseFloat(optargs[i])
       }
       if (type == 'ground' && boxes.indexOf(this) != 0) {
-        boxes.move(boxes.indexOf(this), 0);
+        boxes.move(boxes.indexOf(this), 0); // it is essential that ground is at 0
       }
       valid = true;
       divComponent.style.backgroundColor = '#424242'
@@ -230,7 +233,7 @@ function Component(name, xin = mouseX, yin = mouseY - 100) {
       divComponent.style.backgroundColor = '#ff6961'
       valid = false;
     }
-    // Resize width according to length of name
+
 
   }
 
@@ -241,6 +244,7 @@ function Component(name, xin = mouseX, yin = mouseY - 100) {
 
   // Delete a whole box
   this.delete = function() {
+    if(blocked == false) {
     // First remove connections
     for (let i = connections.length - 1; i >= 0; i--) {
       // count backwards to avoid messing up the order when removing
@@ -257,6 +261,7 @@ function Component(name, xin = mouseX, yin = mouseY - 100) {
 
     // Then remove the box
     boxes.splice(boxes.indexOf(this), 1);
+  }
 
   }
 

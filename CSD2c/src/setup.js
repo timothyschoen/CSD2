@@ -7,6 +7,10 @@ let sbarwidth;
 let home = os.homedir() + "/Documents/Circuitry";
 // __dirname refers to the read-only working directory inside the electron app
 
+let connections = []; // Where we store our components
+let boxes = []; // Where we store our connections
+let connecting = -1; // Is any inlet currently in the connecting state?
+let blocked = false; // for blocking actions that cause glitches, like either inputting, deleting or connecting at the same time
 
 let code = '';
 

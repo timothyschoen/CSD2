@@ -61,7 +61,7 @@ function Inlet(x, y, instance, type, datatype, color = '#229FD7') {
 
 
   inletbutton.onclick = function() {
-    if (connectingline == undefined) {
+    if (connectingline == undefined && blocked == false) {
       connecting = instance; // let everyone know who's connecting
       // Create a temporary line from the clicked inlet to the mouse
       let htmlLine = document.createElement("div");
@@ -82,7 +82,7 @@ function Inlet(x, y, instance, type, datatype, color = '#229FD7') {
       connectingline();
       connectingline = undefined;
       connecting = -1; // no one is connecting now
-    } else {
+    } else if (blocked == false) {
       let sametype = instance[0].getinlets()[instance[1]].getdatatype() == connecting[0].getinlets()[connecting[1]].getdatatype();
       if (connecting[0] != instance[0] && sametype) {
         connectingline()

@@ -251,7 +251,7 @@ function mediaLibrary() {
     };
     // Create a new input when clicked
     this.onclick = function() {
-      boxes.push(new Component('input file 0.2'.replace('file', home + "/Media/" + file), window.innerWidth / 2, window.innerHeight / 2 - 250));
+      boxes.push(new Component('input file 0.2'.replace('file', "./Media/" + file), window.innerWidth / 2, window.innerHeight / 2 - 250));
     };
 
     // Delete a file from our media folder when the user clicks X

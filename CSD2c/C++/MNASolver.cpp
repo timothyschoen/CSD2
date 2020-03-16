@@ -50,7 +50,7 @@ extern "C" {    // another way
  */
 
 
-class MNASolver
+struct MNASolver
 {
 public:
     int nets;
@@ -62,26 +62,10 @@ public:
     int *pivot;
     double *systemB;
     double *systemX;
-    float *r;
-    float *c;
-    float *work;
-    int *iwork;
-    float rcond;
-    float ferr;
-    float berr;
+
     int info;
-    char e = 'E';
-    char n = 'N';
-    char set;
-    int zero = 0;
     int one = 1;
-    float room;
-    double *diag;
-    double *_r;
-    double *_p;
-    double *_temp;
-    double *_Ap ;
-    double *_z ;
+
 
     /*
 
@@ -104,17 +88,6 @@ public:
 		//freeaml::BiconjugateGradientStabilized<double> lss(50, 1e-12);
 
 
-
-    /*
-      MNASolver(int size) : nets(size-1)
-      {
-
-
-      } */
-
-
-public:
-
     void setSize(int size, double timestep, MNASystem & m)
     {
 
@@ -124,15 +97,11 @@ public:
 
 
          systemA = new double[rNets*rNets];
-				 diag = new double[rNets];
          systemA_lu = new float[rNets*rNets];
          pivot = new int[rNets*rNets];
          systemB = new double[rNets];
          systemX = new double[rNets];
-         r = new float[rNets];
-         c = new float[rNets];
-         work = new float[rNets*rNets];
-         iwork = new int[rNets*rNets];
+
 
 
          /*

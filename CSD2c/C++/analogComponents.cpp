@@ -29,11 +29,6 @@ struct VariableResistor : Component<2, 0, 1>
     double  g;
     double  ng;
 
-
-    double smoothscale = 1;
-    double previousscale = 1;
-    double a = 0.9; // smoothing factor
-
     VariableResistor(int l0, int l1, std::string d0, std::vector<std::string> init)
     {
         pinLoc[0] = l0;
@@ -123,20 +118,13 @@ struct Potentiometer : Component<3, 0, 1>
     void updateInput(MNASystem & m) final
     {
 
-        g = 1. / (r * m.getDigital(digiNets[0]));
-        ig = 1. / (r - (r * m.getDigital(digiNets[0])));
+        g = 1. / (r * m.getDigital(digiNets[0], 0.5));
+        ig = 1. / (r - (r * m.getDigital(digiNets[0], 0.5)));
 
         ng = -g;
         ing = -ig;
     }
 
-    void update(MNASystem & m) final
-    {
-
-
-
-
-    }
 };
 
 struct Capacitor : Component<2, 1>

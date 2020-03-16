@@ -84,21 +84,21 @@ let types = {
     'outlets': 2,
     'args': 1,
     'colors': ['#ff0000', '#000000', '#229FD7'],
-    'code': " bjt, i0, i1, i2, a0"
+    'code': " bjt, i0, i2, i1, a0"
   },
   'pnp': {
     'inlets': 1,
     'outlets': 2,
     'args': 0,
     'colors': ['#ff0000', '#000000', '#229FD7'],
-    'code': " bjt, i0, i1, i2, 1"
+    'code': " bjt, i0, i2, i1, 1"
   },
   'npn': {
     'inlets': 1,
     'outlets': 2,
     'args': 0,
     'colors': ['#ff0000', '#000000', '#229FD7'],
-    'code': " bjt, i0, i1, i2, 0"
+    'code': " bjt, i0, i2, i1, 0"
   },
 
   'op-amp': {
@@ -167,6 +167,14 @@ let types = {
     'colors': ['#229FD7', '#229FD7'],
     'args': 0,
     'code': " adc, i0, i1, d2"
+  },
+  'comment': {
+    'inlets': 0,
+    'outlets': 0,
+    'datatypes': [],
+    'colors': [],
+    'args': 0,
+    'code': " comment, a0"
   },
 
   // digital objects
