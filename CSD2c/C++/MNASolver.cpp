@@ -152,6 +152,7 @@ extern "C" {    // another way
 
 											updatePre(tStep, m);
 
+                      if(nets > 1) {
 
 											for (int i = 0; i < rNets; i++ ) {
 													systemB[i] = m.b[i+1].lu;
@@ -169,6 +170,10 @@ extern "C" {    // another way
 
                       if(newton(components, m)) break;
 
+                }
+                else {
+                  break;
+                }
                 }
 
       }

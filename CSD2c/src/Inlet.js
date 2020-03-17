@@ -18,10 +18,10 @@ function Inlet(x, y, instance, type, datatype, color = '#229FD7') {
   }
 
   inletbutton.style.position = "absolute";
-  inletbutton.style.height = "8px";
-  inletbutton.style.width = "8px";
-  inletbutton.style.padding = "0";
-  inletbutton.style.margin = "0";
+  inletbutton.style.height = "9px";
+  inletbutton.style.width = "9px";
+  inletbutton.style.padding = "0px";
+  inletbutton.style.margin = "0px";
   inletbutton.style.borderRadius = '100%'
   inletbutton.style.border = '0px'
   inletbutton.style.zIndex = "-1";
@@ -45,6 +45,11 @@ function Inlet(x, y, instance, type, datatype, color = '#229FD7') {
   this.getdiv = function() {
     return inletbutton;
   }
+
+  this.settooltip = function(tooltip) {
+    inletbutton.title = tooltip;
+  }
+
 
   this.getdatatype = function() {
     return datatype;

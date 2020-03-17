@@ -15,9 +15,7 @@
 #define FORMAT RTAUDIO_FLOAT64
 #define SCALE  1.0
 
-
 double* inbuffer; // ugly, fix this
-
 
 #include "MNASystem.h"
 #include "NetList.h"
@@ -197,7 +195,7 @@ int main(int argc, char* argv[])
         {
             net = new NetList(stoi(seglist[1]), stoi(seglist[2]));
         }
-        else if(!seglist[0].compare("ground"))
+        else if(!seglist[0].compare("ground") || !seglist[0].compare("comment"))
         {
             continue;
         }
@@ -212,7 +210,7 @@ int main(int argc, char* argv[])
         else if(!seglist[0].compare("triangle-"))
             net->addComponent(new triangleGenerator(optargs, seglist[1], seglist[2]));
 
-        else if(!seglist[0].compare("phasor-"))
+        else if(!seglist[0].compare("saw-"))
             net->addComponent(new sawGenerator(optargs, seglist[1], seglist[2]));
 
         else if(!seglist[0].compare("sig-"))

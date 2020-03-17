@@ -7,7 +7,7 @@ Array.prototype.move = function(from, to) {
 };
 
 
-function Component(name, xin = mouseX, yin = mouseY - 100) {
+function Component(name, xin = mouseX, yin = mouseY - 200) {
   let x, y, w, h; // Location and size
   let inp; // letiable for input field
   let inputting = false; // Check if we have an active input field
@@ -16,22 +16,14 @@ function Component(name, xin = mouseX, yin = mouseY - 100) {
   let args = []; // Arguments of our component ('200' in 'resistor 200')
   let optargs = []; // Optional arguments
   let type = name; // Name of our component ('resistor' in 'resistor 200')
-  let selected = false; // Is our component selected?
   let _this = this;
 
   let instance = this;
-  let offsetX, offsetY;
-  let dragging = false; // Is the Component being dragged?
-  let multipledragging = false; // Is another Component being dragged while we are selected?
-  let rollover = false; // color change on mouseOver
 
 
   x = xin;
   y = yin;
 
-  // Dimensions
-  w = 70;
-  h = 20;
 
   var divComponent = document.createElement("div");
 
@@ -40,11 +32,11 @@ function Component(name, xin = mouseX, yin = mouseY - 100) {
   divComponent.style.position = "absolute";
   divComponent.style.height = "17px";
   divComponent.style.paddingLeft = "12px";
-  divComponent.style.paddingTop = "2px";
-  divComponent.style.paddingBottom = "0px";
+  divComponent.style.paddingTop = "3px";
+  divComponent.style.paddingBottom = "1px";
   divComponent.style.paddingRight = "12px";
   divComponent.style.background = "#424242";
-  divComponent.style.top = y + h + "px";
+  divComponent.style.top = y + "px";
   divComponent.style.left = x + "px";
   divComponent.style.color = "#DCDCDC";
   divComponent.style.border = "1px solid #DCDCDC"
@@ -95,6 +87,7 @@ function Component(name, xin = mouseX, yin = mouseY - 100) {
     inp.style.position = 'absolute';
     inp.addEventListener("focusout", this.closeinput);
     document.body.appendChild(inp);
+    inp.focus(); // set focus to the input so the user can start typing
   }
 
   //Bunch of getters and setters to interact and get info from these boxes
@@ -132,43 +125,7 @@ function Component(name, xin = mouseX, yin = mouseY - 100) {
   this.getsize = function() {
     return [w, h];
   }
-  this.select = function() {
-    selected = true;
-  }
-  this.deselect = function() {
-    selected = false;
-  }
 
-
-  // Select the box if there is a click on it
-  this.mouseClicked = function() {
-    if (intersect(mouseX, mouseX + 1, mouseY, mouseY + 1, x, x + w, y, y + h)) {
-      selected = true;
-    }
-    // Only deselect when clicking outside the box if shift is not down
-    // This allows us to select multiple objects when holding down shift!
-    else if (!keyIsDown(SHIFT) && !selecting) {
-      selected = false;
-    }
-  }
-
-  // Change positions of inlets and outlets
-  this.updateInlets = function() {
-    let offset = 0;
-    for (let i = 0; i < inlets.length; i++) {
-      if (inlets[i].gettype() == 'inlet') {
-        inlets[i].setposition(x + 15 + (10 * i), y + 17)
-        offset++;
-      } else {
-        inlets[i].setposition(x + 15 + (10 * (i - offset)), y + 36);
-      }
-      if (inlets[i].getposition()[0] > window.innerWidth - sbarwidth) {
-        inlets[i].show(false);
-      } else {
-        inlets[i].show(true);
-      }
-    }
-  }
 
 
   // When the name changes or the object is being created, display the new name and update the inlets
@@ -184,30 +141,47 @@ function Component(name, xin = mouseX, yin = mouseY - 100) {
     newinlets = parseInt(types[type]['inlets']);
     newoutlets = parseInt(types[type]['outlets']);
     if(oldinlets !== undefined) {
-    let oldinlets = parseInt(types[oldtype]['inlets']);
-    let oldoutlets = parseInt(types[oldtype]['outlets']);
+    oldinlets = parseInt(types[oldtype]['inlets']);
+    oldoutlets = parseInt(types[oldtype]['outlets']);
     }
     else {
       oldinlets = oldoutlets = 0
     }
+
+    let diff = ((divComponent.clientWidth-24) / (newinlets-1 + (newinlets == 1)));
+    let start = 8;
 
     for (let i = 0; i < newinlets; i++) {
       let datatype = 'analog';
       if (types[type]['datatypes'] !== undefined) {
         datatype = types[type]['datatypes'][i]
       }
-
-      inlets[i] = new Inlet((11 * i) + 6, -4, [this, i], 'inlet', datatype, types[type]['colors'][i])
-
-
+      inlets[i] = new Inlet(start, -4, [this, i], 'inlet', datatype, types[type]['colors'][i])
+      if(types[type]['tooltips'] !== undefined) {
+        inlets[i].settooltip("Inlet " + i + ": " + types[type]['tooltips'][i]);
+      }
+      else {
+        inlets[i].settooltip("Inlet " + i);
+      }
+      start += diff;
     }
+
+    diff = ((divComponent.clientWidth-24) / (newoutlets-1 + (newoutlets == 1)));
+    start = 8;
+
     for (let i = 0; i < newoutlets; i++) {
       let datatype = 'analog';
       if (types[type]['datatypes'] !== undefined) {
         datatype = types[type]['datatypes'][i + newinlets]
       }
-        inlets[newinlets + i] = new Inlet((11 * i) + 6, 16, [this, newinlets + i], 'outlet', datatype, types[type]['colors'][i + newinlets]);
-
+        inlets[newinlets + i] = new Inlet(start, divComponent.clientHeight-4, [this, newinlets + i], 'outlet', datatype, types[type]['colors'][i + newinlets]);
+        if(types[type]['tooltips'] !== undefined) {
+          inlets[newinlets + i].settooltip("Outlet " + i + ": " + types[type]['tooltips'][newinlets + i]);
+        }
+        else {
+          inlets[newinlets + i].settooltip("Outlet " + i);
+        }
+        start += diff;
     }
   }
 

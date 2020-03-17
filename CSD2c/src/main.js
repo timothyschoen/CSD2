@@ -23,14 +23,15 @@ let types = {
     'inlets': 1,
     'outlets': 0,
     'args': 0,
-    'colors': ['#000000'],
+    'colors': ['#191919'],
     'code': " ground"
   },
   'voltage': {
     'inlets': 0,
     'outlets': 2,
     'args': 1,
-    'colors': ['#ff0000', '#000000'],
+    'colors': ['#FE3B3B', '#191919'],
+    'tooltips' :   ['+', '-'],
     'code': " voltage, a0, i0, i1"
   },
 
@@ -38,7 +39,8 @@ let types = {
     'inlets': 1,
     'outlets': 1,
     'args': 1,
-    'colors': ['#000000', '#ff0000'],
+    'colors': ['#191919', '#FE3B3B'],
+    'tooltips' :   ['-', '+'],
     'code': " current, a0, i0, i1"
   },
 
@@ -46,7 +48,8 @@ let types = {
     'inlets': 0,
     'outlets': 2,
     'args': 1,
-    'colors': ['#ff0000', '#000000'],
+    'colors': ['#FE3B3B', '#191919'],
+    'tooltips' :   ['+', '-'],
     'code': " click, a0, i0, i1"
   },
 
@@ -68,7 +71,8 @@ let types = {
     'inlets': 2,
     'outlets': 2,
     'args': 1,
-    'colors': ['#ff0000', '#000000', '#ff0000', '#000000'],
+    'colors': ['#FE3B3B', '#191919', '#FE3B3B', '#191919'],
+    'tooltips' :   ['Input +', 'Input -', 'Output +', 'Output -'],
     'code': " transformer, a0, i0, i1, i2, i3"
   },
 
@@ -76,28 +80,30 @@ let types = {
     'inlets': 1,
     'outlets': 1,
     'args': 0,
-    'colors': ['#ff0000', '#229FD7'],
+    'colors': ['#FE3B3B', '#229FD7'],
+    'tooltips' :   ['Anode', 'Cathode'],
     'code': " diode, i0, i1"
   },
   'bjt': {
     'inlets': 1,
     'outlets': 2,
     'args': 1,
-    'colors': ['#ff0000', '#000000', '#229FD7'],
+    'colors': ['#FE3B3B', '#191919', '#229FD7'],
     'code': " bjt, i0, i2, i1, a0"
   },
   'pnp': {
     'inlets': 1,
     'outlets': 2,
     'args': 0,
-    'colors': ['#ff0000', '#000000', '#229FD7'],
+    'colors': ['#FE3B3B', '#191919', '#229FD7'],
     'code': " bjt, i0, i2, i1, 1"
   },
   'npn': {
     'inlets': 1,
     'outlets': 2,
     'args': 0,
-    'colors': ['#ff0000', '#000000', '#229FD7'],
+    'colors': ['#FE3B3B', '#191919', '#229FD7'],
+    'tooltips': ['Base', 'Collector', 'Emitter'],
     'code': " bjt, i0, i2, i1, 0"
   },
 
@@ -105,7 +111,8 @@ let types = {
     'inlets': 2,
     'outlets': 1,
     'args': 0,
-    'colors': ['#229FD7', '#000000', '#ff0000', '#000000', '#229FD7'],
+    'colors': ['#5B8DEE', '#191919', '#FE3B3B', '#191919', '#229FD7'],
+    'tooltips': ['V+', 'V-', 'VOut'],
     'code': " opa, i0, i1, i2"
   },
 
@@ -124,21 +131,23 @@ let types = {
     'outlets': 2,
     'datatypes': ['analog', 'digital', 'analog', 'analog'],
     'args': 1,
-    'colors': ['#ff0000', '#229FD7', '#000000', '#229FD7'],
+    'colors': ['#FE3B3B', '#229FD7', '#191919', '#229FD7'],
     'code': " potentiometer, a0, i0, i2, i3, d1"
   },
   'input': {
     'inlets': 0,
     'outlets': 2,
     'args': 2,
-    'colors': ['#ff0000', '#000000'],
+    'colors': ['#FE3B3B', '#191919'],
+    'tooltips' :   ['+', '-'],
     'code': " input, a0, a1, i0, i1"
   },
   'output': {
     'inlets': 2,
     'outlets': 0,
     'args': 1,
-    'colors': ['#229FD7'],
+    'colors': ['#FE3B3B', '#191919'],
+    'tooltips' :   ['+', '-'],
     'code': " probe, i0, i1, a0"
   },
 
@@ -148,6 +157,7 @@ let types = {
     'datatypes': ['digital'],
     'colors': ['#229FD7'],
     'args': 0,
+    'tooltips' :   ['Anything to be printed'],
     'code': " print-, d0"
   },
 
@@ -184,7 +194,7 @@ let types = {
     'outlets': 1,
     'datatypes': ['digital', 'digital'],
     'args': 2,
-    'colors': ['#ff0000', '#000000'],
+    'colors': ['#FE3B3B', '#191919'],
     'code': " input-, a0, a1, d0"
   },
   'stinput-': {
@@ -192,7 +202,7 @@ let types = {
     'outlets': 2,
     'datatypes': ['digital', 'digital'],
     'args': 2,
-    'colors': ['#ff0000', '#000000'],
+    'colors': ['#FE3B3B', '#191919'],
     'code': " stinput-, a0, a1, d0, d1"
   },
   'rtinput-': {
@@ -200,7 +210,7 @@ let types = {
     'outlets': 1,
     'datatypes': ['digital', 'digital'],
     'args': 1,
-    'colors': ['#ff0000', '#000000'],
+    'colors': ['#FE3B3B', '#191919'],
     'code': " rtinput-, a0, d0"
   },
   'output-': {
@@ -587,7 +597,7 @@ types['osc-'] = types['cycle-'];
 types['sine-'] = types['cycle-'];
 types['train-'] = types['rect-'];
 types['square-'] = types['rect-'];
-types['saw-'] = types['phasor-']; // for now, even though they arent exactly the same
+types['phasor-'] = types['saw-']; // for now, even though they arent exactly the same
 
 
 // default preset
