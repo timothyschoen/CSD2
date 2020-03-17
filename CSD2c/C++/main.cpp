@@ -1,31 +1,35 @@
+
+
 #include <sstream>
+#include <fstream>
+#include <streambuf>
+#include <tclap/CmdLine.h>
+
+// Audio I/O libraries
 #include "rtlibs/RtAudio.h"
 #include "rtlibs/RtMidi.h"
+#include "AudioFile.h"
 
 //#include "./gen/genlib.h"
 //#include "./genComponents.cpp"
+#define FORMAT RTAUDIO_FLOAT64
+#define SCALE  1.0
 
 
 double* inbuffer; // ugly, fix this
 
 
 #include "MNASystem.h"
-#include "IComponent.h"
 #include "NetList.h"
 
 #include "MNASolver.h"
-#include "AudioFile.h"
+
 #include "IComponent.h"
-#include "Component.cpp"
+#include "Component.h"
 #include "digitalComponents.cpp"
 #include "analogComponents.cpp"
 
 
-
-
-#include <fstream>
-#include <streambuf>
-#include <tclap/CmdLine.h>
 
 std::vector<std::string> savefile;
 std::vector<std::string> object;
@@ -36,8 +40,7 @@ unsigned int bufferFrames, fs = 44100, offset = 0;
 RtMidiIn *midiin = new RtMidiIn();
 std::vector<unsigned char> message;
 
-#define FORMAT RTAUDIO_FLOAT64
-#define SCALE  1.0
+
 
 void errorCallback( RtAudioError::Type type, const std::string &errorText )
 {

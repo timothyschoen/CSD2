@@ -1,16 +1,19 @@
 #pragma once
 #include "MNASystem.h"
 
+// The reason that we have a separate IComponent is so that we can use the type IComponent to refer to any component without having to specify template arguments
+// That would mean that we can't use the class component without specifying how many nets it occupies, which is very inconvenient
+
 struct IComponent
 {
     virtual ~IComponent() {}
 
     // return the number of pins for this component
-    virtual int pinCount() = 0;
+    virtual int pinCount() {return 0;}
 
 
-    virtual const int* getPinLocs() const = 0;
-    virtual const std::vector<std::string> getDigiLocs() const = 0;
+    virtual const int* getPinLocs() const {return 0;}
+    virtual const std::vector<std::string> getDigiLocs() const {return std::vector<std::string>(0, 0);}
 
     // setup pins and calculate the size of the full netlist
     // the Component<> will handle this automatically
@@ -18,13 +21,11 @@ struct IComponent
     //  - netSize is the current size of the netlist
     //  - pins is an array of circuits nodes
     //
-    virtual void setupNets(int & netSize, int & states, const int* pins, const std::vector<std::string> digiPins) = 0;
-
-
+    virtual void setupNets(int & netSize, int & states, const int* pins, const std::vector<std::string> digiPins) {}
 
 
     // stamp constants into the matrix
-    virtual void stamp(MNASystem & m) = 0;
+    virtual void stamp(MNASystem & m) {}
 
     // this is for allocating state variables
     virtual void setupStates(int & states) {}

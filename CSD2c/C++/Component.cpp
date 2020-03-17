@@ -1,31 +1,27 @@
-#include "IComponent.h"
 
-template <int nPins = 0, int nInternalNets = 0, int nDigipins = 0>
-struct Component : IComponent
-{
-    static const int nNets = nPins + nInternalNets;
-
-    int pinLoc[nPins];
-    int nets[nNets];
-    std::vector<std::vector<int>> digiNets = std::vector<std::vector<int>>(nDigipins);
-    std::vector<std::string> digiPins = std::vector<std::string>(nDigipins);
-
-    int pinCount() final
+    template <int nPins, int nInternalNets, int nDigipins>
+    int Component<nPins, nInternalNets, nDigipins>::pinCount()
     {
         return nPins;
     }
 
-    const int* getPinLocs() const final
+
+    template <int nPins, int nInternalNets, int nDigipins>
+    const int* Component<nPins, nInternalNets, nDigipins>::getPinLocs() const
     {
         return pinLoc;    // This is used for running setupnets!!!! (for linking pinloc to nets)
     }
-    const std::vector<std::string> getDigiLocs() const final
+
+
+    template <int nPins, int nInternalNets, int nDigipins>
+    const std::vector<std::string> Component<nPins, nInternalNets, nDigipins>::getDigiLocs() const
     {
         return digiPins;
     }
 
 
-    void setupNets(int & netSize, int & states, const int* pins, const std::vector<std::string> digipins) final
+    template <int nPins, int nInternalNets, int nDigipins>
+    void Component<nPins, nInternalNets, nDigipins>::setupNets(int & netSize, int & states, const int* pins, const std::vector<std::string> digipins)
     {
         for(int i = 0; i < nPins; ++i)
         {
@@ -63,5 +59,3 @@ struct Component : IComponent
 
         setupStates(states);
     }
-
-};

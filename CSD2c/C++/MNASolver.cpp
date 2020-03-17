@@ -10,7 +10,7 @@
 #endif
 
 
-#include <iostream>
+#include <iosfwd>
 #include <cmath>
 #include "IComponent.h"
 #include "MNASolver.h"
