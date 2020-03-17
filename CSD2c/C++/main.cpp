@@ -3,6 +3,7 @@
 #include <sstream>
 #include <fstream>
 #include <streambuf>
+#include <unistd.h>
 #include <tclap/CmdLine.h>
 
 // Audio I/O libraries
