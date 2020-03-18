@@ -92,7 +92,7 @@ struct Potentiometer : Component<3, 0, 1>
 
     double g;
     double ig;
-
+    double input;
     double ng;
     double ing;
 
@@ -128,12 +128,16 @@ struct Potentiometer : Component<3, 0, 1>
     }
     void updateInput(MNASystem & m) final
     {
+        input =  m.getDigital(digiNets[0], 0.5);
+        input = fmax(fmin(input, 0.9), 0.1); // take out the extremes and prevent 0 divides
 
-        g = 1. / (r * m.getDigital(digiNets[0], 0.5));
-        ig = 1. / (r - (r * m.getDigital(digiNets[0], 0.5)));
+        g = 1. / (r * input);
+        ig = 1. / (r - (r * input));
 
         ng = -g;
         ing = -ig;
+
+
     }
 
 };
@@ -643,23 +647,41 @@ struct BJT : Component<3, 4>
     JunctionPN  pnC, pnE;
 
     // forward and reverse alpha
-    double af, ar, rsbc, rsbe;
+    double af, ar, bf, br, rsbc, rsbe;
+
+    int type;
 
     bool pnp;
 
-    BJT(int b, int c, int e, bool pnp = false) : pnp(pnp)
+    BJT(int b, int c, int e, bool pnp, std::vector<std::string> init) : pnp(pnp)
     {
         pinLoc[0] = b;
         pinLoc[1] = c;
         pinLoc[2] = e;
+
+        if (init.size() > 0 && !init[0].empty())
+        {
+            type = std::stoi(init[0]);
+        }
+        else {
+            type = 0;
+        }
 
         // this attempts a 2n3904-style small-signal
         // transistor, although the values are a bit
         // arbitrarily set to "something reasonable"
 
         // forward and reverse beta
-        double bf = 200;
-        double br = 20;
+        if(type == 0) { // Simulates silicon
+        bf = 250;
+        br = 20;
+        }
+        else if (type == 1) { // Simulates germanium (this is not correct yet, germaium is louder now which it shouldn't be...)
+          bf = 110;
+          br = 70;
+        }
+
+
 
         // forward and reverse alpha
         af = bf / (1 + bf);

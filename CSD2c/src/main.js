@@ -1,5 +1,7 @@
 let dialog = require('electron').remote.dialog;
 let path = require('path');
+const net = require('net');
+
 
 const {spawn} = require('child_process');
 const {clipboard} = require('electron')
@@ -84,18 +86,20 @@ let types = {
     'tooltips' :   ['Anode', 'Cathode'],
     'code': " diode, i0, i1"
   },
-  'bjt': {
+  'bjt': { // dont use this, use pnp and npn instead. The reason im including this is because we have lots of patches depending on it
     'inlets': 1,
     'outlets': 2,
     'args': 1,
     'colors': ['#FE3B3B', '#191919', '#229FD7'],
-    'code': " bjt, i0, i2, i1, a0"
+    'tooltips': ['Base', 'Collector', 'Emitter'],
+    'code': " bjt, i0, i1, i2, a0"
   },
   'pnp': {
     'inlets': 1,
     'outlets': 2,
     'args': 0,
     'colors': ['#FE3B3B', '#191919', '#229FD7'],
+    'tooltips': ['Base', 'Emitter', 'Collector'],
     'code': " bjt, i0, i2, i1, 1"
   },
   'npn': {
@@ -103,7 +107,7 @@ let types = {
     'outlets': 2,
     'args': 0,
     'colors': ['#FE3B3B', '#191919', '#229FD7'],
-    'tooltips': ['Base', 'Collector', 'Emitter'],
+    'tooltips': ['Base', 'Emitter', 'Collector'],
     'code': " bjt, i0, i2, i1, 0"
   },
 
@@ -601,7 +605,7 @@ types['phasor-'] = types['saw-']; // for now, even though they arent exactly the
 
 
 // default preset
-let preset = ["ground", "output 0.3", 'input ' + home + "/Media/sample-44k.wav 0.2"];
+let preset = ["ground", "output 0.3", 'input ' + "./Media/sample-44k.wav 0.2"];
 
 let halite; // variable for halite process
 
@@ -767,9 +771,15 @@ function precompile(save = 1) {
             itercode = itercode.replace("i" + x, exists.length);
             exists.push(iterconnections[d]);
           }
+
         }
       }
-      // check of type == digital!!
+      if(itercode.includes("i" + x)) {
+        console.log("Not all inlets connected! \n")
+        console.log("Unconnected inlets will be connected to ground \n")
+        itercode = itercode.replace("i" + x, 0);
+      }
+      // check of type == digital??
       for (let d = 0; d < digitalconns.length; d++) {
         if (JSON.stringify(digitalconns[d]).includes(target)) {
           inletconns[x] = inletconns[x].concat(d + 1);
@@ -824,6 +834,8 @@ function startHalite(realtime) {
 
   if (!(realtime && (realtime_playing))) {
     halite = spawn(path.join(__dirname, '/../compiled/Halite'), haliteappendix);
+
+
 
     halite.stdout.on('data', function(data) {
       console.log('Halite: ' + data);

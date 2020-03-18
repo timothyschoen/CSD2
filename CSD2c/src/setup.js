@@ -69,6 +69,10 @@ if (!fs.existsSync(home)) {
     if (err) throw err;
   });
 
+  fs.copyFile(__dirname + '/../saves/Examples/Wah-Wah.ncl', home + '/Saves/Examples/Wah-Wah.ncl', (err) => {
+    if (err) throw err;
+  });
+
 }
 
 

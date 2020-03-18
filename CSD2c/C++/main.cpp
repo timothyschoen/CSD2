@@ -317,7 +317,7 @@ int main(int argc, char* argv[])
             net->addComponent(new Diode(std::stoi(seglist[1]), std::stoi(seglist[2])));
 
         else if(!seglist[0].compare("bjt"))
-            net->addComponent(new BJT(std::stoi(seglist[1]), std::stoi(seglist[2]), std::stoi(seglist[3]), std::stoi(seglist[4])));
+            net->addComponent(new BJT(std::stoi(seglist[1]), std::stoi(seglist[2]), std::stoi(seglist[3]), std::stoi(seglist[4]), optargs));
 
         else if(!seglist[0].compare("opa"))
             net->addComponent(new OPA(std::stoi(seglist[1]), std::stoi(seglist[2]), std::stoi(seglist[3])));
