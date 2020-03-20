@@ -59,6 +59,18 @@ struct MNASolver
     int info;
     int one = 1;
 
+    int iter;
+    void *pt[64];
+    MKL_INT maxfct, mnum, error, msglvl;
+    int phase = 13;
+    int nz = 0;
+    MKL_INT i, j;
+    double ddum;          /* Double dummy */
+    MKL_INT idum;         /* Integer dummy. */
+    MKL_INT nrhs = 1;     /* Number of right hand sides. */
+    MKL_INT mtype = -99;       /* Real unsymmetric matrix */
+    MKL_INT iparm[64];
+
 
     /*
 

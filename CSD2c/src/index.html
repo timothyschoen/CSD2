@@ -4,11 +4,14 @@
 <h1 class="title">   </h1>
 </header>
 <head>
+  <div class="slidecontainer">
+  <input type="range" min="0" max="127" value="50" class="slider" id="myRange">
+  </div>
   <title>OSC test server</title>
   <script src="DragSelect.js"></script>
-  
+
   <script src="setup.js"></script>
-  
+
   <script src="console-viewer.js"></script>
   <script src="Inlet.js"></script>
   <script src="Component.js"></script>
@@ -103,6 +106,7 @@
 
 </head>
 <body>
+
   <div class="topnav">
   <a href="#new" onclick="
       localStorage.setItem('load', 'new');
@@ -134,6 +138,7 @@
   }
   </style>
   <body>
+
 
 </body>
 </html>

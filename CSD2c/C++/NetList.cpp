@@ -94,7 +94,7 @@
 
 
         //t1 = std::chrono::high_resolution_clock::now();
-        //if(system.ticks < 44100) solver.solve3(components, system);
+        //if(system.ticks < 44100) solver.solve(components, system);
 
         solver.solveMKL(components, system);
         //solver.solve5(components, system);

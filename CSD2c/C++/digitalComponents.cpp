@@ -702,7 +702,7 @@ struct rtDigitalInput : Component<0, 0, 1>
 
 
 
-struct midiCtlIn : Component<0, 0, 3>
+struct midiCtlIn : Component<0, 0, 2>
 {
 
     int cc;

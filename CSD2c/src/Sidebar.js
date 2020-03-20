@@ -1,5 +1,6 @@
 sbarwidth = 350;
 
+var easymidi = require('easymidi');
 
 
 let tab = 1;
@@ -64,6 +65,8 @@ function Sidebar() {
 
   let codebox = new codeBox();
 
+  let midisliders = new midiSliders();
+
 
   // Function to open a tab and hide the rest
   function showTab(tab) {
@@ -89,9 +92,10 @@ function Sidebar() {
       [audiosettings],
       [logviewer, modlabel],
       [medialib],
-      [codebox]
+      [codebox],
+      [midisliders]
     ];
-    for (var i = 0; i < 5; i++) {
+    for (var i = 0; i < 6; i++) {
       if (i != tab) {
         tabs[i].forEach((t) => t.hide());
       }
@@ -116,6 +120,9 @@ function Sidebar() {
     }],
     ['r', '62%', function() {
       showTab(3)
+    }],
+    ['S', '68%', function() {
+      showTab(5)
     }]
   ];
   let buttons = [];
@@ -149,6 +156,7 @@ function Sidebar() {
     audiosettings.windowResize();
     medialib.windowresize();
     codebox.windowResize();
+    midisliders.windowResize();
     modlabel.style.right = sbarwidth - 105 + "px";
 
 
@@ -581,6 +589,54 @@ function codeBox() {
     coderun.style.display = "none";
     coderefresh.style.display = "none";
     modlabel.style.display = "none"
+  }
+
+  this.hide();
+}
+
+
+
+
+function midiSliders() {
+
+  var output = new easymidi.Output('MIDI Output Name', true);
+  output.send('noteon', {
+    note: 64,
+    velocity: 127,
+    channel: 3
+  });
+
+
+  var slider = document.getElementById("myRange");
+  slider.style.position = "fixed";
+  slider.style.width = sbarwidth - 100 + "px";
+  slider.style.height = window.innerHeight - 220 + "px";
+  slider.style.top = "80px";
+  slider.style.right = "5px";
+  slider.style.resize = "none";
+  slider.style.display = "none";
+  document.body.appendChild(slider);
+
+
+  this.value = function(val) {
+    //slider.innerHTML = val;
+  }
+
+  this.windowResize = function() {
+    slider.style.width = sbarwidth - 100 + "px";
+    slider.style.height = window.innerHeight - 220 + "px";;
+
+  }
+
+  this.show = function() {
+    slider.style.display = "block";
+
+  }
+
+
+  this.hide = function() {
+    slider.style.display = "none";
+
   }
 
   this.hide();

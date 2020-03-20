@@ -18,12 +18,10 @@
 /*
 #include "./IterativeLinearSolvers.h"
 #include "SparseLU"
-
 // prerequisites
 #include "./freeaml/Matrix.h"
 #include "./freeaml/Vector.h"
 #include "./freeaml/SparseMatrix.h"
-
 // Solvers
 #include "./freeaml/IncompleteCholeskyConjugateGradient.h"
 #include "./freeaml/SuccessiveOverRelaxation.h"
@@ -35,16 +33,7 @@
 #include "./freeaml/PLUFactorization.h"
 #include "./freeaml/SteepestDescent.h"
 #include "./freeaml/WeightedJacobi.h"
-
 #include "./ilupp/iluplusplus.h"
-
-
-
-
-
-
-
-
 extern "C" {    // another way
       #include "csparse.h"
     };
@@ -53,13 +42,9 @@ extern "C" {    // another way
 
 
     /*
-
 		freeaml::Vector<double> sysA;
-
 		freeaml::SparseMatrix<double> A;
-
 		freeaml::Vector<double> x;
-
 		freeaml::Vector<double> b;
 */
 
@@ -94,8 +79,6 @@ extern "C" {    // another way
 	 				A = freeaml::SparseMatrix<double>(rNets, rNets, sysA);
 	 				x = freeaml::Vector<double>(systemX, systemX+rNets);
 	 				b = freeaml::Vector<double>(systemB, systemB+rNets);
-
-
          for (int i = 0; i < rNets; i++ ) {
              systemB[i] = m.b[i+1].lu;
              systemX[i] = 0;
@@ -182,79 +165,52 @@ extern "C" {    // another way
 /*
       void solveEigen(std::vector<IComponent*> &components, MNASystem & m)
       {
-
           Eigen::VectorXd mX(rNets);
-
-
           Eigen::SparseMatrix<double> mA(rNets, rNets);
           Eigen::VectorXd mB(rNets);
-
           for (size_t i = 0; i < rNets; i++) {
             mX(i) = m.b[i+1].lu;
           }
-
           updatePre(tStep, m);
-
           for (int i = 0; i < rNets; i++ ) {
               mB(i) = m.b[i+1].lu;
               for (int j = 0; j < rNets; j++ ) {
                   mA.coeffRef(i, j) = m.A[j+1][i+1].lu; //klopt dit??
               }
           }
-
           solver.compute(mA);
-
           mX = solver.solve(mB);
-
           for (size_t i = 0; i < rNets; i++) {
             m.b[i+1].lu = mX(i);
           }
         }
-
-
-
       void solveAML(std::vector<IComponent*> &components, MNASystem & m)
       {
-
 				for (int i = 0; i < rNets; i++ ) {
 						x[i] = m.b[i+1].lu;
 				}
 				//std::vector<double> sysA(rNets);
 				updatePre(tStep, m);
-
         //
-
         luFactor(m);
-
         freeaml::GeneralizedMinimumResidual<double> lss(1, 1e-5);
         //freeaml::GaussianElimination lss;
-
 				for (int i = 0; i < rNets; i++ ) {
 						b[i] = m.b[i+1].lu;
 						for (int j = 0; j < rNets; j++ ) {
 								systemA[(i*(rNets))+j] = m.A[i+1][j+1].lu;
 						}
 				}
-
 				sysA = freeaml::Vector<double>(systemA, systemA+(rNets*rNets));
 				A = freeaml::SparseMatrix<double>(rNets, rNets, sysA);
 				//x = freeaml::Vector<double>(systemX, systemX+rNets);
 				//b = freeaml::Vector<double>(systemB, systemB+rNets);
-
-
 				lss.solve(A, x, b);
-
 				for (int i = 0; i < rNets; i++ ) {
 							 m.b[i+1].lu = x[i];
-
 				}
-
-
 				double residual = (A * x - b).l2_norm();
-
-
     }
-
  */
 
 
