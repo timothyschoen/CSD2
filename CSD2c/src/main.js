@@ -86,7 +86,7 @@ let types = {
     'tooltips' :   ['Anode', 'Cathode'],
     'code': " diode, i0, i1"
   },
-  'bjt': { // dont use this, use pnp and npn instead. The reason im including this is because we have lots of patches depending on it
+  'bjt': { // dont use this, use pnp and npn instead. The reason im including this is because we have some old patches depending on it
     'inlets': 1,
     'outlets': 2,
     'args': 1,
@@ -617,7 +617,7 @@ let draginstance = -1; // Is any component being dragged? -1 means no, otherwise
 
 let halsettings = [44100, 44100, 24, '.WAV', 1024]; // Export and audio settings for halite
 
-let typing = false; // Check if we're typing, if so, disable keyboard shortcuts
+//let typing = false; // Check if we're typing, if so, disable keyboard shortcuts
 
 let initializing = true;
 
@@ -937,7 +937,7 @@ document.addEventListener("keydown", function(event) {
   var key = event.which || event.keyCode; // keyCode detection
   var ctrl = event.ctrlKey ? event.ctrlKey : ((key === 17) ? true : false); // ctrl detection
 
-  if (!typing) //ignore shortcuts when typing
+  if (!blocked) //ignore shortcuts when typing
   {
     switch (event.keyCode) {
       case (8 || 46): // 'backspace' or 'delete' is pressed

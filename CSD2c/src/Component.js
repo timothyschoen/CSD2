@@ -75,8 +75,10 @@ function Component(name, xin = mouseX, yin = mouseY - 200) {
     inp = document.createElement("INPUT");
     inp.value = text;
     inputting = true;
+    if (connectingline !== undefined) {
+      connectingline();
+    }
     blocked = true;
-    typing = true;
     // Display it over the bounds of the component
     var bound = divComponent.getBoundingClientRect();
     inp.style.cssText = 'background-color: #efefef; font-size:11px; font:sans-serif; text-align: center; border:none; outline:none;';
@@ -96,7 +98,7 @@ function Component(name, xin = mouseX, yin = mouseY - 200) {
   }
 
   this.getindex = function() {
-    return boxes.indexOf(this);
+    return boxes.indexOf(instance);
   }
 
   this.gettype = function() {
@@ -154,7 +156,7 @@ function Component(name, xin = mouseX, yin = mouseY - 200) {
     for (let i = 0; i < newinlets; i++) {
       let datatype = 'analog';
       if (types[type]['datatypes'] !== undefined) {
-        datatype = types[type]['datatypes'][i]
+        datatype = types[type]['datatypes'][i];
       }
       inlets[i] = new Inlet(start, -4, [this, i], 'inlet', datatype, types[type]['colors'][i])
       if(types[type]['tooltips'] !== undefined) {
@@ -190,7 +192,6 @@ function Component(name, xin = mouseX, yin = mouseY - 200) {
     if (inputting == true) {
       inputting = false;
       blocked = false
-      typing = false;
       name = inp.value;
       inp.remove();
     }
@@ -208,8 +209,8 @@ function Component(name, xin = mouseX, yin = mouseY - 200) {
       for (let i = 0; i < optargs.length; i++) {
         optargs[i] = parseFloat(optargs[i])
       }
-      if (type == 'ground' && boxes.indexOf(this) != 0) {
-        boxes.move(boxes.indexOf(this), 0); // it is essential that ground is at 0
+      if (type == 'ground' && boxes.indexOf(instance) != 0) {
+        boxes.move(boxes.indexOf(instance), 0); // it is essential that ground is at 0
       }
       valid = true;
       divComponent.style.backgroundColor = '#424242'
@@ -217,6 +218,18 @@ function Component(name, xin = mouseX, yin = mouseY - 200) {
     } else {
       divComponent.innerHTML = name;
       divComponent.style.backgroundColor = '#ff6961'
+
+      for (let i = connections.length - 1; i >= 0; i--) {
+        // count backwards to avoid messing up the order when removing
+        if (JSON.stringify(connections[i].getinlets()[0]).includes(boxes.indexOf(instance)) || JSON.stringify(connections[i].getinlets()[1]).includes(boxes.indexOf(instance))) {
+          connections[i].remove();
+        }
+        // Then remove inlets
+        for (let i = 0; i < inlets.length; i++) {
+          inlets[i].remove();
+        }
+        inlets = [];
+      }
       valid = false;
     }
 
@@ -234,7 +247,7 @@ function Component(name, xin = mouseX, yin = mouseY - 200) {
     // First remove connections
     for (let i = connections.length - 1; i >= 0; i--) {
       // count backwards to avoid messing up the order when removing
-      if (connections[i].getinlets()[0].includes(boxes.indexOf(this))) {
+      if (connections[i].getinlets()[0].includes(boxes.indexOf(instance))) {
         connections[i].remove();
       }
     }
@@ -246,7 +259,7 @@ function Component(name, xin = mouseX, yin = mouseY - 200) {
     divComponent.parentNode.removeChild(divComponent);
 
     // Then remove the box
-    boxes.splice(boxes.indexOf(this), 1);
+    boxes.splice(boxes.indexOf(instance), 1);
   }
 
   }
