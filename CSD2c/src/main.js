@@ -788,6 +788,7 @@ function precompile(save = 1) {
         console.log("Not all analog inlets connected! \n");
         console.log("Analog boxes with unconnected inlets will be ignored \n");
         x = amtinlets;
+        console.log(boxtype, boxargs);
         boxes[i].isValid(false);
 
       }

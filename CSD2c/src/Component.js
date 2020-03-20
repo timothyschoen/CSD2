@@ -192,6 +192,10 @@ function Component(name, xin = mouseX, yin = mouseY - 200) {
         }
         start += diff;
     }
+
+    if(type == "pot") {
+      midisliders.update();
+    }
   }
 
   // Close the input and parse the name
@@ -239,8 +243,6 @@ function Component(name, xin = mouseX, yin = mouseY - 200) {
       }
       valid = false;
     }
-
-
   }
 
   // Delete an inlet
@@ -267,6 +269,10 @@ function Component(name, xin = mouseX, yin = mouseY - 200) {
 
     // Then remove the box
     boxes.splice(boxes.indexOf(instance), 1);
+
+    if (type == "pot" || type  == "varres") {
+      midisliders.update();
+    }
   }
 
   }
@@ -296,7 +302,8 @@ function Component(name, xin = mouseX, yin = mouseY - 200) {
   // If this object has no name, open an input!
   if (name == undefined) {
     this.inputname("New Object");
-  } else {
+  }
+  else {
     this.closeinput();
   }
 }

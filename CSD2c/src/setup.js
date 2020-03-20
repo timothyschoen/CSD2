@@ -3,6 +3,8 @@ const os = require('os');
 
 let sbarwidth;
 
+let midisliders;
+
 // Link to our read-write working directory
 let home = os.homedir() + "/Documents/Circuitry";
 // __dirname refers to the read-only working directory inside the electron app
