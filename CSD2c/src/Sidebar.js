@@ -3,6 +3,9 @@ sbarwidth = 350;
 var easymidi = require('easymidi');
 
 
+var midioutput = new easymidi.Output('MIDIhh Name', true);
+
+
 let tab = 1;
 
 function Sidebar() {
@@ -599,12 +602,6 @@ function codeBox() {
 
 function midiSliders() {
 
-  var output = new easymidi.Output('MIDI Output Name', true);
-  output.send('noteon', {
-    note: 64,
-    velocity: 127,
-    channel: 3
-  });
 
 
   var slider = document.getElementById("myRange");
@@ -616,6 +613,14 @@ function midiSliders() {
   slider.style.resize = "none";
   slider.style.display = "none";
   document.body.appendChild(slider);
+
+  slider.oninput = function() {
+    midioutput.send('cc', {
+      controller: 1,
+      value: this.value,
+      channel: 1
+    });
+  }
 
 
   this.value = function(val) {
