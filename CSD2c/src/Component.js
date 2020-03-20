@@ -109,6 +109,13 @@ function Component(name, xin = mouseX, yin = mouseY - 200) {
     return divComponent;
   }
 
+  this.isValid = function(val) {
+    if(val !== undefined) {
+      valid = val;
+    }
+    return valid;
+  }
+
   this.getargs = function() {
     return args;
   }

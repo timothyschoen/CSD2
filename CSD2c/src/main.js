@@ -774,11 +774,7 @@ function precompile(save = 1) {
 
         }
       }
-      if(itercode.includes("i" + x)) {
-        console.log("Not all inlets connected! \n")
-        console.log("Unconnected inlets will be connected to ground \n")
-        itercode = itercode.replace("i" + x, 0);
-      }
+
       // check of type == digital??
       for (let d = 0; d < digitalconns.length; d++) {
         if (JSON.stringify(digitalconns[d]).includes(target)) {
@@ -788,11 +784,24 @@ function precompile(save = 1) {
       }
       itercode = itercode.replace("d" + x, JSON.stringify(inletconns[x]).replace(',', ':'));
 
+      if(itercode.includes("i" + x)) {
+        console.log("Not all analog inlets connected! \n");
+        console.log("Analog boxes with unconnected inlets will be ignored \n");
+        x = amtinlets;
+        boxes[i].isValid(false);
+
+      }
+
     }
     for (let x = 0; x < boxargs.length; x++) {
       itercode = itercode.replace("a" + x, convertMetric(boxargs[x]))
     }
+    if (boxes[i].isValid()) {
     itercode = itercode + ', ' + JSON.stringify(optargs).replace(',', ':') + '\n';
+    }
+    else {
+      itercode = '';
+    }
 
     iterboxes[i] = itercode;
   }
