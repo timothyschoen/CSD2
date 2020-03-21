@@ -19,8 +19,6 @@ struct NetList
 
     void setTimeStep(double tStepSize);
 
-    void resetTicks();
-
     double* getAudioOutput();
 
     void setMidiInput(std::vector<unsigned char> &message);
@@ -28,13 +26,11 @@ struct NetList
     void setOscBuffer(std::vector<double> &oscbuf);
 
 
-    void setAudioInput(double *buf);
+    void setAudioInput(double *buf); // implementeren!!
 
 
     void simulateTick();
 
-    // plotting and such would want to use this
-    const MNASystem & getMNA();
 
 protected:
 

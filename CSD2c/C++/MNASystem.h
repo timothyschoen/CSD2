@@ -14,6 +14,7 @@ struct MNASystem
 
     double audioInput[512]; // this is temporary because it's ugly
     double      time;
+    int sampleRate;
     long      ticks;
     double      tStep;
 

@@ -17,17 +17,14 @@
     {
         system.setSize(nets, diginets);
 
-
         for(int i = 0; i < components.size(); ++i)
         {
             components[i]->stamp(system);
         }
 
-        setStepScale((double)1/44100);
-        tStep = (double)1/44100;
-        solver.setSize(nets, tStep, system);
-
-
+        solver.setSize(nets, system);
+        setStepScale(0);
+        tStep = 0;
     }
 
 
@@ -42,13 +39,11 @@
         tStep = tStepSize;
         double stepScale = 1. / tStep;
         setStepScale(stepScale);
-        system.tStep = stepScale;
+
+        system.tStep = tStep;
+        system.sampleRate = stepScale;
     }
 
-    void NetList::resetTicks()
-    {
-        system.ticks = 0;
-    }
 
     double* NetList::getAudioOutput()
     {
@@ -129,17 +124,10 @@
         //std::cout << "Per sample: " << duration << '\n';
     }
 
-    // plotting and such would want to use this
-    const MNASystem & NetList::getMNA()
-    {
-        return system;
-    }
 
 
     void NetList::update()
     {
-
-
         for(int i = 0; i < components.size(); ++i)
         {
             components[i]->update(system);
@@ -179,5 +167,4 @@
                         || system.A[i][j].gdyn.size()) ++fill;
             }
         }
-        //printf("MNA density %.1f%%\n", 100 * fill / ((nets-1.)*(nets-1.)));
     }

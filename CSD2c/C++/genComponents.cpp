@@ -52,7 +52,7 @@ struct genLoader : Component2<0, 0, 3>
         gOutputs = new t_sample[nOutChannels];
 
         // Initialize Gen patcher
-        gState = (CommonState*)Patcher::create(44100, 1);
+        gState = (CommonState*)Patcher::create(m.sampleRate, 1);
 
     }
 

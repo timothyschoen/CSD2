@@ -1,14 +1,3 @@
-let dialog = require('electron').remote.dialog;
-let path = require('path');
-const net = require('net');
-
-
-const {spawn} = require('child_process');
-const {clipboard} = require('electron')
-
-document.body.style.backgroundColor = "#505050";
-document.head.style.height = "1500px";
-
 // Our main code manages instances of all our other classes, handles spawning C++ and preparing the code
 
 // All our objects, plus the data that we need to convert it to halite
@@ -834,7 +823,7 @@ function precompile(save = 1) {
 
 function startHalite(realtime) {
   let params = [];
-  let prefixes = ['-s', '-t', '-d', '-f', '-b']
+  let prefixes = ['-t ', '-s ', '-d ', '-f ', '-b ']
   for (var i = 0; i < halsettings.length; i++) {
     params.push(prefixes[i] + halsettings[i]);
   }
@@ -852,14 +841,16 @@ function startHalite(realtime) {
     let savepath = dialog.showSaveDialog({
       filters: [{
         name: "Audio",
-        extensions: ['wav', 'aif']
+        extensions: [halsettings[3].replace('.', '').toLowerCase()]
       }]
     });
     haliteappendix = ['-o ' + savepath, '-i ' + home + '/precompile.ncl']; // this doesn't contain everything yet...
   }
 
+
+
   if (!(realtime && (realtime_playing))) {
-    halite = spawn(path.join(__dirname, '/../compiled/Halite'), haliteappendix);
+    halite = spawn(path.join(__dirname, '/../compiled/Halite'), haliteappendix.concat(params));
 
 
 

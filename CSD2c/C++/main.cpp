@@ -14,8 +14,7 @@
 
 //#include "./gen/genlib.h"
 //#include "./genComponents.cpp"
-#define FORMAT RTAUDIO_FLOAT64
-#define SCALE  1.0
+
 
 double* inbuffer; // ugly, fix this
 
@@ -126,6 +125,8 @@ int main(int argc, char* argv[])
     std::string inputpath;
     std::string outputpath;
     std::string outputformat;
+
+
     double initarr[512] = {0};
     inbuffer = initarr;
 
@@ -164,7 +165,6 @@ int main(int argc, char* argv[])
         cmd.add(rtswitch);
         cmd.add(format);
         cmd.parse(argc, argv);
-
 
         // assign them to variables
         outputformat = format.getValue();
@@ -288,7 +288,7 @@ int main(int argc, char* argv[])
             net->addComponent(new stereoDigitalInput(seglist[1], std::stof(seglist[2]), seglist[3], seglist[4]));
 
         else if(!seglist[0].compare("rtinput-"))
-            net->addComponent(new rtDigitalInput(std::stof(seglist[1]), seglist[2]));
+            net->addComponent(new rtDigitalInput(std::stof(seglist[1]), seglist[2], buffersize));
 
         else if(!seglist[0].compare("ctlin-"))
             net->addComponent(new midiCtlIn(seglist[1], seglist[2]));
@@ -416,7 +416,6 @@ int main(int argc, char* argv[])
     net->buildSystem();
 
 // sets amount of time that is simulated between ticks (1/samplerate)
-    std::cout << "Sample Rate = " << enginesamplerate << std::endl;
 
     net->setMidiInput(message);
     net->setOscBuffer(oscBuffer);
@@ -425,9 +424,6 @@ int main(int argc, char* argv[])
     net->simulateTick();
     net->setTimeStep((double)1/enginesamplerate);
     net->simulateTick();
-
-
-
 
 
     double* output;
@@ -487,7 +483,7 @@ int main(int argc, char* argv[])
         dac.showWarnings( true );
 
         // Set our stream parameters for output only.
-        bufferFrames = 512;
+        bufferFrames = buffersize;
         RtAudio::StreamParameters oParams;
         oParams.deviceId = dac.getDefaultOutputDevice();
         oParams.nChannels = channs;
@@ -503,7 +499,7 @@ int main(int argc, char* argv[])
 
         try
         {
-            dac.openStream( &oParams, &iParams, FORMAT, 44100, &bufferFrames, &inout, (void *)&bufferBytes, &options );
+            dac.openStream( &oParams, &iParams, RTAUDIO_FLOAT64, outputsamplerate, &bufferFrames, &inout, (void *)&bufferBytes, &options );
             dac.startStream();
         }
         catch ( RtAudioError& e )

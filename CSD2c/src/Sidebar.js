@@ -1,11 +1,4 @@
-sbarwidth = 350;
 
-
-
-
-
-
-let tab = 1;
 
 function Sidebar() {
   let hidden = 0;
@@ -350,7 +343,7 @@ function audioSettings() {
   buflabel.style.cssText = "color:#dcdcdc; font-size:14px; font-family:sans-serif; position:fixed; right:x0px; top:13%".replace('x0', sbarwidth - 135);
   document.body.appendChild(buflabel);
 
-  let bufsizes = [4096, 256, 512, 1024, 2048];
+  let bufsizes = [512, 1024, 256, 128, 64];
   let buffersel = document.createElement("SELECT");
   buffersel.style.cssText = "font-size:12px; position:fixed; right:11px; top:13%";
   buffersel.style.width = "100px"
@@ -369,7 +362,7 @@ function audioSettings() {
   srenginelabel.style.cssText = "color:#dcdcdc; font-size:14px; font-family:sans-serif; position:fixed; right:x0px; top:20%".replace('x0', sbarwidth - 51);
   document.body.appendChild(srenginelabel);
 
-  let samplerates = [44100, 22050, 32000, 48000, 88200, 96000];
+  let samplerates = [44100, 48000, 88200, 96000]; // only rates that rtaudio allows
   let srenginesel = document.createElement("SELECT");
   srenginesel.style.cssText = "font-size:12px; position:fixed; right:11px; top:20%";
   srenginesel.style.width = "100px";

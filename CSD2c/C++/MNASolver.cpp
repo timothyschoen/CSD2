@@ -58,12 +58,11 @@ extern "C" {    // another way
 		//freeaml::BiconjugateGradientStabilized<double> lss(50, 1e-12);
 
 
-    void MNASolver::setSize(int size, double timestep, MNASystem & m)
+    void MNASolver::setSize(int size, MNASystem & m)
     {
 
         nets = size;
         rNets = size-1;
-        tStep = timestep;
 
 
          systemA = new double[rNets*rNets];
@@ -103,7 +102,7 @@ extern "C" {    // another way
         {
           //std::cout << "oude iter "<< iter << '\n';
             // restore matrix state and add dynamic values
-            updatePre(tStep, m);
+            updatePre(m);
 
             if(nets > 1) {
 
@@ -133,7 +132,7 @@ extern "C" {    // another way
                   {
 
 
-											updatePre(tStep, m);
+											updatePre(m);
 
                       if(nets > 1) {
 
@@ -171,7 +170,7 @@ extern "C" {    // another way
           for (size_t i = 0; i < rNets; i++) {
             mX(i) = m.b[i+1].lu;
           }
-          updatePre(tStep, m);
+          updatePre(m);
           for (int i = 0; i < rNets; i++ ) {
               mB(i) = m.b[i+1].lu;
               for (int j = 0; j < rNets; j++ ) {
@@ -190,7 +189,7 @@ extern "C" {    // another way
 						x[i] = m.b[i+1].lu;
 				}
 				//std::vector<double> sysA(rNets);
-				updatePre(tStep, m);
+				updatePre(m);
         //
         luFactor(m);
         freeaml::GeneralizedMinimumResidual<double> lss(1, 1e-5);
@@ -226,14 +225,14 @@ extern "C" {    // another way
     }
 
 
-    void MNASolver::updatePre(double stepScale, MNASystem & m)
+    void MNASolver::updatePre(MNASystem & m)
     {
         for(int i = 0; i < nets; ++i)
         {
-            m.b[i].updatePre(stepScale);
+            m.b[i].updatePre(m.tStep);
             for(int j = 0; j < nets; ++j)
             {
-                m.A[i][j].updatePre(stepScale);
+                m.A[i][j].updatePre(m.tStep);
             }
         }
     }

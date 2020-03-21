@@ -1,10 +1,18 @@
 let fs = require("fs");
 const os = require('os');
 
+let dialog = require('electron').remote.dialog;
+let path = require('path');
+const net = require('net');
 
 
+const {spawn} = require('child_process');
+const {clipboard} = require('electron');
 
-let sbarwidth;
+
+let sbarwidth = 350;
+
+let tab = 1;
 
 let midisliders;
 
@@ -28,6 +36,12 @@ let connecting = -1; // Is any inlet currently in the connecting state?
 let blocked = false; // for blocking actions that cause glitches, like either inputting, deleting or connecting at the same time
 
 let code = '';
+
+
+// Set background color
+document.body.style.backgroundColor = "#505050";
+document.head.style.height = "1500px";
+
 
 // Set up a file structure and copy all example files there
 // The inside of an electron app becomes read-only once compiled

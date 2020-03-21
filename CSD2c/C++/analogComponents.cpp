@@ -269,7 +269,7 @@ struct Inductor : Component<2, 1>
 
 
 
-        g = 1/((2.*l)/m.tStep);
+        g = 1/((2.*l)/m.sampleRate);
 
         m.stampStatic(+1, nets[0], nets[2]); // Naar A->B system
         m.stampStatic(-1, nets[1], nets[2]);
@@ -287,7 +287,7 @@ struct Inductor : Component<2, 1>
     void update(MNASystem & m) final
     {
 
-        g = 1/((2.*l)/m.tStep);
+        g = 1/((2.*l)/m.sampleRate);
 
 
         stateVar = voltage + g * m.b[nets[2]].lu;

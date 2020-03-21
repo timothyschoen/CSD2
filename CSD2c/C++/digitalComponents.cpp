@@ -673,7 +673,7 @@ struct rtDigitalInput : Component<0, 0, 1>
     double inputvalue;
     int tick;
 
-    rtDigitalInput(double inamp, std::string d0)
+    rtDigitalInput(double inamp, std::string d0, int bufsize)
     {
         digiPins[0] = d0;
         amplitude = inamp;
@@ -909,7 +909,7 @@ struct sineGenerator : Component<0, 0, 2>
     void updateInput(MNASystem & m) final
     {
         freq = m.getDigital(digiNets[0], freq);
-        phase += freq / 44100.;
+        phase += freq / m.sampleRate;
         if(phase >= 1) phase = phase - 1;
     }
 
@@ -943,7 +943,7 @@ struct squareGenerator : Component<0, 0, 2>
     void updateInput(MNASystem & m) final
     {
         freq = m.getDigital(digiNets[0], freq);
-        phase += freq / 44100.;
+        phase += freq / m.sampleRate;
         if(phase >= 1) phase = phase - 1;
     }
 
@@ -979,7 +979,7 @@ struct triangleGenerator : Component<0, 0, 2>
     void updateInput(MNASystem & m) final
     {
         freq = m.getDigital(digiNets[0], freq);
-        phase += freq / 44100.;
+        phase += freq / m.sampleRate;
         if(phase >= 1) phase = phase - 1;
     }
 
@@ -1015,7 +1015,7 @@ struct sawGenerator : Component<0, 0, 2>
     void updateInput(MNASystem & m) final
     {
         freq = m.getDigital(digiNets[0], freq);
-        phase += freq / 44100.;
+        phase += freq / m.sampleRate;
         if(phase >= 1) phase = phase - 1;
     }
 

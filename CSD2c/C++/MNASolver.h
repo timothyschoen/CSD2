@@ -93,7 +93,7 @@ struct MNASolver
 		//freeaml::BiconjugateGradientStabilized<double> lss(50, 1e-12);
 
 
-    void setSize(int size, double timestep, MNASystem & m);
+    void setSize(int size, MNASystem & m);
 
     void solve(std::vector<IComponent*> &components, MNASystem & m);
 
@@ -111,7 +111,7 @@ protected:
     bool newton(std::vector<IComponent*> &components, MNASystem & m);
 
 
-    void updatePre(double stepScale, MNASystem & m);
+    void updatePre(MNASystem & m);
 
     void luFactor( MNASystem & m);
 

@@ -20,10 +20,8 @@
                 A[i][j].clear();
             }
         }
-
         time = 0;
         ticks = 0;
-        tStep = 1./44100.; // set to samplerate as default to prevent dividing by 0
     }
 
     void MNASystem::stampTimed(double g, int r, int c)
