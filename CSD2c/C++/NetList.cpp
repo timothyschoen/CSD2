@@ -25,6 +25,8 @@
         solver.setSize(nets, system);
         setStepScale(0);
         tStep = 0;
+        system.tStep = tStep;
+        system.sampleRate = 44100; // this is purely to prevent dividing by 0
     }
 
 
