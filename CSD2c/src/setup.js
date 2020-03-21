@@ -1,9 +1,22 @@
 let fs = require("fs");
 const os = require('os');
 
+
+
+
 let sbarwidth;
 
 let midisliders;
+
+let sliders = [];
+
+
+const { Client } = require('node-osc');
+
+const client = new Client('127.0.0.1', 9000);
+
+
+
 
 // Link to our read-write working directory
 let home = os.homedir() + "/Documents/Circuitry";
@@ -112,7 +125,7 @@ function dragElement(elmnt, sidebar) {
     pos4 = e.clientY;
     document.onmouseup = closeDragElement;
     // call a function whenever the cursor moves:
-    document.onmousemove = elementDrag;
+    document.addEventListener("mousemove", elementDrag);
   }
 
   function elementDrag(e) {
@@ -124,7 +137,7 @@ function dragElement(elmnt, sidebar) {
     pos3 = e.clientX;
     pos4 = e.clientY;
 
-    if (sidebar == undefined) {
+    if (sidebar == undefined && blocked == false) {
       // Make sure the element stays selected
       ds.addSelection(elmnt);
       // Get all selected elements (for dragging multiple components at once with shift/ctrl)
@@ -144,7 +157,7 @@ function dragElement(elmnt, sidebar) {
       for (var i = 0; i < connections.length; i++) {
         connections[i].update();
       }
-    } else {
+    } else if (blocked == false) {
       // If we're dragging the sidebar, just set the horizontal position
       sbarwidth = window.innerWidth - (elmnt.offsetLeft - pos1);
       elmnt.style.right = sbarwidth - 30 + "px";
@@ -157,6 +170,6 @@ function dragElement(elmnt, sidebar) {
   function closeDragElement() {
     // stop moving when mouse button is released:
     document.onmouseup = null;
-    document.onmousemove = null;
+    document.removeEventListener("mousemove", elementDrag);
   }
 }

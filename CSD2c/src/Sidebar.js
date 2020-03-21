@@ -1,9 +1,8 @@
 sbarwidth = 350;
 
-var easymidi = require('easymidi');
 
 
-var midioutput = new easymidi.Output('MIDIhh Name', true);
+
 
 
 let tab = 1;
@@ -68,7 +67,6 @@ function Sidebar() {
 
   let codebox = new codeBox();
 
-  midisliders = new midiSliders();
 
 
   // Function to open a tab and hide the rest
@@ -96,9 +94,8 @@ function Sidebar() {
       [logviewer, modlabel],
       [medialib],
       [codebox],
-      [midisliders]
     ];
-    for (var i = 0; i < 6; i++) {
+    for (var i = 0; i < 5; i++) {
       if (i != tab) {
         tabs[i].forEach((t) => t.hide());
       }
@@ -124,9 +121,6 @@ function Sidebar() {
     ['r', '62%', function() {
       showTab(3)
     }],
-    ['S', '68%', function() {
-      showTab(5)
-    }]
   ];
   let buttons = [];
 
@@ -159,7 +153,6 @@ function Sidebar() {
     audiosettings.windowResize();
     medialib.windowresize();
     codebox.windowResize();
-    midisliders.windowResize();
     modlabel.style.right = sbarwidth - 105 + "px";
 
 
@@ -597,136 +590,75 @@ function codeBox() {
   this.hide();
 }
 
-function singleSlider(idx) {
+function singleSlider(divComponent) {
+
 
   var slider = document.createElement("INPUT");
-  slider.setAttribute("type", "range");
-  slider.style.position = "fixed";
-  slider.style.width = sbarwidth - 160 + "px";
+  slider.type = "range";
+  slider.min = 0;
+  slider.max = 1;
+  slider.step = 0.001;
+  slider.style.position = "relative";
+  slider.style.width = 155 + "px";
   slider.style.height = "20px"
-  slider.style.top = 80+idx*25 + "px";
-  slider.style.right = "50px";
+  slider.style.bottom = "5px";
+  slider.style.right = "0px";
   slider.style.resize = "none";
   slider.style.display = "none";
   slider.style.zIndex = "1";
-  document.body.appendChild(slider);
+
+  divComponent.style.width = 185 + "px";
+  divComponent.appendChild(slider);
 
 
-  let sliderlabel = document.createElement("div");
-  sliderlabel.style.cssText = "color:#dcdcdc; font-size:14px; font-family:sans-serif; position:fixed; right:x0px;".replace('x0', sbarwidth - 80);
-  sliderlabel.style.top = 83+idx*25 + "px";
-  document.body.appendChild(sliderlabel);
+  slider.addEventListener('mousedown',function (event){
+   event.stopPropagation();
+});
+
 
   let valuelabel = document.createElement("div");
-  valuelabel.style.cssText = "color:#dcdcdc; font-size:14px; font-family:sans-serif; position:fixed; right:x0px;".replace('x0', 20);
-  valuelabel.style.top = 83+idx*25 + "px";
-  valuelabel.innerHTML = slider.value;
-  document.body.appendChild(valuelabel);
+  valuelabel.style.cssText = "color:#dcdcdc; font-size:13px; font-family:sans-serif; position:relative; bottom:24px; left:163px".replace('x0', 20);
+  valuelabel.innerHTML = parseFloat(slider.value).toFixed(2);
+  divComponent.appendChild(valuelabel);
 
+  slider.style.display = "block";
+  valuelabel.style.display = "block";
+
+
+slider.update = function() {
+    divComponent.setargs(["/slider" + sliders.indexOf(divComponent), JSON.stringify(sliders.indexOf(divComponent))]);
+}
+
+divComponent.update = function(a) {
+  slider.update();
+}
 
   slider.oninput = function() {
-    valuelabel.innerHTML = this.value;
-    midioutput.send('cc', {
-      controller: 1,
-      value: this.value,
-      channel: 1
+      valuelabel.innerHTML = parseFloat(slider.value).toFixed(2);
+    client.send("/slider"+sliders.indexOf(divComponent), parseFloat(slider.value), (err) => {
+      if (err) console.log(err);
     });
+    slider.update();
   }
 
-  this.hide = function() {
-      slider.style.display = "none";
-      sliderlabel.style.display = "none";
-      valuelabel.style.display = "none";
-
-  }
-
-  this.show = function() {
-      slider.style.display = "block";
-      sliderlabel.style.display = "block";
-      valuelabel.style.display = "block";
-
-  }
-
-  this.setName = function(name) {
-      sliderlabel.innerHTML = name;
-
-  }
 
   this.delete = function() {
+      sliders.splice(sliders.indexOf(divComponent), 1);
+      for (var i = 0; i < sliders.length; i++) {
+        sliders[i].update();
+      }
+
+      // undo slider specific modifications we made to the component
+      divComponent.setargs([]);
+      divComponent.style.width = "";
+      divComponent.style.paddingTop = "3px";
+      divComponent.style.paddingBottom = "1px";
+      divComponent.style.paddingRight = "12px";
+      divComponent.update = undefined;
+
       slider.remove();
-      sliderlabel.remove();
       valuelabel.remove();
 
   }
-
-  this.windowResize = function() {
-  slider.style.width = sbarwidth - 160 + "px";
-  slider.style.top = (80+idx*25) + "px";
-
-  sliderlabel.style.top = 83+idx*25 + "px";
-  sliderlabel.style.right = sbarwidth - 80 + "px";
-
-  valuelabel.style.top = 83+idx*25 + "px";
-  valuelabel.style.right = 20 + "px";
-
-  }
-}
-
-
-function midiSliders() {
-
-  let sliders = [];
-  let hidden = 1;
-
-
-
-  this.windowResize = function() {
-    for (var i = 0; i < sliders.length; i++) {
-      sliders[i].windowResize();
-    }
-  }
-
-  this.show = function() {
-    if (hidden) {
-      this.update();
-      hidden = 0;
-    }
-    for (var i = 0; i < sliders.length; i++) {
-      sliders[i].show();
-    }
-
-  }
-
-  this.hide = function() {
-    hidden = 1;
-    for (var i = 0; i < sliders.length; i++) {
-      sliders[i].hide();
-    }
-  }
-
-  this.update = function() {
-
-    // destroy old elements
-    for (let i = sliders.length - 1; i >= 0; i--) {
-      sliders[i].delete();
-      sliders.splice(i, 1);
-    }
-
-    sliders = []; // clear sliders
-
-    for (var i = 0; i < boxes.length; i++) {
-      if (boxes[i].gettype() == "pot") {
-        sliders.push(new singleSlider(sliders.length)); // add updated sliders
-        sliders[sliders.length-1].setName(boxes[i].gettype() + " " + sliders.length)
-      }
-
-    }
-    if(!hidden) {
-      this.show();
-    }
-
-
-  }
-
-  this.hide();
+  slider.update();
 }

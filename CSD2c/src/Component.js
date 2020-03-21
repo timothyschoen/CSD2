@@ -18,6 +18,8 @@ function Component(name, xin = mouseX, yin = mouseY - 200) {
   let type = name; // Name of our component ('resistor' in 'resistor 200')
   let _this = this;
 
+  let uiChild;
+
   let instance = this;
 
 
@@ -120,6 +122,15 @@ function Component(name, xin = mouseX, yin = mouseY - 200) {
     return args;
   }
 
+  this.setargs = function(a) {
+    optargs = a;
+  }
+
+
+  divComponent.setargs = function(a) {
+    optargs = a;
+  }
+
   this.getoptargs = function() {
     return optargs;
   }
@@ -139,8 +150,16 @@ function Component(name, xin = mouseX, yin = mouseY - 200) {
 
   // When the name changes or the object is being created, display the new name and update the inlets
   this.changetype = function(oldtype) {
+    if(uiChild !== undefined) {
+      uiChild.delete();
+    }
     if(type === 'comment') {
       divComponent.innerHTML = name.replace(type, "");
+    }
+    else if (type === 'slider-') {
+      divComponent.innerHTML = '';
+      sliders.push(divComponent);
+      uiChild = new singleSlider(divComponent);
     }
     else {
     divComponent.innerHTML = name;
@@ -193,9 +212,6 @@ function Component(name, xin = mouseX, yin = mouseY - 200) {
         start += diff;
     }
 
-    if(type == "pot") {
-      midisliders.update();
-    }
   }
 
   // Close the input and parse the name
@@ -252,6 +268,9 @@ function Component(name, xin = mouseX, yin = mouseY - 200) {
 
   // Delete a whole box
   this.delete = function() {
+    if(uiChild !== undefined) {
+      uiChild.delete();
+    }
     if(blocked == false) {
     // First remove connections
     for (let i = connections.length - 1; i >= 0; i--) {
@@ -269,10 +288,6 @@ function Component(name, xin = mouseX, yin = mouseY - 200) {
 
     // Then remove the box
     boxes.splice(boxes.indexOf(instance), 1);
-
-    if (type == "pot" || type  == "varres") {
-      midisliders.update();
-    }
   }
 
   }

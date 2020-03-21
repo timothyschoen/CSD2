@@ -857,6 +857,33 @@ struct stereoDigitalInput : Component<0,0,2>
 
 };
 
+struct slider : Component<0, 0, 1>
+{
+
+    float message = 0.5;
+    int idx;
+
+
+    slider(std::string d0, int idx) : idx(idx)
+    {
+        digiPins[0] = d0;
+    }
+
+    void stamp(MNASystem & m) final
+    { }
+
+    void updateInput(MNASystem & m) final
+    {
+
+      message = (*m.oscBuffer)[idx];
+    }
+
+    void update(MNASystem & m) final
+    {
+        m.setDigital(digiNets[0], message);
+    }
+
+};
 
 
 struct sineGenerator : Component<0, 0, 2>

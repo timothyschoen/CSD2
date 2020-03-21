@@ -70,6 +70,11 @@
         system.midiInput = &message;
     }
 
+    void NetList::setOscBuffer(std::vector<double> &oscbuf)
+    {
+        system.oscBuffer = &oscbuf;
+    }
+
     void NetList::setAudioInput(double *buf)
     {
         //*system.audioInput = buf;
@@ -96,7 +101,9 @@
         //t1 = std::chrono::high_resolution_clock::now();
         //if(system.ticks < 44100) solver.solve(components, system);
 
+
         solver.solveMKL(components, system);
+
         //solver.solve5(components, system);
         //solver.solve3(components, system);
 

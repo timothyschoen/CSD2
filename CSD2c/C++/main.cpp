@@ -1,4 +1,5 @@
-
+#include <lo/lo.h>
+#include <lo/lo_cpp.h>
 
 #include <sstream>
 #include <fstream>
@@ -38,6 +39,28 @@ unsigned int bufferFrames, fs = 44100, offset = 0;
 
 RtMidiIn *midiin = new RtMidiIn();
 std::vector<unsigned char> message;
+
+
+std::vector<double> oscBuffer(20, 0.5);
+
+
+
+
+
+ /*
+  * Add a method handler for "/example,i" using a C++11 lambda to
+  * keep it succinct.  We capture a reference to the `received'
+  * count and modify it atomatically.
+  *
+  * You can also pass in a normal function, or a callable function
+  * object.
+  *
+  * Note: If the lambda doesn't specify a return value, the default
+  *       is `return 0', meaning "this message has been handled,
+  *       don't continue calling the method chain."  If this is not
+  *       the desired behaviour, add `return 1' to your method
+  *       handlers.
+  */
 
 
 
@@ -105,6 +128,19 @@ int main(int argc, char* argv[])
     std::string outputformat;
     double initarr[512] = {0};
     inbuffer = initarr;
+
+
+    lo::ServerThread st(9000);
+
+
+    if (!st.is_valid()) {
+        std::cout << "Nope." << std::endl;
+    }
+
+
+
+    st.start();
+
 
     // register all our parameters
     try
@@ -186,8 +222,14 @@ int main(int argc, char* argv[])
         // and then our final list of optional arguments is splitted with :
         while(std::getline(argstream, parsedargs, ':'))
         {
+            // remove array blocks
             parsedargs.erase(0, 1);
             parsedargs.erase(parsedargs.size()-1, 1);
+            //remove any quotes
+            parsedargs.erase(
+            remove( parsedargs.begin(), parsedargs.end(), '\"' ),
+            parsedargs.end()
+            );
             optargs.push_back(parsedargs);
         }
 
@@ -201,6 +243,17 @@ int main(int argc, char* argv[])
             continue;
         }
 // Digital components
+        else if(!seglist[0].compare("slider-")) {
+            std::string address(optargs[0]);
+            int idx(std::stoi(optargs[1]));
+
+            net->addComponent(new slider(seglist[1], idx));
+            st.add_method(address, "f",
+                          [&, seglist, idx](lo_arg **argv, float){
+                            oscBuffer[idx] = argv[0]->f;
+                        });
+        }
+
 
         else if(!seglist[0].compare("cycle-"))
             net->addComponent(new sineGenerator(optargs, seglist[1], seglist[2]));
@@ -366,6 +419,7 @@ int main(int argc, char* argv[])
     std::cout << "Sample Rate = " << enginesamplerate << std::endl;
 
     net->setMidiInput(message);
+    net->setOscBuffer(oscBuffer);
     //net->setAudioInput(inbuffer);
 
     net->simulateTick();

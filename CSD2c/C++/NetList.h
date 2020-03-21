@@ -25,6 +25,9 @@ struct NetList
 
     void setMidiInput(std::vector<unsigned char> &message);
 
+    void setOscBuffer(std::vector<double> &oscbuf);
+
+
     void setAudioInput(double *buf);
 
 

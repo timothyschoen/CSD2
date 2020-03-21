@@ -1,7 +1,7 @@
 CC = clang++
 CFLAGS = -Wall -std=c++17
 AUFLAGS =
-MAINFLAGS = -lpthread -lm
+MAINFLAGS = -lpthread -lm -llo
 GENDEPS =
 
 # Extra flags for different kinds of solvers

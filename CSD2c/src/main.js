@@ -193,6 +193,16 @@ let types = {
 
   // digital objects
   // I/O
+
+  'slider-': {
+    'inlets': 0,
+    'outlets': 1,
+    'datatypes': ['digital', 'digital'],
+    'args': 0,
+    'colors': ['#FE3B3B', '#191919'],
+    'code': " slider-, d0"
+  },
+
   'input-': {
     'inlets': 0,
     'outlets': 1,
@@ -719,6 +729,12 @@ function convertMetric(str) {
 
 // Convert our line-based network into an electrical nodes network that Halite can interpret
 function precompile(save = 1) {
+  // Make sure we have correct OSC addresses for our sliders
+  for (var i = 0; i < sliders.length; i++) {
+    sliders[i].update();
+  }
+
+
   let iterconnections = [
     [
       [0, 0],

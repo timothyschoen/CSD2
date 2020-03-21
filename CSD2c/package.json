@@ -47,12 +47,14 @@
     }
   },
   "dependencies": {
-    "easymidi": "^1.0.3",
     "electron": "^7.1.10",
     "electron-compile": "^6.4.4",
     "electron-forge": "^5.2.4",
+    "express": "^4.17.1",
     "file-browser": "^0.0.5",
-    "node-localstorage": "^2.1.5"
+    "lodash": "^4.17.15",
+    "node-osc": "^4.1.8",
+    "socket.io": "^1.0.0"
   },
   "devDependencies": {
     "babel-plugin-transform-async-to-generator": "^6.24.1",
