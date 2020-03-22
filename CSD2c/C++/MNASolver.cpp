@@ -74,17 +74,21 @@ extern "C" {    // another way
 
 
          /*
+         for (int i = 0; i < rNets; i++ ) {
+             systemB[i] = 0;
+             for (int j = 0; j < rNets; j++ ) {
+                 systemA[(i*(rNets))+j] = 0; //klopt dit??
+             }
+         } *
+
+        /*
 					sysA = freeaml::Vector<double>(systemA, systemA+(rNets*rNets));
 	 				A = freeaml::SparseMatrix<double>(rNets, rNets, sysA);
 	 				x = freeaml::Vector<double>(systemX, systemX+rNets);
 	 				b = freeaml::Vector<double>(systemB, systemB+rNets);
-         for (int i = 0; i < rNets; i++ ) {
-             systemB[i] = m.b[i+1].lu;
-             systemX[i] = 0;
-             for (int j = 0; j < rNets; j++ ) {
-                 systemA[(i*(rNets))+j] = m.A[j+1][i+1].lu; //klopt dit??
-             }
-         } */
+          */
+
+
 
 
 
@@ -143,12 +147,18 @@ extern "C" {    // another way
 													}
 											}
 
+
+
 												dgesv_(&rNets, &one, systemA, &rNets, pivot, systemB, &rNets, &info);
-												m.b[0].lu = 0;
+
+
+                        m.b[0].lu = 0;
 												for (size_t i = 1; i < nets; i++) {
 													 m.b[i].lu = systemB[i-1];
 
-											 }
+                         }
+
+
 
                       if(newton(components, m)) break;
 

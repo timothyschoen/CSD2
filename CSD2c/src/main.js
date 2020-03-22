@@ -608,17 +608,14 @@ let preset = ["ground", "output 0.3", 'input ' + "./Media/sample-44k.wav 0.2"];
 
 let halite; // variable for halite process
 
-let realtime_playing = false; // Checks if we are playing in realtime
+let halite_running = false; // Checks if we are playing in realtime
 
 let sbar = new Sidebar; // Sidebar (see sidebar.js)
-
-let draginstance = -1; // Is any component being dragged? -1 means no, otherwise it contains the index number
 
 let halsettings = [44100, 44100, 24, '.WAV', 1024]; // Export and audio settings for halite
 
 //let typing = false; // Check if we're typing, if so, disable keyboard shortcuts
 
-let initializing = true;
 
 
 
@@ -627,7 +624,7 @@ let initializing = true;
 window.onbeforeunload = function() {
   generatesave(1, home + '/lastsession.ncl');
   try {
-    if (realtime_playing) {
+    if (halite_running) {
       halite.kill('SIGINT');
     }
   } catch (e) {}
@@ -684,7 +681,7 @@ if (state == undefined || state == 'new') {
 } else {
   openSavedFile(state);
 }
-initializing = false;
+
 
 
 // set up buttons at the bottom
@@ -849,7 +846,7 @@ function startHalite(realtime) {
 
 
 
-  if (!(realtime && (realtime_playing))) {
+  if (!(realtime && (halite_running))) {
     halite = spawn(path.join(__dirname, '/../compiled/Halite'), haliteappendix.concat(params));
 
 
@@ -865,16 +862,16 @@ function startHalite(realtime) {
     halite.on('close', function(code) {
       buttons[1].style.color = "white"
       console.log('Halite closed with code ' + code);
-      realtime_playing = false;
+      halite_running = false;
     });
-    realtime_playing = true;
+    halite_running = true;
 
 
-  } else if (realtime_playing) {
+  } else if (halite_running) {
     buttons[1].style.color = "white";
     // hacky... but it works for now
     halite.kill('SIGINT')
-    realtime_playing = false;
+    halite_running = false;
   }
 
 }

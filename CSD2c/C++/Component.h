@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <vector>
+#include <sstream>
 #include "MNASystem.h"
 #include "IComponent.h"
 

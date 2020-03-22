@@ -159,7 +159,7 @@ function Component(name, xin = mouseX, yin = mouseY - 200) {
     else if (type === 'slider-') {
       divComponent.innerHTML = '';
       sliders.push(divComponent);
-      uiChild = new singleSlider(divComponent);
+      uiChild = new sliderElement(divComponent);
     }
     else {
     divComponent.innerHTML = name;
