@@ -4,6 +4,10 @@
 #include "digitalCalculus.h"
 
 
+//
+//                  DIGITAL ARITHMETIC
+//
+
 digitalArithmetic::digitalArithmetic(std::string type, std::vector<std::string> init, std::string d0, std::string d1, std::string d2)
 {
         digiPins[0] = d0;
@@ -111,6 +115,11 @@ void digitalArithmetic::update(MNASystem & m)
 }
 
 
+//
+//                  LOGARITHMS
+//
+
+
 logarithms::logarithms(std::string type, std::string d0, std::string d1)
 {
         digiPins[0] = d0;
@@ -140,6 +149,9 @@ void logarithms::update(MNASystem & m)
         fun();
 }
 
+//
+//                  ACCUMULATE
+//
 
 accumulate::accumulate(std::string d0, std::string d1)
 {
@@ -159,6 +171,11 @@ void accumulate::update(MNASystem & m)
 {
         m.setDigital(digiNets[1], accum);
 }
+
+
+//
+//                  ABSOLUTE
+//
 
 
 absol::absol(std::string d0, std::string d1)
@@ -182,6 +199,10 @@ void absol::update(MNASystem & m)
 }
 
 
+//
+//                  FLOOR
+//
+
 
 flor::flor(std::string d0, std::string d1)
 {
@@ -203,6 +224,9 @@ void flor::update(MNASystem & m)
 }
 
 
+//
+//                  CEILING
+//
 
 
 ceiling::ceiling(std::string d0, std::string d1)

@@ -30,6 +30,13 @@
     }
 
 
+    void NetList::setIterations(int iterations)
+    {
+
+        solver.setIterations(iterations);
+    }
+
+
 
     void NetList::setTimeStep(double tStepSize)
     {

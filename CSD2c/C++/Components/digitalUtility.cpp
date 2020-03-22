@@ -3,6 +3,11 @@
 #include "../Component.h"
 #include "digitalUtility.h"
 
+
+//
+//                  DCBLOCK
+//
+
 dcBlock::dcBlock(std::string d0, std::string d1)
 {
 
@@ -22,6 +27,10 @@ void dcBlock::update(MNASystem & m)
         m.setDigital(digiNets[1], y);
 }
 
+
+//
+//                  GATE
+//
 
 Gate::Gate(std::string d0, std::string d1, std::string d2)
 {
@@ -45,7 +54,9 @@ void Gate::update(MNASystem & m)
 
 }
 
-
+//
+//                  SCALE
+//
 
 Scale::Scale(std::vector<std::string> init, std::string d0, std::string d1, std::string d2, std::string d3, std::string d4, std::string d5)
 {
@@ -88,6 +99,9 @@ void Scale::update(MNASystem & m)
 
 }
 
+//
+//                  CLIP
+//
 
 Clip::Clip(std::vector<std::string> init, std::string d0, std::string d1, std::string d2, std::string d3)
 {
@@ -126,7 +140,9 @@ void Clip::update(MNASystem & m)
 
 }
 
-
+//
+//                  MTOF
+//
 
 
 mToF::mToF(std::string d0, std::string d1)

@@ -4,6 +4,12 @@
 
 
 
+//
+//                  DIGITAL FILE INPUT
+//
+
+
+
 digitalInput::digitalInput(std::string path, double inamp, std::string d0)
 {
         digiPins[0] = d0;
@@ -17,6 +23,11 @@ void digitalInput::update(MNASystem & m)
         m.setDigital(digiNets[0], audioFile.samples[0][fmod(m.ticks, numSamples)]*amplitude);
 
 }
+
+
+//
+//                  REALTIME DIGITAL INPUT
+//
 
 
 rtDigitalInput::rtDigitalInput(double inamp, std::string d0, int bufsize)
@@ -39,6 +50,62 @@ void rtDigitalInput::update(MNASystem & m)
 
 }
 
+//
+//                 STEREO DIGITAL FILE INPUT
+//
+
+
+stereoDigitalInput::stereoDigitalInput(std::string path, double inamp, std::string d0, std::string d1)
+{
+        digiPins[0] = d0;
+        digiPins[1] = d1;
+
+        amplitude = inamp;
+        audioFile.load(path);
+        numSamples = audioFile.getNumSamplesPerChannel();
+}
+
+void stereoDigitalInput::update(MNASystem & m)
+{
+
+        m.setDigital(digiNets[0], audioFile.samples[0][fmod(m.ticks, numSamples)]*amplitude);
+        m.setDigital(digiNets[1], audioFile.samples[1][fmod(m.ticks, numSamples)]*amplitude);
+
+
+        //
+        //                 DIGITAL AUDIO OUTPUT (FILE/REALTIME)
+        //
+
+digitalOutput::digitalOutput(float amp, std::string d0, std::string d1)
+{
+        digiPins[0] = d0;
+        digiPins[1] = d1;
+        value[0] = 0;
+        value[1] = 0;
+        amplitude = amp;
+}
+
+
+void digitalOutput::updateInput(MNASystem & m)
+{
+
+        value[0] = m.getDigital(digiNets[0]);
+        value[1] = m.getDigital(digiNets[1]);
+}
+
+double digitalOutput::getAudioOutput(MNASystem & m, int channel)
+{
+        return value[channel];
+}
+
+
+
+}
+
+
+//
+//                  MIDI CONTROL INPUT
+//
 
 
 
@@ -73,6 +140,11 @@ void midiCtlIn::updateInput(MNASystem & m)
 
         }
 }
+
+//
+//                  MIDI NOTE INPUT
+//
+
 
 midiNoteIn::midiNoteIn(std::string d0, std::string d1)
 {
@@ -111,50 +183,9 @@ void midiNoteIn::updateInput(MNASystem & m)
         }
 }
 
-
-stereoDigitalInput::stereoDigitalInput(std::string path, double inamp, std::string d0, std::string d1)
-{
-        digiPins[0] = d0;
-        digiPins[1] = d1;
-
-        amplitude = inamp;
-        audioFile.load(path);
-        numSamples = audioFile.getNumSamplesPerChannel();
-}
-
-
-digitalOutput::digitalOutput(float amp, std::string d0, std::string d1)
-{
-        digiPins[0] = d0;
-        digiPins[1] = d1;
-        value[0] = 0;
-        value[1] = 0;
-        amplitude = amp;
-}
-
-
-void digitalOutput::updateInput(MNASystem & m)
-{
-
-        value[0] = m.getDigital(digiNets[0]);
-        value[1] = m.getDigital(digiNets[1]);
-}
-
-double digitalOutput::getAudioOutput(MNASystem & m, int channel)
-{
-        return value[channel];
-}
-
-
-void stereoDigitalInput::update(MNASystem & m)
-{
-
-        m.setDigital(digiNets[0], audioFile.samples[0][fmod(m.ticks, numSamples)]*amplitude);
-        m.setDigital(digiNets[1], audioFile.samples[1][fmod(m.ticks, numSamples)]*amplitude);
-
-}
-
-
+//
+//                 DIGITAL CONTROL SLIDER
+//
 
 slider::slider(std::string d0, int idx) : idx(idx)
 {
@@ -172,7 +203,9 @@ void slider::update(MNASystem & m)
         m.setDigital(digiNets[0], message);
 }
 
-
+//
+//                 DIGITAL DATA PRINTER
+//
 
 digitalPrinter::digitalPrinter(std::vector<std::string> a_args, std::string d0)
 {

@@ -433,6 +433,21 @@ function audioSettings() {
     formatsel.appendChild(opt);
   }
 
+  let maxiterlabel = document.createElement("div");
+
+  maxiterlabel.style.cssText = "color:#dcdcdc; font-size:14px; font-family:sans-serif; position:fixed; right:x0px; top:48%".replace('x0', sbarwidth - 183);
+  maxiterlabel.innerHTML = 'Maximum iterations:';
+  document.body.appendChild(maxiterlabel);
+
+  let maxiter = document.createElement("input");
+  maxiter.type = "number";
+  maxiter.value = 1;
+  maxiter.style.cssText = "font-size:12px; position:fixed; right:11px; top:48%";
+  maxiter.style.width = sbarwidth - 210 + "px";
+  maxiter.style.height = "15px";
+  document.body.appendChild(maxiter);
+
+
 
   this.update = function() {
     halsettings[0] = srenginesel.value
@@ -440,12 +455,14 @@ function audioSettings() {
     halsettings[2] = depthsel.value
     halsettings[3] = formatsel.value
     halsettings[4] = buffersel.value
+    halsettings[5] = maxiter.value
   }
   buffersel.onchange = this.update;
   depthsel.onchange = this.update;
   formatsel.onchange = this.update;
   sroutputsel.onchange = this.update;
   srenginesel.onchange = this.update;
+  maxiter.onchange = this.update;
 
 
   this.windowResize = function() {
@@ -461,6 +478,8 @@ function audioSettings() {
     formatsel.style.width = sbarwidth - 200 + "px";
     formatlabel.style.right = sbarwidth - 180 + "px";
 
+    maxiterlabel.style.right = sbarwidth - 183 + "px";
+    maxiter.style.width = sbarwidth - 210 + "px";
   }
 
   this.show = function() {
@@ -475,6 +494,8 @@ function audioSettings() {
     depthlabel.style.display = "block"
     formatsel.style.display = "block"
     formatlabel.style.display = "block"
+    maxiter.style.display = "block"
+    maxiterlabel.style.display = "block"
   }
 
   this.hide = function() {
@@ -489,6 +510,8 @@ function audioSettings() {
     depthlabel.style.display = "none"
     formatsel.style.display = "none"
     formatlabel.style.display = "none"
+    maxiter.style.display = "none"
+    maxiterlabel.style.display = "none"
   }
 
   this.hide();

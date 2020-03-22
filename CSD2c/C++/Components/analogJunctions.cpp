@@ -69,7 +69,6 @@ Diode::Diode(int l0, int l1, double rs, double is, double n) : rs(rs)
 
         initJunctionPN(pn, is, n);
 
-        // FIXME: move init to some restart routine?
 
         // initial condition v = 0
         linearizeJunctionPN(pn, 0);

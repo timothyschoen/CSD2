@@ -46,54 +46,26 @@ extern "C" {    // another way
 
 struct MNASolver
 {
-    int nets;
-    int rNets;
-    int maxIter = 20;
-    double tStep;
-    double *systemA;
-    float *systemA_lu;
-    int *pivot;
-    double *systemB;
-    double *systemX;
+    int nets; // total number of nets
+    int rNets; // nets without ground
 
-    int info;
-    int one = 1;
+
+    double *systemA; // Maps to m.A[x][y].lu
+    double *systemB; // Maps to m.b[x].lu
 
     int iter;
-    void *pt[64];
-    MKL_INT maxfct, mnum, error, msglvl;
-    int phase = 13;
-    int nz = 0;
-    MKL_INT i, j;
-    double ddum;          /* Double dummy */
-    MKL_INT idum;         /* Integer dummy. */
-    MKL_INT nrhs = 1;     /* Number of right hand sides. */
-    MKL_INT mtype = -99;       /* Real unsymmetric matrix */
-    MKL_INT iparm[64];
+    int maxIter = 1;
 
+    int info;
+    int *pivot;
+    int one = 1;
 
-    /*
-
-		freeaml::Vector<double> sysA;
-
-		freeaml::SparseMatrix<double> A;
-
-		freeaml::Vector<double> x;
-
-		freeaml::Vector<double> b;
-*/
-
-    //Eigen::SparseLU<Eigen::SparseMatrix<double>> solver;
-    //Eigen::IncompleteLUT<Eigen::SparseMatrix<double> > solver;
-    //Eigen::BiCGSTAB<Eigen::SparseMatrix<double>, Eigen::IncompleteLUT<double> >  solver;
-    //Eigen::ConjugateGradient<Eigen::MatrixXd, Eigen::Lower|Eigen::Upper> cg;
-
-		//freeaml::SuccessiveOverRelaxation<double> lss(20, 1e-2, 0.4);
-		//freeaml::IncompleteCholeskyConjugateGradient lss(5, 1e-9);
-		//freeaml::BiconjugateGradientStabilized<double> lss(50, 1e-12);
 
 
     void setSize(int size, MNASystem & m);
+
+    void setIterations(int iterations);
+
 
     void solve(std::vector<IComponent*> &components, MNASystem & m);
 

@@ -34,6 +34,8 @@
 #include "Components/analogJunctions.h"
 #include "Components/analogInteraction.h"
 
+#include <iomanip>
+
 
 
 std::vector<std::string> savefile;
@@ -101,12 +103,15 @@ int inout( void *outputBuffer, void *inputBuffer, unsigned int nBufferFrames,
 int main(int argc, char* argv[])
 {
 
+
+
         // Argument variables
         bool realtime;
         int outputsamplerate;
         int enginesamplerate;
         int bitdepth;
         int buffersize;
+        int newtonIterations;
         std::string inputpath;
         std::string outputpath;
         std::string outputformat;
@@ -133,6 +138,7 @@ int main(int argc, char* argv[])
                 TCLAP::ValueArg<int> esr("t","interval", "set sample rate for engine", false, 44100, "integer");
                 TCLAP::ValueArg<int> bd("d","bitdepht", "set bit depth for output", false, 24, "integer");
                 TCLAP::ValueArg<int> bs("b","buffersize", "set realtime buffersize", false, 1024, "integer");
+                TCLAP::ValueArg<int> iter("n","iterations", "maximum newton iterations", false, 2, "integer");
                 TCLAP::ValueArg<std::string> format("f","format", "output file format", false, ".WAV", "string");
                 TCLAP::SwitchArg rtswitch("r", "realtime", "enable realtime playback");
 
@@ -142,6 +148,7 @@ int main(int argc, char* argv[])
                 cmd.add(osr);
                 cmd.add(bd);
                 cmd.add(bs);
+                cmd.add(iter);
                 cmd.add(rtswitch);
                 cmd.add(format);
                 cmd.parse(argc, argv);
@@ -150,11 +157,14 @@ int main(int argc, char* argv[])
                 outputformat = format.getValue();
                 bitdepth = bd.getValue();
                 buffersize = bs.getValue();
+                newtonIterations = iter.getValue();
                 outputsamplerate = osr.getValue();
                 enginesamplerate = esr.getValue();
                 inputpath = inputFile.getValue();
                 outputpath = outputFile.getValue();
                 realtime = rtswitch.getValue();
+
+                std::cout << newtonIterations << '\n';
 
         }
         catch (TCLAP::ArgException &e) // catch any exceptions
@@ -393,6 +403,7 @@ int main(int argc, char* argv[])
 
         }
 
+        net->setIterations(newtonIterations);
         net->buildSystem();
 
 // sets amount of time that is simulated between ticks (1/samplerate)

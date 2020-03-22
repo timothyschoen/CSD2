@@ -612,7 +612,7 @@ let halite_running = false; // Checks if we are playing in realtime
 
 let sbar = new Sidebar; // Sidebar (see sidebar.js)
 
-let halsettings = [44100, 44100, 24, '.WAV', 1024]; // Export and audio settings for halite
+let halsettings = [44100, 44100, 24, '.WAV', 1024, 1]; // Export and audio settings for halite
 
 //let typing = false; // Check if we're typing, if so, disable keyboard shortcuts
 
@@ -820,10 +820,11 @@ function precompile(save = 1) {
 
 function startHalite(realtime) {
   let params = [];
-  let prefixes = ['-t ', '-s ', '-d ', '-f ', '-b ']
+  let prefixes = ['-t ', '-s ', '-d ', '-f ', '-b ', '-n ']
   for (var i = 0; i < halsettings.length; i++) {
     params.push(prefixes[i] + halsettings[i]);
   }
+  console.log(params);
   let haliteappendix;
   let halitecmd = __dirname + '/../compiled/Halite'
 

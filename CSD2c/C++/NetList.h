@@ -20,6 +20,8 @@ struct NetList
 
     void buildSystem();
 
+    void setIterations(int iterations);
+
     void setTimeStep(double tStepSize);
 
     double* getAudioOutput();

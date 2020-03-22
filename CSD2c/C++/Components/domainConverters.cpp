@@ -2,6 +2,9 @@
 #include "domainConverters.h"
 
 
+//
+//                  DAC
+//
 
 digitalAnalogConverter::digitalAnalogConverter(std::string d0, int l0, int l1)
 {
@@ -31,6 +34,9 @@ void digitalAnalogConverter::updateInput(MNASystem & m)
 }
 
 
+//
+//                  ADC
+//
 
 analogDigitalConverter::analogDigitalConverter(int l0, int l1, std::string d0)
 {

@@ -3,6 +3,11 @@
 #include "digitalSignalGenerators.h"
 
 
+
+//
+//                  CONSTANT SIGNAL GENERATOR
+//
+
 digitalSignal::digitalSignal(double init, std::string d0)
 {
         digiPins[0] = d0;
@@ -17,6 +22,9 @@ void digitalSignal::update(MNASystem & m)
 }
 
 
+//
+//                  SINE WAVE GENERATOR
+//
 
 sineGenerator::sineGenerator(std::vector<std::string> a_args, std::string d0, std::string d1)
 {
@@ -42,6 +50,10 @@ void sineGenerator::update(MNASystem & m)
 {
         m.setDigital(digiNets[1], (sin(phase * 2. * 3.14159265358979323846)+1.)/2.);
 }
+
+//
+//                  SQUARE WAVE GENERATOR
+//
 
 
 squareGenerator::squareGenerator(std::vector<std::string> a_args, std::string d0, std::string d1)
@@ -71,6 +83,12 @@ void squareGenerator::update(MNASystem & m)
         m.setDigital(digiNets[1], sample);
 }
 
+
+//
+//                  TRIANGLE WAVE GENERATOR
+//
+
+
 triangleGenerator::triangleGenerator(std::vector<std::string> a_args, std::string d0, std::string d1)
 {
         digiPins[0] = d0;
@@ -97,6 +115,13 @@ void triangleGenerator::update(MNASystem & m)
         sample = 0.9 * (fabs(sample) - 0.5);
         m.setDigital(digiNets[1], sample);
 }
+
+
+
+//
+//                  SAWTOOTH WAVE GENERATOR
+//
+
 
 
 sawGenerator::sawGenerator(std::vector<std::string> a_args, std::string d0, std::string d1)
