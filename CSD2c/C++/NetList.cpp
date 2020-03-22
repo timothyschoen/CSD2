@@ -72,58 +72,22 @@
         system.oscBuffer = &oscbuf;
     }
 
-    void NetList::setAudioInput(double *buf)
+    void NetList::setAudioBuffer(double *&buf)
     {
-        //*system.audioInput = buf;
-        // FIX THIS
+        system.audioInput = buf;
+
     }
 
     void NetList::simulateTick()
     {
-        //solver.solve3(components, system);
-        //auto t1 = std::chrono::high_resolution_clock::now();
-
-        //solver.solve(system);
-        //solver.solve2(system);
-
-
-        //solver.solve3(components, system);
-        //auto t2 = std::chrono::high_resolution_clock::now();
-        //auto duration = std::chrono::duration_cast<std::chrono::microseconds>( t2 - t1 ).count();
-
-
-        //std::cout << "oude solver: " << duration << "us" << '\n';
-
-
-        //t1 = std::chrono::high_resolution_clock::now();
-        //if(system.ticks < 44100) solver.solve(components, system);
-
 
         solver.solveMKL(components, system);
-
-        //solver.solve5(components, system);
-        //solver.solve3(components, system);
-
-        //t2 = std::chrono::high_resolution_clock::now();
-        //duration = std::chrono::duration_cast<std::chrono::microseconds>( t2 - t1 ).count();
-
-        //std::cout << "nieuwe solver: " << duration << "us" << '\n';
-        /*
-        std::cout << "B uit:" << '\n';
-
-        for (size_t i = 0; i < aSize; i++) {
-          std::cout << system.b[i].lu << '\n';
-        }
-        usleep(100000); */
-
 
         system.time += tStep;
         system.ticks++;
 
-
         update();
 
-        //std::cout << "Per sample: " << duration << '\n';
     }
 
 

@@ -25,6 +25,7 @@ rtDigitalInput::rtDigitalInput(double inamp, std::string d0, int bufsize)
         amplitude = inamp;
         inputvalue = 0;
         tick = 0;
+        b = bufsize-1;
 
 }
 
@@ -32,9 +33,9 @@ rtDigitalInput::rtDigitalInput(double inamp, std::string d0, int bufsize)
 void rtDigitalInput::update(MNASystem & m)
 {
         // FIX REALTIME INPUT
-        //m.setDigital(digiNets[0], (inbuffer)[tick]);
+        m.setDigital(digiNets[0], m.audioInput[tick]);
         tick++;
-        tick = tick & 511;
+        tick = tick & b;
 
 }
 

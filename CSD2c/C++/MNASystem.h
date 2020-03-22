@@ -12,7 +12,7 @@ struct MNASystem
     std::vector<unsigned char>* midiInput;
     std::vector<double>* oscBuffer;
 
-    double audioInput[512]; // this is temporary because it's ugly
+    double* audioInput;
     double      time;
     int sampleRate;
     long      ticks;

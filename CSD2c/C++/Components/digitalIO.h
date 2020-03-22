@@ -38,6 +38,7 @@ struct rtDigitalInput : Component<0, 0, 1>
         double amplitude;
         double inputvalue;
         int tick;
+        int b;
 
         rtDigitalInput(double inamp, std::string d0, int bufsize);
 

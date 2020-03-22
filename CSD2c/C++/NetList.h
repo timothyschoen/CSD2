@@ -26,7 +26,7 @@ struct NetList
     void setOscBuffer(std::vector<double> &oscbuf);
 
 
-    void setAudioInput(double *buf); // implementeren!!
+    void setAudioBuffer(double *&buf);
 
 
     void simulateTick();

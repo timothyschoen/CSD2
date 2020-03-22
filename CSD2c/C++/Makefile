@@ -2,9 +2,8 @@ CC = clang++
 CFLAGS = -Wall -std=c++17
 AUFLAGS =
 MAINFLAGS = -lpthread -lm -llo
-GENDEPS =
 
-COMPONENTS = analogComponents.o digitalIO.o  digitalTimeBased.o digitalSignalGenerators.o digitalUtility.o digitalCalculus.o domainConverters.o
+COMPONENTS = analogBasics.o analogJunctions.o analogIO.o analogInteraction.o digitalIO.o digitalTimeBased.o digitalSignalGenerators.o digitalUtility.o digitalCalculus.o domainConverters.o
 
 # Extra flags for different kinds of solvers
 #AFFLAGS= -I/opt/arrayfire/include -rpath /opt/arrayfire/lib -lafcpu -L/opt/arrayfire/lib -framework Accelerate
@@ -19,31 +18,27 @@ endif
 ifeq ($(UNAME_S),Darwin)
 	MAINFLAGS += -framework CoreMIDI -framework CoreAudio -framework CoreFoundation $(MKLFLAGS)
 	AUFLAGS += -D__MACOSX_CORE__
-	#GENDEPS += genlib.o phasor.o json.o json_builder.o     for gen support
 endif
 
 
 all: Halite
 
-# Enable support for Max/MSP gen patchers (currently macOs only)
-
-#genlib.o: json.o
-#	$(CC) -c $< $(CFLAGS) ./gen/genlib.cpp ./gen/phasor.cpp ./gen/json.o ./gen/json_builder.o
-
-#json.o:
-#	clang -c ./gen/json.c ./gen/json_builder.c
-
-#endif
+# Main
 
 Halite : RtMidi.o RtAudio.o MNASystem.o MNACell.o NetList.o MNASolver.o $(COMPONENTS) # $(GENDEPS)
 	$(CC) -o $@ $(CFLAGS) main.cpp RtMidi.o RtAudio.o MNASystem.o MNACell.o NetList.o MNASolver.o $(COMPONENTS) $(AUFLAGS) $(MAINFLAGS)
 	mv Halite ../compiled/
 
+
+# Libraries
 RtMidi.o: #AUflags shouldn't be necessary but it won't work on mac without
 	$(CC) -c $(CFLAGS) $(AUFLAGS) ./rtlibs/RtMidi.cpp
 
 RtAudio.o: # We mute the warnings that this library throws, which are all related to using -l to make a .o file (required by the library though)
 	$(CC) -c $(CFLAGS) $(AUFLAGS) ./rtlibs/RtAudio.cpp
+
+
+# System
 
 NetList.o:
 	$(CC) -c $(CFLAGS) NetList.cpp
@@ -57,8 +52,22 @@ MNACell.o:
 MNASolver.o:
 	$(CC) -c $(CFLAGS) MNASolver.cpp
 
-analogComponents.o:
-	$(CC) -c $(CFLAGS) Components/analogComponents.cpp
+
+
+# Components
+
+
+analogBasics.o:
+	$(CC) -c $(CFLAGS) Components/analogBasics.cpp
+
+analogJunctions.o:
+	$(CC) -c $(CFLAGS) Components/analogJunctions.cpp
+
+analogIO.o:
+	$(CC) -c $(CFLAGS) Components/analogIO.cpp
+
+analogInteraction.o:
+	$(CC) -c $(CFLAGS) Components/analogInteraction.cpp
 
 digitalUtility.o:
 	$(CC) -c $(CFLAGS) Components/digitalUtility.cpp
@@ -77,6 +86,8 @@ digitalTimeBased.o:
 
 domainConverters.o:
 	$(CC) -c $(CFLAGS) Components/domainConverters.cpp
+
+
 
 clean:
 	mkdir -p ../compiled
