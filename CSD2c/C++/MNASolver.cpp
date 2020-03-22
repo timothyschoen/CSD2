@@ -79,7 +79,7 @@ extern "C" {    // another way
              for (int j = 0; j < rNets; j++ ) {
                  systemA[(i*(rNets))+j] = 0; //klopt dit??
              }
-         } *
+         } */
 
         /*
 					sysA = freeaml::Vector<double>(systemA, systemA+(rNets*rNets));

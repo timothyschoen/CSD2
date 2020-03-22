@@ -332,8 +332,7 @@ struct mToF : Component<0, 0, 2>
 
     mToF(std::string d0, std::string d1);
 
-    void stamp(MNASystem & m) final
-    { }
+
     void update(MNASystem & m);
 
     void updateInput(MNASystem & m);
