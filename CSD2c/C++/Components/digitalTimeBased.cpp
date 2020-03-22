@@ -97,18 +97,22 @@ digitalDelay::digitalDelay(std::vector<std::string> init, std::string d0, std::s
         else bufSize = 88200;
         if(init.size() > offset+1) t = stof(init[1]);
         else t = 10000;
-        currentSample = 0;
-        smoothTime = t;
 
         bufSize = pow(2, ceil(log(bufSize)/log(2)))-1;     //prepare for bitwise AND
 
         buf.assign(bufSize, 0);
+
+        currentSample = bufSize-t;
+        smoothTime = t;
+
+
+
 }
 
 
 void digitalDelay::updateInput(MNASystem & m)
 {
-        t = (int)m.getDigital(digiNets[1]) + (t>=bufSize)*bufSize;     // trying to avoid if statements
+        t = (int)m.getDigital(digiNets[1]); //+ (t>=bufSize)*bufSize;     // trying to avoid if statements
 
         //Write current value
         buf[currentSample] = m.getDigital(digiNets[0]);

@@ -71,6 +71,7 @@ void stereoDigitalInput::update(MNASystem & m)
         m.setDigital(digiNets[0], audioFile.samples[0][fmod(m.ticks, numSamples)]*amplitude);
         m.setDigital(digiNets[1], audioFile.samples[1][fmod(m.ticks, numSamples)]*amplitude);
 
+}
 
         //
         //                 DIGITAL AUDIO OUTPUT (FILE/REALTIME)
@@ -99,8 +100,6 @@ double digitalOutput::getAudioOutput(MNASystem & m, int channel)
 }
 
 
-
-}
 
 
 //
