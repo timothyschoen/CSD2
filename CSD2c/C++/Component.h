@@ -16,7 +16,7 @@ struct Component : IComponent
 
     int pinLoc[nPins];
     int nets[nNets];
-    std::vector<std::vector<int>> digiNets = std::vector<std::vector<int>>(nDigipins);
+    std::vector<std::vector<int> > digiNets = std::vector<std::vector<int> >(nDigipins);
     std::vector<std::string> digiPins = std::vector<std::string>(nDigipins);
 
     int pinCount();

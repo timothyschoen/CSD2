@@ -15,9 +15,9 @@ app.once('ready', () => {
   // Create a new window
   window = new BrowserWindow({
     // Set the initial width to 500px
-    width: 1100,
+    width: 1300,
     // Set the initial height to 400px
-    height: 500,
+    height: 800,
     // minimum width
     minWidth: 750,
     // minimum height

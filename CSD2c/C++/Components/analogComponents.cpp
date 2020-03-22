@@ -1,7 +1,9 @@
 #include <math.h>
-#include "AudioFile.h"
-#include "Component.h"
+#include <unistd.h>
+#include "../AudioFile.h"
+#include "../Component.h"
 #include "analogComponents.h"
+
 
 // gMin for diodes etc..
 constexpr double gMin = 1e-12;
@@ -20,48 +22,48 @@ constexpr double vThermal = 0.026;
 //                  RESISTOR
 //
 
-    Resistor::Resistor(double r, int l0, int l1) : r(r)
-    {
+Resistor::Resistor(double r, int l0, int l1) : r(r)
+{
         pinLoc[0] = l0;
         pinLoc[1] = l1;
-    }
+}
 
-    void Resistor::stamp(MNASystem & m)
-    {
+void Resistor::stamp(MNASystem & m)
+{
 
         double g = 1. / r;
         m.stampStatic(+g, nets[0], nets[0]); //Positive on diagonal elements
         m.stampStatic(-g, nets[0], nets[1]); //Negative on off-diagonal elements
         m.stampStatic(-g, nets[1], nets[0]);
         m.stampStatic(+g, nets[1], nets[1]);
-    }
+}
 
 
 //
 //                VARIABLE RESISTOR
 //
 
-    VariableResistor::VariableResistor(int l0, int l1, std::string d0, std::vector<std::string> init)
-    {
+VariableResistor::VariableResistor(int l0, int l1, std::string d0, std::vector<std::string> init)
+{
         pinLoc[0] = l0;
         pinLoc[1] = l1;
         digiPins[0] = d0;
         if (init.size() > 0)
         {
-            r = std::stod(init[0]);
+                r = std::stod(init[0]);
         }
         else
         {
-            r = 10000;
+                r = 10000;
         }
         g = 1. / r;
         ng = -g;
 
 
-    }
+}
 
-    void VariableResistor::stamp(MNASystem & m)
-    {
+void VariableResistor::stamp(MNASystem & m)
+{
 
 
         m.A[nets[0]][nets[0]].gdyn.push_back(&g);
@@ -69,24 +71,24 @@ constexpr double vThermal = 0.026;
         m.A[nets[1]][nets[0]].gdyn.push_back(&ng);
         m.A[nets[1]][nets[1]].gdyn.push_back(&g);
 
-    }
-    void VariableResistor::updateInput(MNASystem & m)
-    {
+}
+void VariableResistor::updateInput(MNASystem & m)
+{
         r = m.getDigital(digiNets[0], 1);
         r += r == 0; // cant have 0
 
         g = 1. / r;
         ng = -g;
 
-    }
+}
 
 
-    //
-    //                POTENTIOMETER
-    //
+//
+//                POTENTIOMETER
+//
 
-    Potentiometer::Potentiometer(double r, int l0, int l1, int l2, std::string d0) : r(r)
-    {
+Potentiometer::Potentiometer(double r, int l0, int l1, int l2, std::string d0) : r(r)
+{
         pinLoc[0] = l0; // in
         pinLoc[1] = l1; // out
         pinLoc[2] = l2; // inv out
@@ -97,24 +99,24 @@ constexpr double vThermal = 0.026;
 
         ng = -g;
         ing = -ig;
-    }
+}
 
-    void Potentiometer::stamp(MNASystem & m)
-    {
+void Potentiometer::stamp(MNASystem & m)
+{
 
-          m.A[nets[0]][nets[0]].gdyn.push_back(&g);
-          m.A[nets[0]][nets[1]].gdyn.push_back(&ng);
-          m.A[nets[1]][nets[0]].gdyn.push_back(&ng);
-          m.A[nets[1]][nets[1]].gdyn.push_back(&g);
+        m.A[nets[0]][nets[0]].gdyn.push_back(&g);
+        m.A[nets[0]][nets[1]].gdyn.push_back(&ng);
+        m.A[nets[1]][nets[0]].gdyn.push_back(&ng);
+        m.A[nets[1]][nets[1]].gdyn.push_back(&g);
 
-          m.A[nets[0]][nets[0]].gdyn.push_back(&ig);
-          m.A[nets[0]][nets[2]].gdyn.push_back(&ing);
-          m.A[nets[2]][nets[0]].gdyn.push_back(&ing);
-          m.A[nets[2]][nets[2]].gdyn.push_back(&ig);
+        m.A[nets[0]][nets[0]].gdyn.push_back(&ig);
+        m.A[nets[0]][nets[2]].gdyn.push_back(&ing);
+        m.A[nets[2]][nets[0]].gdyn.push_back(&ing);
+        m.A[nets[2]][nets[2]].gdyn.push_back(&ig);
 
-    }
-    void Potentiometer::updateInput(MNASystem & m)
-    {
+}
+void Potentiometer::updateInput(MNASystem & m)
+{
         input =  m.getDigital(digiNets[0], 0.5);
         input = fmax(fmin(input, 0.9), 0.1); // take out the extremes and prevent 0 divides
 
@@ -125,23 +127,23 @@ constexpr double vThermal = 0.026;
         ing = -ig;
 
 
-    }
+}
 
-    //
-    //                  CAPACITOR
-    //
+//
+//                  CAPACITOR
+//
 
-    Capacitor::Capacitor(double c, int l0, int l1) : c(c)
-    {
+Capacitor::Capacitor(double c, int l0, int l1) : c(c)
+{
         pinLoc[0] = l0;
         pinLoc[1] = l1;
 
         stateVar = 0;
         voltage = 0;
-    }
+}
 
-    void Capacitor::stamp(MNASystem & m)
-    {
+void Capacitor::stamp(MNASystem & m)
+{
 
 
         double g = 2*c;
@@ -166,10 +168,10 @@ constexpr double vThermal = 0.026;
         m.b[nets[2]].gdyn.push_back(&stateVar);
 
 
-    }
+}
 
-    void Capacitor::update(MNASystem & m)
-    {
+void Capacitor::update(MNASystem & m)
+{
 
 
         stateVar = m.b[nets[2]].lu; // t - h
@@ -177,31 +179,31 @@ constexpr double vThermal = 0.026;
         // solve legit voltage from the pins
         voltage = m.b[nets[0]].lu - m.b[nets[1]].lu; // t
 
-    }
+}
 
-    void Capacitor::scaleTime(double told_per_new)
-    {
+void Capacitor::scaleTime(double told_per_new)
+{
 
         double qq = 2*c*voltage;
         stateVar = qq + (stateVar - qq)*told_per_new;
-    }
+}
 
 
-    //
-    //                  INDUCTOR
-    //
+//
+//                  INDUCTOR
+//
 
-    Inductor::Inductor(double l, int l0, int l1) : l(l)
-    {
+Inductor::Inductor(double l, int l0, int l1) : l(l)
+{
         pinLoc[0] = l0;
         pinLoc[1] = l1;
 
         stateVar = 0;
         voltage = 0;
-    }
+}
 
-    void Inductor::stamp(MNASystem & m)
-    {
+void Inductor::stamp(MNASystem & m)
+{
 
 
 
@@ -219,10 +221,10 @@ constexpr double vThermal = 0.026;
 
         m.b[nets[2]].gdyn.push_back(&stateVar);
 
-    }
+}
 
-    void Inductor::update(MNASystem & m)
-    {
+void Inductor::update(MNASystem & m)
+{
 
         g = 1/((2.*l)/m.sampleRate);
 
@@ -232,10 +234,10 @@ constexpr double vThermal = 0.026;
         // solve legit voltage from the pins
         voltage = (m.b[nets[0]].lu - m.b[nets[1]].lu);
 
-    }
+}
 
-    void Inductor::scaleTime(double told_per_new)
-    {
+void Inductor::scaleTime(double told_per_new)
+{
         // the state is 2*c*voltage - i/t0
         // so we subtract out the voltage, scale current
         // and then add the voltage back to get new state
@@ -245,21 +247,21 @@ constexpr double vThermal = 0.026;
         // ?????????
         //double qq = 2*l*voltage;
         //stateVar = qq + (stateVar - qq)*told_per_new;
-    }
+}
 
-    //
-    //                  VOLTAGE
-    //
+//
+//                  VOLTAGE
+//
 
 
-    Voltage::Voltage(double v, int l0, int l1) : v(v)
-    {
+Voltage::Voltage(double v, int l0, int l1) : v(v)
+{
         pinLoc[0] = l0;
         pinLoc[1] = l1;
-    }
+}
 
-    void Voltage::stamp(MNASystem & m)
-    {
+void Voltage::stamp(MNASystem & m)
+{
         // Gets written to A matrix (B and C parts)
         m.stampStatic(-1, nets[0], nets[2]); // -1 to the net connected to the negative
         m.stampStatic(+1, nets[1], nets[2]);
@@ -269,40 +271,40 @@ constexpr double vThermal = 0.026;
 
         m.b[nets[2]].g = v;
 
-    }
+}
 
-    //
-    //                  CURRENT SOURCE
-    //
+//
+//                  CURRENT SOURCE
+//
 
-    Current::Current(double a, int l0, int l1) : a(a)
-    {
+Current::Current(double a, int l0, int l1) : a(a)
+{
         pinLoc[0] = l0;
         pinLoc[1] = l1;
-    }
+}
 
-    void Current::stamp(MNASystem & m)
-    {
+void Current::stamp(MNASystem & m)
+{
 
         m.b[nets[0]].g = -a;
         m.b[nets[1]].g = a;
 
-    }
+}
 
-    //
-    //                  TRANSFORMER
-    //
+//
+//                  TRANSFORMER
+//
 
-    Transformer::Transformer(double ratio, int inP, int inN, int outP, int outN) : b(ratio)
-    {
+Transformer::Transformer(double ratio, int inP, int inN, int outP, int outN) : b(ratio)
+{
         pinLoc[0] = inN;
         pinLoc[1] = inP;
         pinLoc[2] = outN;
         pinLoc[3] = outP;
-    }
+}
 
-    void Transformer::stamp(MNASystem & m)
-    {
+void Transformer::stamp(MNASystem & m)
+{
 
 
         m.stampStatic(1, nets[5], nets[3]);
@@ -318,20 +320,20 @@ constexpr double vThermal = 0.026;
         m.stampStatic(b, nets[5], nets[1]);
         m.stampStatic(-b, nets[4], nets[5]);
 
-    }
+}
 
-    //
-    //                  CLICK
-    //
+//
+//                  CLICK
+//
 
-    Click::Click(double amp, int l0, int l1) : amp(amp)
-    {
+Click::Click(double amp, int l0, int l1) : amp(amp)
+{
         pinLoc[0] = l0;
         pinLoc[1] = l1;
-    }
+}
 
-    void Click::stamp(MNASystem & m)
-    {
+void Click::stamp(MNASystem & m)
+{
         // Gets written to A matrix (B and C parts)
         m.stampStatic(-1, nets[0], nets[2]); // -1 to the net connected to the negative
         m.stampStatic(+1, nets[1], nets[2]);
@@ -341,46 +343,46 @@ constexpr double vThermal = 0.026;
 
         m.b[nets[2]].gdyn.push_back(&v);
 
-    }
-    void Click::update(MNASystem & m)
-    {
+}
+void Click::update(MNASystem & m)
+{
 
         v = (m.ticks == 1)*amp;
 
-    }
+}
 
-    //
-    //                  PROBE
-    //
+//
+//                  PROBE
+//
 
-    Probe::Probe(int l0, int l1)
-    {
+Probe::Probe(int l0, int l1)
+{
         pinLoc[0] = l0;
         pinLoc[1] = l1;
-    }
+}
 
-    void Probe::stamp(MNASystem & m)
-    {
+void Probe::stamp(MNASystem & m)
+{
         m.stampStatic(+impedance, nets[2], nets[0]);
         m.stampStatic(-impedance, nets[2], nets[1]);
         m.stampStatic(-impedance, nets[2], nets[2]);
 
-    }
+}
 
-    double Probe::getAudioOutput(MNASystem & m, int channel)
-    {
+double Probe::getAudioOutput(MNASystem & m, int channel)
+{
 
         return m.b[nets[2]].lu;
 
-    }
+}
 
-    //
-    //                  SAMPLE INPUT
-    //
+//
+//                  SAMPLE INPUT
+//
 
 
-    InputSample::InputSample(std::string path, double inamp, int l0, int l1)
-    {
+InputSample::InputSample(std::string path, double inamp, int l0, int l1)
+{
         pinLoc[0] = l0;
         pinLoc[1] = l1;
         amplitude = inamp;
@@ -388,10 +390,10 @@ constexpr double vThermal = 0.026;
         numSamples = audioFile.getNumSamplesPerChannel();
         currentSample = 0;
         v = 0;
-    }
+}
 
-    void InputSample::stamp(MNASystem & m)
-    {
+void InputSample::stamp(MNASystem & m)
+{
         // this is identical to voltage source
         // except voltage is dynanic
         m.stampStatic(-0.1, nets[0], nets[2]);
@@ -402,16 +404,16 @@ constexpr double vThermal = 0.026;
 
         m.b[nets[2]].gdyn.push_back(&v);
 
-    }
+}
 
-    void InputSample::update(MNASystem & m)
-    {
+void InputSample::update(MNASystem & m)
+{
         currentSample++;
         if (currentSample >= numSamples) currentSample = currentSample - numSamples;
 
         v = audioFile.samples[0][currentSample]*amplitude;
 
-    }
+}
 
 
 
@@ -419,10 +421,10 @@ constexpr double vThermal = 0.026;
 
 void initJunctionPN(JunctionPN & pn, double is, double n)
 {
-    pn.is = is;
-    pn.nvt = n * vThermal;
-    pn.rnvt = 1 / pn.nvt;
-    pn.vcrit = pn.nvt * log(pn.nvt / (pn.is * sqrt(2.)));
+        pn.is = is;
+        pn.nvt = n * vThermal;
+        pn.rnvt = 1 / pn.nvt;
+        pn.vcrit = pn.nvt * log(pn.nvt / (pn.is * sqrt(2.)));
 }
 
 // linearize junction at the specified voltage
@@ -432,31 +434,31 @@ void initJunctionPN(JunctionPN & pn, double is, double n)
 // to make that work as it looks like we'd need Lambert-W then
 void linearizeJunctionPN(JunctionPN & pn, double v)
 {
-    double e = pn.is * exp(v * pn.rnvt);
-    double i = e - pn.is + gMin * v;
-    double g = e * pn.rnvt + gMin;
+        double e = pn.is * exp(v * pn.rnvt);
+        double i = e - pn.is + gMin * v;
+        double g = e * pn.rnvt + gMin;
 
-    pn.geq = g;
-    pn.ieq = v*g - i;
-    pn.veq = v;
+        pn.geq = g;
+        pn.ieq = v*g - i;
+        pn.veq = v;
 }
 
 // returns true if junction is good enough
 bool newtonJunctionPN(JunctionPN & pn, double v)
 {
-    double dv = v - pn.veq;
-    if(fabs(dv) < vTolerance) return true;
+        double dv = v - pn.veq;
+        if(fabs(dv) < vTolerance) return true;
 
-    // check critical voltage and adjust voltage if over
-    if(v > pn.vcrit)
-    {
-        // this formula comes from Qucs documentation
-        v = pn.veq + pn.nvt*log((std::max)(pn.is, 1+dv*pn.rnvt));
-    }
+        // check critical voltage and adjust voltage if over
+        if(v > pn.vcrit)
+        {
+                // this formula comes from Qucs documentation
+                v = pn.veq + pn.nvt*log((std::max)(pn.is, 1+dv*pn.rnvt));
+        }
 
-    linearizeJunctionPN(pn, v);
+        linearizeJunctionPN(pn, v);
 
-    return false;
+        return false;
 }
 
 
@@ -464,9 +466,9 @@ bool newtonJunctionPN(JunctionPN & pn, double v)
 //                  DIODE
 //
 
-    // l0 -->|-- l1 -- parameters default to approx 1N4148
-    Diode::Diode(int l0, int l1, double rs, double is, double n) : rs(rs)
-    {
+// l0 -->|-- l1 -- parameters default to approx 1N4148
+Diode::Diode(int l0, int l1, double rs, double is, double n) : rs(rs)
+{
         pinLoc[0] = l0;
         pinLoc[1] = l1;
 
@@ -476,15 +478,15 @@ bool newtonJunctionPN(JunctionPN & pn, double v)
 
         // initial condition v = 0
         linearizeJunctionPN(pn, 0);
-    }
+}
 
-    bool Diode::newton(MNASystem & m)
-    {
+bool Diode::newton(MNASystem & m)
+{
         return newtonJunctionPN(pn, m.b[nets[2]].lu);
-    }
+}
 
-    void Diode::stamp(MNASystem & m)
-    {
+void Diode::stamp(MNASystem & m)
+{
 
         m.stampStatic(-1, nets[3], nets[0]);
         m.stampStatic(+1, nets[3], nets[1]);
@@ -500,25 +502,25 @@ bool newtonJunctionPN(JunctionPN & pn, double v)
         m.b[nets[2]].gdyn.push_back(&pn.ieq);
 
 
-    }
+}
 
-    //
-    //                  BIPOLAR JUNCTION TRANSISTOR
-    //
+//
+//                  BIPOLAR JUNCTION TRANSISTOR
+//
 
 
-    BJT::BJT(int b, int c, int e, bool pnp, std::vector<std::string> init) : pnp(pnp)
-    {
+BJT::BJT(int b, int c, int e, bool pnp, std::vector<std::string> init) : pnp(pnp)
+{
         pinLoc[0] = b;
         pinLoc[1] = c;
         pinLoc[2] = e;
 
         if (init.size() > 0 && !init[0].empty())
         {
-            type = std::stoi(init[0]);
+                type = std::stoi(init[0]);
         }
         else {
-            type = 0;
+                type = 0;
         }
 
         // this attempts a 2n3904-style small-signal
@@ -527,12 +529,12 @@ bool newtonJunctionPN(JunctionPN & pn, double v)
 
         // forward and reverse beta
         if(type == 0) { // Simulates silicon
-        bf = 250;
-        br = 20;
+                bf = 250;
+                br = 20;
         }
         else if (type == 1) { // Simulates germanium (this is not correct yet, germaium is louder now which it shouldn't be...)
-          bf = 110;
-          br = 70;
+                bf = 110;
+                br = 70;
         }
 
 
@@ -562,16 +564,16 @@ bool newtonJunctionPN(JunctionPN & pn, double v)
 
         linearizeJunctionPN(pnE, 0);
         linearizeJunctionPN(pnC, 0);
-    }
+}
 
-    bool BJT::newton(MNASystem & m)
-    {
+bool BJT::newton(MNASystem & m)
+{
         return newtonJunctionPN(pnC, m.b[nets[3]].lu)
                & newtonJunctionPN(pnE, m.b[nets[4]].lu);
-    }
+}
 
-    void BJT::stamp(MNASystem & m)
-    {
+void BJT::stamp(MNASystem & m)
+{
 
 
         // diode currents to external base
@@ -591,20 +593,20 @@ bool newtonJunctionPN(JunctionPN & pn, double v)
         // to flip the diode junctions wrt. the above
         if(pnp)
         {
-            m.stampStatic(-1, nets[5], nets[3]);
-            m.stampStatic(+1, nets[3], nets[5]);
+                m.stampStatic(-1, nets[5], nets[3]);
+                m.stampStatic(+1, nets[3], nets[5]);
 
-            m.stampStatic(-1, nets[6], nets[4]);
-            m.stampStatic(+1, nets[4], nets[6]);
+                m.stampStatic(-1, nets[6], nets[4]);
+                m.stampStatic(+1, nets[4], nets[6]);
 
         }
         else
         {
-            m.stampStatic(+1, nets[5], nets[3]);
-            m.stampStatic(-1, nets[3], nets[5]);
+                m.stampStatic(+1, nets[5], nets[3]);
+                m.stampStatic(-1, nets[3], nets[5]);
 
-            m.stampStatic(+1, nets[6], nets[4]);
-            m.stampStatic(-1, nets[4], nets[6]);
+                m.stampStatic(+1, nets[6], nets[4]);
+                m.stampStatic(-1, nets[4], nets[6]);
         }
 
         // external voltages to collector current
@@ -628,16 +630,16 @@ bool newtonJunctionPN(JunctionPN & pn, double v)
 
 
 
-    }
+}
 
-    //
-    //                  OPAMP
-    //
+//
+//                  OPAMP
+//
 
 
-    // pins: out, in+, in-, supply+, supply-
-    OPA::OPA(int vInP, int vInN, int vOut)
-    {
+// pins: out, in+, in-, supply+, supply-
+OPA::OPA(int vInP, int vInN, int vOut)
+{
         pinLoc[0] = vInP;
         pinLoc[1] = vInN;
         pinLoc[2] = vOut;
@@ -645,30 +647,30 @@ bool newtonJunctionPN(JunctionPN & pn, double v)
         // the DC voltage gain
         amp = 1;
         vmax = 0.02;
-    }
+}
 
 
-    void OPA::stamp(MNASystem & m)
-    {
+void OPA::stamp(MNASystem & m)
+{
 
-      m.stampStatic(-1, nets[3], nets[2]);
-      m.stampStatic(1, nets[2], nets[3]);
+        m.stampStatic(-1, nets[3], nets[2]);
+        m.stampStatic(1, nets[2], nets[3]);
 
-      // This is a way faster method to simulate op-amps
-      m.A[nets[3]][nets[0]].gdyn.push_back(&g);
-      m.A[nets[3]][nets[1]].gdyn.push_back(&ng);
+        // This is a way faster method to simulate op-amps
+        m.A[nets[3]][nets[0]].gdyn.push_back(&g);
+        m.A[nets[3]][nets[1]].gdyn.push_back(&ng);
 
-      m.b[nets[3]].gdyn.push_back(&v);
+        m.b[nets[3]].gdyn.push_back(&v);
 
         // http://qucs.sourceforge.net/tech/node67.html  !!!!!!!!!!!
 
-    }
-    void OPA::update(MNASystem & m)
-    {
+}
+void OPA::update(MNASystem & m)
+{
         g = amp/(1 + pow(((2*M_PI)/2*vmax*amp*(m.b[0].lu-m.b[1].lu)), 2));
 
         ng = -g;
 
         v = g * (m.b[0].lu-m.b[1].lu) - (vmax*(2/M_PI)*atan((M_PI/(2*vmax))*amp*(m.b[0].lu-m.b[1].lu)));
 
-    }
+}

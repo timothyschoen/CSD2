@@ -4,6 +4,8 @@ AUFLAGS =
 MAINFLAGS = -lpthread -lm -llo
 GENDEPS =
 
+COMPONENTS = analogComponents.o digitalIO.o  digitalTimeBased.o digitalSignalGenerators.o digitalUtility.o digitalCalculus.o domainConverters.o
+
 # Extra flags for different kinds of solvers
 #AFFLAGS= -I/opt/arrayfire/include -rpath /opt/arrayfire/lib -lafcpu -L/opt/arrayfire/lib -framework Accelerate
 MKLFLAGS=  -ldl -llapack
@@ -33,8 +35,8 @@ all: Halite
 
 #endif
 
-Halite : RtMidi.o RtAudio.o MNASystem.o MNACell.o NetList.o MNASolver.o analogComponents.o digitalComponents.o # $(GENDEPS)
-	$(CC) -o $@ $(CFLAGS) main.cpp RtMidi.o RtAudio.o MNASystem.o MNACell.o NetList.o MNASolver.o analogComponents.o digitalComponents.o $(AUFLAGS) $(MAINFLAGS)
+Halite : RtMidi.o RtAudio.o MNASystem.o MNACell.o NetList.o MNASolver.o $(COMPONENTS) # $(GENDEPS)
+	$(CC) -o $@ $(CFLAGS) main.cpp RtMidi.o RtAudio.o MNASystem.o MNACell.o NetList.o MNASolver.o $(COMPONENTS) $(AUFLAGS) $(MAINFLAGS)
 	mv Halite ../compiled/
 
 RtMidi.o: #AUflags shouldn't be necessary but it won't work on mac without
@@ -56,16 +58,31 @@ MNASolver.o:
 	$(CC) -c $(CFLAGS) MNASolver.cpp
 
 analogComponents.o:
-	$(CC) -c $(CFLAGS) analogComponents.cpp
+	$(CC) -c $(CFLAGS) Components/analogComponents.cpp
 
-digitalComponents.o:
-	$(CC) -c $(CFLAGS) digitalComponents.cpp
+digitalUtility.o:
+	$(CC) -c $(CFLAGS) Components/digitalUtility.cpp
+
+digitalCalculus.o:
+	$(CC) -c $(CFLAGS) Components/digitalCalculus.cpp
+
+digitalIO.o:
+	$(CC) -c $(CFLAGS) Components/digitalIO.cpp
+
+digitalSignalGenerators.o:
+	$(CC) -c $(CFLAGS) Components/digitalSignalGenerators.cpp
+
+digitalTimeBased.o:
+	$(CC) -c $(CFLAGS) Components/digitalTimeBased.cpp
+
+domainConverters.o:
+	$(CC) -c $(CFLAGS) Components/domainConverters.cpp
 
 clean:
 	mkdir -p ../compiled
 	rm -f *.o
 	rm -f example
-	rm -f genHeaders.h
+	rm -f Components/*.o
 	make
 
 cleanup:

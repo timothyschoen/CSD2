@@ -25,9 +25,14 @@ double* inbuffer; // ugly, fix this
 
 #include "IComponent.h"
 #include "Component.h"
-#include "digitalComponents.h"
 
-#include "analogComponents.h"
+#include "Components/digitalSignalGenerators.h"
+#include "Components/domainConverters.h"
+#include "Components/digitalIO.h"
+#include "Components/digitalCalculus.h"
+#include "Components/digitalUtility.h"
+#include "Components/digitalTimeBased.h"
+#include "Components/analogComponents.h"
 
 
 
