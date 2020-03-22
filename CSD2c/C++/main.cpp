@@ -25,7 +25,7 @@ double* inbuffer; // ugly, fix this
 
 #include "IComponent.h"
 #include "Component.h"
-#include "digitalComponents.cpp"
+#include "digitalComponents.h"
 
 #include "analogComponents.h"
 

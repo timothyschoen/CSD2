@@ -33,8 +33,8 @@ all: Halite
 
 #endif
 
-Halite : RtMidi.o RtAudio.o MNASystem.o MNACell.o NetList.o MNASolver.o analogComponents.o # $(GENDEPS)
-	$(CC) -o $@ $(CFLAGS) main.cpp RtMidi.o RtAudio.o MNASystem.o MNACell.o NetList.o MNASolver.o analogComponents.o $(AUFLAGS) $(MAINFLAGS)
+Halite : RtMidi.o RtAudio.o MNASystem.o MNACell.o NetList.o MNASolver.o analogComponents.o digitalComponents.o # $(GENDEPS)
+	$(CC) -o $@ $(CFLAGS) main.cpp RtMidi.o RtAudio.o MNASystem.o MNACell.o NetList.o MNASolver.o analogComponents.o digitalComponents.o $(AUFLAGS) $(MAINFLAGS)
 	mv Halite ../compiled/
 
 RtMidi.o: #AUflags shouldn't be necessary but it won't work on mac without
@@ -58,6 +58,8 @@ MNASolver.o:
 analogComponents.o:
 	$(CC) -c $(CFLAGS) analogComponents.cpp
 
+digitalComponents.o:
+	$(CC) -c $(CFLAGS) digitalComponents.cpp
 
 clean:
 	mkdir -p ../compiled
