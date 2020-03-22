@@ -87,6 +87,8 @@ digitalDelay::digitalDelay(std::vector<std::string> init, std::string d0, std::s
         digiPins[1] = d1;
         digiPins[2] = d2;
 
+        a = 0.002;
+
         int offset = 0;     // sometimes a space slips inbetween here, this offset is a fix (might not be necessary anymore?)
 
         if(init[0].empty()) {
@@ -94,15 +96,18 @@ digitalDelay::digitalDelay(std::vector<std::string> init, std::string d0, std::s
         }
 
         if(init.size() > offset) bufSize = stoi(init[0]);
-        else bufSize = 88200;
+        else bufSize = 44100;
         if(init.size() > offset+1) t = stof(init[1]);
-        else t = 10000;
+        else t = 0;
 
-        bufSize = pow(2, ceil(log(bufSize)/log(2)))-1;     //prepare for bitwise AND
+        int power = 1;
+        while(power < bufSize)  power*=2;
+
+        bufSize = power-1;
+
 
         buf.assign(bufSize, 0);
-
-        currentSample = bufSize-t;
+        currentSample = 0;
         smoothTime = t;
 
 
@@ -112,8 +117,9 @@ digitalDelay::digitalDelay(std::vector<std::string> init, std::string d0, std::s
 
 void digitalDelay::updateInput(MNASystem & m)
 {
-        t = (int)m.getDigital(digiNets[1]); //+ (t>=bufSize)*bufSize;     // trying to avoid if statements
+        t = (int)m.getDigital(digiNets[1]) + (t>=bufSize)*bufSize;
 
+        if(m.ticks <= 1) smoothTime = t;
         //Write current value
         buf[currentSample] = m.getDigital(digiNets[0]);
 
@@ -125,12 +131,15 @@ void digitalDelay::update(MNASystem & m)
         currentSample++;
         currentSample = currentSample & bufSize;     // Bitwise AND, faster than modulo or if-statements
 
-        smoothTime = ((1-a)*smoothTime + a * t);     // smoothing readhead movement
+        smoothTime = ((1-a)*smoothTime + a * t); // smoothing readhead movement
+
 
         readHead = (int)currentSample-smoothTime;
         readHead += (readHead<=0)*bufSize;
 
         m.setDigital(digiNets[2], buf[readHead]);
+
+
 
 
 }

@@ -790,7 +790,6 @@ function precompile(save = 1) {
         console.log("Not all analog inlets connected! \n");
         console.log("Analog boxes with unconnected inlets will be ignored \n");
         x = amtinlets;
-        console.log(boxtype, boxargs);
         boxes[i].isValid(false);
 
       }
@@ -824,7 +823,6 @@ function startHalite(realtime) {
   for (var i = 0; i < halsettings.length; i++) {
     params.push(prefixes[i] + halsettings[i]);
   }
-  console.log(params);
   let haliteappendix;
   let halitecmd = __dirname + '/../compiled/Halite'
 

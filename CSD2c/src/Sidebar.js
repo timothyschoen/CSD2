@@ -358,21 +358,21 @@ function audioSettings() {
   }
 
   let srenginelabel = document.createElement("div");
-  srenginelabel.innerHTML = 'Engine sample rate:';
+  srenginelabel.innerHTML = 'Engine time step:';
   srenginelabel.style.cssText = "color:#dcdcdc; font-size:14px; font-family:sans-serif; position:fixed; right:x0px; top:20%".replace('x0', sbarwidth - 51);
   document.body.appendChild(srenginelabel);
 
-  let samplerates = [44100, 48000, 88200, 96000]; // only rates that rtaudio allows
+  let timesteps = ['1/44100', '1/48000', '1/88200', '1/96000']; // only rates that rtaudio allows
   let srenginesel = document.createElement("SELECT");
   srenginesel.style.cssText = "font-size:12px; position:fixed; right:11px; top:20%";
   srenginesel.style.width = "100px";
   srenginesel.style.height = "20px";
   document.body.appendChild(srenginesel);
 
-
+  let samplerates = [44100, 48000, 88200, 96000]; // only rates that rtaudio allows
   let sroutputlabel = document.createElement("div");
   sroutputlabel.style.cssText = "color:#dcdcdc; font-size:14px; font-family:sans-serif; position:fixed; right:x0px; top:27%".replace('x0', sbarwidth / 2);
-  sroutputlabel.innerHTML = 'Export sample rate:';
+  sroutputlabel.innerHTML = 'Output sample rate:';
   document.body.appendChild(sroutputlabel);
 
   let sroutputsel = document.createElement("SELECT");
@@ -383,7 +383,7 @@ function audioSettings() {
 
   for (let i = 0; i < samplerates.length; i++) {
     let opt = document.createElement('option');
-    opt.appendChild(document.createTextNode(samplerates[i]));
+    opt.appendChild(document.createTextNode(timesteps[i]));
     opt.value = samplerates[i];
 
     let opt2 = document.createElement('option');

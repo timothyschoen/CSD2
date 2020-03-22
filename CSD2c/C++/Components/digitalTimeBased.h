@@ -46,14 +46,14 @@ struct getDelta : Component<0, 0, 2>
 
 struct digitalDelay : Component<0, 0, 3>
 {
-        int t = 10000;
+        int t;
         int bufSize;
         int currentSample;
         double smoothTime;
         int readHead;
         double prevTime;
         std::vector<double> buf;
-        float a = 0.00005;
+        float a;
 
         digitalDelay(std::vector<std::string> init, std::string d0, std::string d1, std::string d2);
 
