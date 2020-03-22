@@ -78,9 +78,9 @@ int inout( void *outputBuffer, void *inputBuffer, unsigned int nBufferFrames,
         extern unsigned int channs;
         double *buffer = (double *) outputBuffer;
 
-        inbuffer = ((double *) inputBuffer);
+        //inbuffer = ;
 
-        net->setAudioBuffer(inbuffer);
+        net->setAudioBuffer(&*((double *) inputBuffer));
 
         double *output;
         midiin->getMessage( &message );

@@ -72,7 +72,7 @@
         system.oscBuffer = &oscbuf;
     }
 
-    void NetList::setAudioBuffer(double *&buf)
+    void NetList::setAudioBuffer(double *buf)
     {
         system.audioInput = buf;
 
