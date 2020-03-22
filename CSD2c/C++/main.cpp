@@ -48,8 +48,6 @@ std::vector<unsigned char> message;
 
 std::vector<double> oscBuffer(20, 0.5);
 
-double* inbuffer;
-
 
 void errorCallback( RtAudioError::Type type, const std::string &errorText )
 {
@@ -78,19 +76,16 @@ int inout( void *outputBuffer, void *inputBuffer, unsigned int nBufferFrames,
         extern unsigned int channs;
         double *buffer = (double *) outputBuffer;
 
-        //inbuffer = ;
 
-        net->setAudioBuffer(&*((double *) inputBuffer));
+        net->input = (double *)inputBuffer;
 
-        double *output;
         midiin->getMessage( &message );
 
         for ( i=0; i<nBufferFrames; i++ )
         {
                 net->simulateTick();
-                output = net->getAudioOutput();
-                *buffer++ = output[0]*outamp;
-                *buffer++ = output[1]*outamp;
+                *buffer++ = net->output[0]*outamp;
+                *buffer++ = net->output[1]*outamp;
 
         }
 
@@ -106,6 +101,7 @@ int inout( void *outputBuffer, void *inputBuffer, unsigned int nBufferFrames,
 int main(int argc, char* argv[])
 {
 
+        // Argument variables
         bool realtime;
         int outputsamplerate;
         int enginesamplerate;
@@ -116,19 +112,13 @@ int main(int argc, char* argv[])
         std::string outputformat;
 
 
-
-        double initarr[512] = {0};
-        inbuffer = initarr;
-
+        // Set up OSC server
 
         lo::ServerThread st(9000);
-
 
         if (!st.is_valid()) {
                 std::cout << "Nope." << std::endl;
         }
-
-
 
         st.start();
 
@@ -173,13 +163,10 @@ int main(int argc, char* argv[])
         }
 
 
-        // Here we start parsing out input file that we generate in JS
+        // Here we start parsing the input file that we generate in JS
 
         std::ifstream t(inputpath);
         std::string str;
-
-
-        std::cout << buffersize << '\n';
 
 
         t.seekg(0, std::ios::end);
@@ -412,7 +399,9 @@ int main(int argc, char* argv[])
 
         net->setMidiInput(message);
         net->setOscBuffer(oscBuffer);
-        net->setAudioBuffer(inbuffer);
+
+        net->input = new double[buffersize](); // set init values
+
 
         net->simulateTick();
         net->setTimeStep((double)1/enginesamplerate);

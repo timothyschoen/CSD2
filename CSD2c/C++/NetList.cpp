@@ -49,15 +49,6 @@
 
     double* NetList::getAudioOutput()
     {
-
-        for (size_t c = 0; c < 2; c++)
-        {
-            output[c] = 0;
-            for(int i = 0; i < components.size(); ++i)
-            {
-                output[c] += components[i]->getAudioOutput(system, c);
-            }
-        }
         return output;
 
     }
@@ -72,9 +63,9 @@
         system.oscBuffer = &oscbuf;
     }
 
-    void NetList::setAudioBuffer(double *buf)
+    double* NetList::getAudioBuffer()
     {
-        system.audioInput = buf;
+        return system.audioInput;
 
     }
 
@@ -102,6 +93,16 @@
         for(int i = 0; i < components.size(); ++i)
         {
             components[i]->updateInput(system);
+        }
+
+        // Add the audio outputs
+        for (size_t c = 0; c < 2; c++)
+        {
+            output[c] = 0;
+            for(int i = 0; i < components.size(); ++i)
+            {
+                output[c] += components[i]->getAudioOutput(system, c);
+            }
         }
 
 

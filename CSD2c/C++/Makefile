@@ -60,7 +60,7 @@ MNASolver.o: MNASolver.cpp
 analogBasics.o: Components/analogBasics.cpp
 	$(CC) -c $(CFLAGS) Components/analogBasics.cpp
 
-aanalogBasics.o: Components/analogBasics.cpp
+analogJunctions.o: Components/analogJunctions.cpp
 	$(CC) -c $(CFLAGS) Components/analogJunctions.cpp
 
 analogIO.o: Components/analogIO.cpp

@@ -9,7 +9,10 @@
 struct NetList
 {
     typedef std::vector<IComponent*> ComponentList;
+
     double* output;
+
+    double* input;
 
     NetList(int nodes, int diginodes);
 
@@ -26,7 +29,7 @@ struct NetList
     void setOscBuffer(std::vector<double> &oscbuf);
 
 
-    void setAudioBuffer(double *buf);
+    double* getAudioBuffer();
 
 
     void simulateTick();

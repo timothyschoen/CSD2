@@ -62,6 +62,11 @@ if (!fs.existsSync(home)) {
     if (err) throw err;
   });
 
+  fs.copyFile(__dirname + '/../saves/Documentation.pdf', home + '/Documentation.pdf', (err) => {
+    if (err) throw err;
+  });
+
+
   fs.copyFile(__dirname + '/../saves/Examples/Fuzzface.ncl', home + '/Saves/Examples/Fuzzface.ncl', (err) => {
     if (err) throw err;
   });
