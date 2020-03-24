@@ -981,9 +981,15 @@ document.addEventListener("keydown", function(event) {
 
         }
         break;
-      case (86):
+      case (86): // ctrl-v
         if (event.metaKey || ctrl) {
           pasteSelection(JSON.parse(clipboard.readText()));
+        }
+        break;
+      case (65): // ctrl-a
+        if (event.metaKey || ctrl) {
+
+          ds.addSelection(ds.getSelectables());
         }
         break;
       default:
