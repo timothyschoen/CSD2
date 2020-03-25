@@ -21,8 +21,4 @@
       {
           lu += *(gdyn[i]);
       }
-      for(int i = 0; i < gdyntimed.size(); ++i)
-      {
-          lu += *(gdyntimed[i]) * stepScale;
-      }
   }

@@ -814,6 +814,7 @@ function precompile(save = 1) {
 
   if (save) {
     fs.writeFileSync(home + "/precompile.ncl", code);
+  
   }
 }
 
@@ -988,7 +989,6 @@ document.addEventListener("keydown", function(event) {
         break;
       case (65): // ctrl-a
         if (event.metaKey || ctrl) {
-
           ds.addSelection(ds.getSelectables());
         }
         break;

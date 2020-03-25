@@ -196,7 +196,6 @@ int MNASolver::luForward( MNASystem & m)
                 {
                         if(m.A[r][p].lu == 0) continue;
                         if(m.b[p].lu == 0) continue;
-                        // A.lu bevat 1, 0 of -1. 0 is al uitgesloten. systeem b gaat + of - zichzelf maar wordt daardoor 0
                         m.b[r].lu -= m.b[p].lu * m.A[r][p].lu;
                 }
         }

@@ -37,7 +37,7 @@
     }
 
 
-
+    // Run this after simulateTick(), this will prevent nasty clicks
     void NetList::setTimeStep(double tStepSize)
     {
         for(int i = 0; i < components.size(); ++i)
@@ -51,6 +51,7 @@
 
         system.tStep = tStep;
         system.sampleRate = stepScale;
+        solver.solve(components, system); // solve once using the old method: this will reorder the A matrix so future solves should be faster!
     }
 
 
