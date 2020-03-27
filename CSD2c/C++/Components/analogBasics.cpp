@@ -231,6 +231,8 @@ OPA::OPA(int vInP, int vInN, int vOut)
 void OPA::stamp(MNASystem & m)
 {
 
+        // I compared this part to the QUCS source code, and it's the same!
+
         m.stampStatic(-1, nets[3], nets[2]);
         m.stampStatic(1, nets[2], nets[3]);
 
@@ -240,11 +242,13 @@ void OPA::stamp(MNASystem & m)
 
         m.b[nets[3]].gdyn.push_back(&v);
 
-        // http://qucs.sourceforge.net/tech/node67.html  !!!!!!!!!!!
+        // http://qucs.sourceforge.net/tech/node67.html explains all this, really
 
 }
 void OPA::update(MNASystem & m)
 {
+        // This part is closer to the QUCS documentation than it is to the source code, which was hard to understand because of vague variable naming
+
         g = amp/(1 + pow(((2*M_PI)/2*vmax*amp*(m.b[0].lu-m.b[1].lu)), 2));
 
         ng = -g;
