@@ -26,10 +26,11 @@
         setStepScale(0);
         tStep = 0;
         system.tStep = tStep;
-        system.sampleRate = 44100; // this is purely to prevent dividing by 0
+        system.sampleRate = 44100; // The Inductor divides by samplerate, so we make sure it's never 0.
     }
 
 
+    // Sets the number of newton iterations
     void NetList::setIterations(int iterations)
     {
 
@@ -51,7 +52,7 @@
 
         system.tStep = tStep;
         system.sampleRate = stepScale;
-        solver.solve(components, system); // solve once using the old method: this will reorder the A matrix so future solves should be faster!
+        solver.solve(components, system); // solve once using the old method: this will reorder the A matrix so future solves are be faster!
     }
 
 

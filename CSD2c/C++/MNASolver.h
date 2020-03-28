@@ -15,33 +15,6 @@
 #include <cmath>
 #include "IComponent.h"
 
-/*
-#include "./IterativeLinearSolvers.h"
-#include "SparseLU"
-
-// prerequisites
-#include "./freeaml/Matrix.h"
-#include "./freeaml/Vector.h"
-#include "./freeaml/SparseMatrix.h"
-
-// Solvers
-#include "./freeaml/IncompleteCholeskyConjugateGradient.h"
-#include "./freeaml/SuccessiveOverRelaxation.h"
-#include "./freeaml/GaussianElimination.h"
-#include "./freeaml/BidiagonalFactorization.h"
-#include "./freeaml/GeneralizedMinimumResidual.h"
-#include "./freeaml/HessenbergFactorization.h"
-#include "./freeaml/MinimumResidual.h"
-#include "./freeaml/PLUFactorization.h"
-#include "./freeaml/SteepestDescent.h"
-#include "./freeaml/WeightedJacobi.h"
-
-#include "./ilupp/iluplusplus.h"
-
-extern "C" {    // another way
-      #include "csparse.h"
-    };
- */
 
 
 struct MNASolver

@@ -19,11 +19,11 @@
 void MNASolver::setSize(int size, MNASystem & m)
 {
 
+        // Information the solver needs
         nets = size;
         rNets = size-1;
 
-
-
+        // Make space in our matrices
         systemA = new double[rNets*rNets];
         systemB = new double[rNets];
         pivot = new int[rNets*rNets];
@@ -39,14 +39,12 @@ void MNASolver::setIterations(int iterations)
 }
 
 // Old solver, use this if you don't want to install Intel MKL
-
+// (I did not write this myself!)
 void MNASolver::solve(std::vector<IComponent*> &components, MNASystem & m)
 {
 
-
         for(iter = 0; iter < maxIter; ++iter)
         {
-                //std::cout << "oude iter "<< iter << '\n';
                 // restore matrix state and add dynamic values
                 updatePre(m);
 
@@ -62,7 +60,6 @@ void MNASolver::solve(std::vector<IComponent*> &components, MNASystem & m)
                 }
         }
 
-
 }
 
 
@@ -75,29 +72,30 @@ void MNASolver::solveMKL(std::vector<IComponent*> &components, MNASystem & m)
         for(iter = 0; iter < maxIter; ++iter)
         {
 
-
                 updatePre(m);
 
                 if(nets > 1) {
 
+                        // Convert input format for dgesv
                         for (int i = 0; i < rNets; i++ ) {
-                                systemB[i] = m.b[i+1].lu;
+                                systemB[i] = m.b[i+1].lu; // move it by 1 because we dont care about the ground row which is always all zeroes -> increases calculation time and means nothing
                                 for (int j = 0; j < rNets; j++ ) {
                                         systemA[(i*(rNets))+j] = m.A[j+1][i+1].lu;
                                 }
                         }
 
-
-
+                        // Solve the system!
                         dgesv_(&rNets, &one, systemA, &rNets, pivot, systemB, &rNets, &info);
 
 
+                        // Put output values back in the b vector
                         m.b[0].lu = 0;
                         for (size_t i = 1; i < nets; i++) {
                                 m.b[i].lu = systemB[i-1];
 
                         }
 
+                        // Check if junctions are accurate enough
                         if (newton(components, m)) break;
 
                 }

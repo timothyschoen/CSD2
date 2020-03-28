@@ -53,7 +53,7 @@ struct Component : IComponent
         return true;
     }
 
-    // NEW: output function for probe object;
+    // Output function for probe object;
     double getAudioOutput(MNASystem & m, int c)
     {
         return 0;

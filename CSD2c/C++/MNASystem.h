@@ -9,13 +9,14 @@ struct MNASystem
     MNAMatrix   A; // A matrix
     MNAVector   b; // This is the Z matrix since that contains our known values
 
+    // OSC and MIDI input buffer pointers
     std::vector<unsigned char>* midiInput;
     std::vector<double>* oscBuffer;
 
-    double* audioInput;
+    double* audioInput; // audio input buffer
     double      time;
     int sampleRate;
-    long      ticks;
+    long      ticks; // elapsed ticks
     double      tStep;
 
     std::vector<double> digiValues;
@@ -27,6 +28,7 @@ struct MNASystem
 
     void stampStatic(double g, int r, int c);
 
+    // functions for easier digital manipulation
     void setDigital(std::vector<int> outputs, double value);
 
 

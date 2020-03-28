@@ -1,10 +1,33 @@
+// Circuitry designer by Timothy Schoen and Joeri Braams
+// Based on mystran's Halite
+
+// Source code can be found here: https://github.com/mbrucher/Halite/blob/master/halite.cpp
+// Our system's structure is based on this program. We've added a faster solver, many more components (the original had like 7), and extensive digital capabilities
+// which can be used to modulate analog components or for audio processing.
+
+
+// If you want to make sense of this code you really need to read this:
+
+// http://qucs.sourceforge.net/tech/node14.html
+// For deeper research, use anything on http://qucs.sourceforge.net/tech/
+
+// This is also interesting:
+// https://www.swarthmore.edu/NatSci/echeeve1/Ref/mna/MNA2.html
+
+
+#include <unistd.h>
+
+// OSC libraries
 #include <lo/lo.h>
 #include <lo/lo_cpp.h>
 
+// Libraries to parse strings from file
 #include <sstream>
 #include <fstream>
 #include <streambuf>
-#include <unistd.h>
+
+
+// Library for parsing command line parameters
 #include <tclap/CmdLine.h>
 
 // Audio I/O libraries
@@ -12,53 +35,48 @@
 #include "rtlibs/RtMidi.h"
 #include "AudioFile.h"
 
-
+// The main MNA system
 #include "MNASystem.h"
 #include "NetList.h"
-
 #include "MNASolver.h"
 
+// Component base classes
 #include "IComponent.h"
 #include "Component.h"
 
+// Digital components (components that use direct communication instead of analog simulation!! Not simulations of digital electronics!!)
 #include "Components/digitalSignalGenerators.h"
 #include "Components/digitalIO.h"
 #include "Components/digitalCalculus.h"
 #include "Components/digitalUtility.h"
 #include "Components/digitalTimeBased.h"
 
+// Components to convert between digital and analog domains
 #include "Components/domainConverters.h"
 
+// Analog components (resistor, capacitors, etc.)
 #include "Components/analogIO.h"
 #include "Components/analogBasics.h"
 #include "Components/analogJunctions.h"
 #include "Components/analogInteraction.h"
 
-#include <iomanip>
 
 
-
-std::vector<std::string> savefile;
-std::vector<std::string> object;
+// The netlist class holds the system and solver, and is also our way of interfacing with those parts
 NetList * net;
+// default output volume
 double outamp = 0.2;
 unsigned int bufferFrames, fs = 44100, offset = 0;
 
+// Midi input
 RtMidiIn *midiin = new RtMidiIn();
+// Midi input buffer
 std::vector<unsigned char> message;
 
-
+// Osc input buffer
 std::vector<double> oscBuffer(20, 0.5);
 
 
-void errorCallback( RtAudioError::Type type, const std::string &errorText )
-{
-        std::cout << "in errorCallback" << std::endl;
-        if ( type == RtAudioError::WARNING )
-                std::cerr << '\n' << errorText << "\n\n";
-        else if ( type != RtAudioError::WARNING )
-                throw( RtAudioError( errorText, type ) );
-}
 
 unsigned int channs;
 RtAudio::StreamOptions options;
@@ -71,23 +89,34 @@ unsigned int bufferBytes;
 
 const unsigned int callbackReturnValue = 1;
 
+// Rtaudio error callback
+void errorCallback( RtAudioError::Type type, const std::string &errorText )
+{
+        std::cout << "in errorCallback" << std::endl;
+        if ( type == RtAudioError::WARNING )
+                std::cerr << '\n' << errorText << "\n\n";
+        else if ( type != RtAudioError::WARNING )
+                throw( RtAudioError( errorText, type ) );
+}
+
+// Audio loop for RtAudio
 int inout( void *outputBuffer, void *inputBuffer, unsigned int nBufferFrames,
            double /*streamTime*/, RtAudioStreamStatus status, void *data )
 {
         unsigned int i;
         extern unsigned int channs;
-        double *buffer = (double *) outputBuffer;
+        double *buffer = (double *) outputBuffer; // output buffer that we pass back to rtaudio
 
 
-        net->input = (double *)inputBuffer;
+        net->input = (double *)inputBuffer; // pass audio input buffer
 
-        midiin->getMessage( &message );
+        midiin->getMessage( &message ); // get midi messages
 
         for ( i=0; i<nBufferFrames; i++ )
         {
-                net->simulateTick();
-                *buffer++ = net->output[0]*outamp;
-                *buffer++ = net->output[1]*outamp;
+                net->simulateTick(); // Tell the network to advance by one tick
+                *buffer++ = net->output[0]*outamp; // get left output from the netlist
+                *buffer++ = net->output[1]*outamp; // get right output from the netlist
 
         }
 
@@ -103,9 +132,7 @@ int inout( void *outputBuffer, void *inputBuffer, unsigned int nBufferFrames,
 int main(int argc, char* argv[])
 {
 
-
-
-        // Argument variables
+        // Parameter variables
         bool realtime;
         int outputsamplerate;
         int enginesamplerate;
@@ -117,16 +144,14 @@ int main(int argc, char* argv[])
         std::string outputformat;
 
 
-        // Set up OSC server
-
+        // Set up Osc server
         lo::ServerThread st(9000);
 
         if (!st.is_valid()) {
-                std::cout << "Nope." << std::endl;
+                std::cout << "Could not open OSC Server. Make sure channel 9000 is free" << std::endl;
         }
 
         st.start();
-
 
         // register all our parameters
         try
@@ -169,16 +194,18 @@ int main(int argc, char* argv[])
         }
         catch (TCLAP::ArgException &e) // catch any exceptions
         {
+                // This will inform the user what argument caused the error
+                // The user actually sees the error this program throws in the JS console (which is in the sidebar)
                 std::cerr << "error: " << e.error() << " for arg " << e.argId() << std::endl;
         }
 
-
         // Here we start parsing the input file that we generate in JS
 
+        // Open file from path
         std::ifstream t(inputpath);
         std::string str;
 
-
+        // claim space
         t.seekg(0, std::ios::end);
         str.reserve(t.tellg());
         t.seekg(0, std::ios::beg);
@@ -223,27 +250,35 @@ int main(int argc, char* argv[])
                         optargs.push_back(parsedargs);
                 }
 
+                // Now it's time to read what was passed to us!
+                // First we check the name, if we know that then we will know exactly what arguments will follow and parse them accordingly
+                // For example: if the name is Resistor, I know that it has 1 argument, float (resistance in ohms), so I can parse it as a float
 
+                // The setup initializes the netlist, and tells it how many nodes and components it has to make room for
                 if(!seglist[0].compare("setup"))
                 {
                         net = new NetList(stoi(seglist[1]), stoi(seglist[2]));
                 }
+                // These variables mean nothing so we skip over them
                 else if(!seglist[0].compare("ground") || !seglist[0].compare("comment"))
                 {
                         continue;
                 }
-// Digital components
+                // Digital components
+                // Our UI slider
                 else if(!seglist[0].compare("slider-")) {
+                        // read address
                         std::string address(optargs[0]);
+                        // read what the unique index number for this slider is
                         int idx(std::stoi(optargs[1]));
 
                         net->addComponent(new slider(seglist[1], idx));
+                        // Set up the OSC listener
                         st.add_method(address, "f",
                                       [&, seglist, idx](lo_arg **argv, float){
                                 oscBuffer[idx] = argv[0]->f;
                         });
                 }
-
 
                 else if(!seglist[0].compare("cycle-"))
                         net->addComponent(new sineGenerator(optargs, seglist[1], seglist[2]));
@@ -349,7 +384,6 @@ int main(int argc, char* argv[])
                 else if(!seglist[0].compare("transformer"))
                         net->addComponent(new Transformer(stod(seglist[1]), std::stoi(seglist[2]), std::stoi(seglist[3]), std::stoi(seglist[4]), std::stoi(seglist[5])));
 
-
                 else if(!seglist[0].compare("click"))
                         net->addComponent(new Click(stof(seglist[1]), std::stoi(seglist[2]), std::stoi(seglist[3])));
 
@@ -403,31 +437,45 @@ int main(int argc, char* argv[])
 
         }
 
+        // The number of newton iterations decides how accurately the transistors and diodes will be modelled
+        // Each iteration will vastly increase the quality, but it currently requires the whole system to be recalculated
+        // For realtime playback you don't want this higher than 2
+        // For non-realtime, it can be something like 20 or higher
+
+        // You can set this value from the sidebar in JS
+
         net->setIterations(newtonIterations);
+
+        // Build the system!
         net->buildSystem();
 
-// sets amount of time that is simulated between ticks (1/samplerate)
-
+        // Pass MIDI and OSC buffers
         net->setMidiInput(message);
         net->setOscBuffer(oscBuffer);
 
         net->input = new double[buffersize](); // set init values
 
-
+        // Simulating a tick before the timestep removes any DC clicks
         net->simulateTick();
+
+        // sets amount of time that is simulated between ticks (1/samplerate)
         net->setTimeStep((double)1/enginesamplerate);
         net->simulateTick();
 
 
+        // Audio output:
+
         double* output;
+
 
         if (realtime == false)
         {
-
+                // Set up audio file for non-realtime mode
                 int length = 8 * 44100;
                 AudioFile<double> audioFile;
                 audioFile.setAudioBufferSize (2, length);
 
+                // Tick the system and put the output in a file
                 for (int i = 0; i<length; i++)
                 {
                         if(i%20000 == 0)
@@ -442,7 +490,7 @@ int main(int argc, char* argv[])
                         audioFile.samples[1][i] = *(output+1)*outamp;
                 }
 
-
+                // Export
                 audioFile.setBitDepth (bitdepth);
                 audioFile.setSampleRate (outputsamplerate);
 
@@ -455,11 +503,12 @@ int main(int argc, char* argv[])
 
         else
         {
+                // We only do midi in realtime
 
                 midiin->openVirtualPort("Halite Input Port 1");
                 midiin->ignoreTypes( false, false, false );
 
-
+                // initialize RTaudio
                 RtAudio dac;
                 if ( dac.getDeviceCount() < 1 )
                 {
@@ -475,7 +524,7 @@ int main(int argc, char* argv[])
                 // Let RtAudio print messages to stderr.
                 dac.showWarnings( true );
 
-                // Set our stream parameters for output only.
+                // Set our stream parameters
                 bufferFrames = buffersize;
                 RtAudio::StreamParameters oParams;
                 oParams.deviceId = dac.getDefaultOutputDevice();
@@ -492,6 +541,7 @@ int main(int argc, char* argv[])
 
                 try
                 {
+                        // Open the stream, passes the audio processing function
                         dac.openStream( &oParams, &iParams, RTAUDIO_FLOAT64, outputsamplerate, &bufferFrames, &inout, (void *)&bufferBytes, &options );
                         dac.startStream();
                 }
