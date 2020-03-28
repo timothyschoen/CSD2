@@ -1,4 +1,5 @@
 #include "../AudioFile.h"
+#include <math.h>
 #include "../Component.h"
 #include "digitalIO.h"
 
@@ -20,7 +21,7 @@ digitalInput::digitalInput(std::string path, double inamp, std::string d0)
 
 void digitalInput::update(MNASystem & m)
 {
-        m.setDigital(digiNets[0], audioFile.samples[0][fmod(m.ticks, numSamples)]*amplitude);
+        m.setDigital(digiNets[0], audioFile.samples[0][std::fmod(m.ticks, numSamples)]*amplitude);
 
 }
 
@@ -68,8 +69,8 @@ stereoDigitalInput::stereoDigitalInput(std::string path, double inamp, std::stri
 void stereoDigitalInput::update(MNASystem & m)
 {
 
-        m.setDigital(digiNets[0], audioFile.samples[0][fmod(m.ticks, numSamples)]*amplitude);
-        m.setDigital(digiNets[1], audioFile.samples[1][fmod(m.ticks, numSamples)]*amplitude);
+        m.setDigital(digiNets[0], audioFile.samples[0][std::fmod(m.ticks, numSamples)]*amplitude);
+        m.setDigital(digiNets[1], audioFile.samples[1][std::fmod(m.ticks, numSamples)]*amplitude);
 
 }
 
