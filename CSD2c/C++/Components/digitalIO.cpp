@@ -178,7 +178,7 @@ void midiNoteIn::updateInput(MNASystem & m)
                 else if ((int)copy[0] == 128)
                 {
                         note = 0;
-                        velocity = (int)copy[2];
+                        velocity = 0;
                 }
         }
 }
