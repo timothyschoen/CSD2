@@ -7,7 +7,7 @@ struct MNASystem
     typedef std::vector<MNAVector>  MNAMatrix;
 
     MNAMatrix   A; // A matrix
-    MNAVector   b; // This is the Z matrix since that contains our known values
+    MNAVector   b; // This contains both our B and our X vector
 
     // OSC and MIDI input buffer pointers
     std::vector<unsigned char>* midiInput;

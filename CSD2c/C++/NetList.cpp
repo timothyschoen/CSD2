@@ -78,6 +78,7 @@
 
     }
 
+    // Simulate a tick
     void NetList::simulateTick()
     {
 
@@ -104,7 +105,7 @@
             components[i]->updateInput(system);
         }
 
-        // Add the audio outputs
+        // Combine the audio outputs
         for (size_t c = 0; c < 2; c++)
         {
             output[c] = 0;

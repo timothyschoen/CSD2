@@ -1,3 +1,9 @@
+// Since all the components follow the same structure, I don't have a lot of commments on this
+// What you need to know is that most analog components are modelled after the QUCS source code (link in main.cpp)
+// I'm just implementing the matrix stamps and formula's in code.
+// For digital components, I'm just constantly doing: get input -> process input -> set output
+
+
 #include <math.h>
 #include "../Component.h"
 #include "analogBasics.h"
@@ -100,8 +106,6 @@ void Inductor::stamp(MNASystem & m)
 {
 
 
-
-
         g = 1/((2.*l)/m.sampleRate);
 
         m.stampStatic(+1, nets[0], nets[2]); // Naar A->B system
@@ -120,19 +124,22 @@ void Inductor::stamp(MNASystem & m)
 void Inductor::update(MNASystem & m)
 {
 
+        // solve legit voltage from the pins
+        voltage = (m.b[nets[0]].lu - m.b[nets[1]].lu);
+
         g = 1/((2.*l)/m.sampleRate);
 
 
         stateVar = voltage + g * m.b[nets[2]].lu;
 
-        // solve legit voltage from the pins
-        voltage = (m.b[nets[0]].lu - m.b[nets[1]].lu);
+
 
 }
 
 void Inductor::scaleTime(double told_per_new)
 {
-
+      // I still have to implement this. This function would allow the inductor to remain stable when changing time-steps
+      // However, currently we never change time-step during runtime so this is fine for now
 }
 
 //
@@ -148,8 +155,7 @@ Voltage::Voltage(double v, int l0, int l1) : v(v)
 
 void Voltage::stamp(MNASystem & m)
 {
-        // Gets written to A matrix (B and C parts)
-        m.stampStatic(-1, nets[0], nets[2]); // -1 to the net connected to the negative
+        m.stampStatic(-1, nets[0], nets[2]);
         m.stampStatic(+1, nets[1], nets[2]);
 
         m.stampStatic(+1, nets[2], nets[0]);

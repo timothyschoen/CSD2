@@ -12,11 +12,9 @@ struct Click : Component<2, 1>
 
 };
 
-// probe a differential voltage
-// also forces this voltage to actually get solved :)
+// probe a differential voltage to use as audio output
 struct Probe : Component<2, 1>
 {
-        float impedance = 1;
 
         Probe(int l0, int l1);
 

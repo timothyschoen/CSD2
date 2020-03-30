@@ -48,9 +48,9 @@ analogDigitalConverter::analogDigitalConverter(int l0, int l1, std::string d0)
 void analogDigitalConverter::stamp(MNASystem & m)
 {
         // vp + vn - vd = 0
-        m.stampStatic(+impedance, nets[2], nets[0]);
-        m.stampStatic(-impedance, nets[2], nets[1]);
-        m.stampStatic(-impedance, nets[2], nets[2]);
+        m.stampStatic(+1, nets[2], nets[0]);
+        m.stampStatic(-1, nets[2], nets[1]);
+        m.stampStatic(-1, nets[2], nets[2]);
 
 }
 void analogDigitalConverter::update(MNASystem & m)

@@ -9,7 +9,7 @@
     template <int nPins, int nInternalNets, int nDigipins>
     const int* Component<nPins, nInternalNets, nDigipins>::getPinLocs() const
     {
-        return pinLoc;    // This is used for running setupnets!!!! (for linking pinloc to nets)
+        return pinLoc;
     }
 
 

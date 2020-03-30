@@ -42,9 +42,9 @@ Probe::Probe(int l0, int l1)
 
 void Probe::stamp(MNASystem & m)
 {
-        m.stampStatic(+impedance, nets[2], nets[0]);
-        m.stampStatic(-impedance, nets[2], nets[1]);
-        m.stampStatic(-impedance, nets[2], nets[2]);
+        m.stampStatic(+1, nets[2], nets[0]);
+        m.stampStatic(-1, nets[2], nets[1]);
+        m.stampStatic(-1, nets[2], nets[2]);
 
 }
 
