@@ -12,6 +12,7 @@
 
 #include <JuceHeader.h>
 #include <thread>
+#include "Synth.h"
 
 
 //==============================================================================
@@ -20,12 +21,11 @@
 class NewProjectAudioProcessor  : public AudioProcessor
 {
 public:
-
+      Synth synth;
       int choice = 2;
       int lfoshape = 1;
       //Variable to store current sample
       double oscSample;
-    std::thread controlThread;
     
     //==============================================================================
     NewProjectAudioProcessor();
@@ -39,7 +39,7 @@ public:
     bool isBusesLayoutSupported (const BusesLayout& layouts) const override;
    #endif
     
-    void controlFunc();
+    void setValuePointer(double* sliderpointer);
 
     void processBlock (AudioBuffer<float>&, MidiBuffer&) override;
 

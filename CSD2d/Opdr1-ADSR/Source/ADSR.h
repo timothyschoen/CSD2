@@ -1,11 +1,11 @@
 #include <unistd.h>
 #include <iostream>
 #include <cmath>
-#include "SynthClass.h"
+#include "Generator.h"
 #pragma once
 
 
-class Envelope : public Synth {
+class Envelope : public Generator {
   int state = 0;
   double level = 0.01;
   bool playing = false;

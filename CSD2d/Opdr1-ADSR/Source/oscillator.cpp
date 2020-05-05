@@ -1,7 +1,7 @@
 #include <unistd.h>
 #include <iostream>
 #include <cmath>
-#include "oscillator.h"
+#include "Oscillator.h"
 
 
 // Constructor Class
@@ -37,28 +37,14 @@
     sample = 0.9 * (fabs(sample) - 0.5);
     return sample;
   }
-  // Poor attempt at PolyBLEP anti-aliasing
-  double Oscillator::poly_blep(double t) {
-    double dt = frequency / samplerate;
-    // 0 <= t < 1
-    if (t < dt) {
-        t /= dt;
-        return t+t - t*t - 1.0;
-    }
-    // -1 < t < 0
-    else if (t > 1.0 - dt) {
-        t = (t - 1.0) / dt;
-        return t*t + t+t + 1.0;
-    }
-    // 0 otherwise
-    else return 0.0;
-}
 
   // Move phase value to the next sample
   void Oscillator::tick() {
     phase += frequency / samplerate;
     t = phase / twoPI;
     if(phase >= 1) phase = phase - 1;
+      
+      output = (this->*shapePointers[shape])();
   }
 
 // Move phase value to the next sample
@@ -66,14 +52,3 @@ void Oscillator::setShape(int shp) {
     shape = shp;
 }
 
-  // Retrieve sample value
-  double Oscillator::getSample(double amplitude) {
-    output = (this->*shapePointers[shape])()*amplitude;
-    if (output > 0.9) {
-    output = 0.9;
-    }
-    else if(output < -0.9) {
-    output = -0.9;
-    }
-    return output;
-  }

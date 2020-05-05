@@ -20,6 +20,7 @@ NewProjectAudioProcessorEditor::NewProjectAudioProcessorEditor (NewProjectAudioP
         // editor's size to whatever you need it to be.
         setSize (980, 450);
         sliders.makeSliders(*this, processor);
+        processor.setValuePointer(sliders.getValuePointer());
 }
 
 NewProjectAudioProcessorEditor::~NewProjectAudioProcessorEditor()

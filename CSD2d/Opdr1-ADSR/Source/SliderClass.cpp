@@ -6,14 +6,11 @@ SliderClass::~SliderClass() {};
 
 void SliderClass::updateToggleState (NewProjectAudioProcessor &processor, Button* button, int idx)
 {
-    printf("idx: %d\n", idx);
     if (idx <= 4) {
         processor.setSlider(17, idx-1);
-        printf("ctrl1\n");
     }
     else if (idx >= 5 && idx < 9) {
         processor.setSlider(18, idx-5);
-         printf("ctrl2\n");
     }
     else {
         processor.setSlider(19, idx-9); 
@@ -244,12 +241,18 @@ void SliderClass::draw(Graphics &g, AudioProcessorEditor &process)
     
 }
 
+double* SliderClass::getValuePointer ()
+{
+    return sliderValues;
+}
+
+
 
 void SliderClass::sliderValueChanged (Slider* slider)
 {
   for (int i = 0; i < 16; i++) {
   if (slider == &sliders[i]) {
-    (*p).setSlider(i, sliders[i].getValue());
+    sliderValues[i] = sliders[i].getValue();
     break;
     }
   }

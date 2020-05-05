@@ -9,6 +9,7 @@
 
 #include <stdio.h>
 #include <JuceHeader.h>
+#include "Synth.h"
 #include "PluginProcessor.h"
 
 //==============================================================================
@@ -44,7 +45,10 @@ void makeSliders (AudioProcessorEditor &process, NewProjectAudioProcessor &proce
 void resized(AudioProcessorEditor &process);
 
 void draw(Graphics &g, AudioProcessorEditor &process);
-
+    
+double* getValuePointer();
+    
+double sliderValues[20];
 
 private:
 

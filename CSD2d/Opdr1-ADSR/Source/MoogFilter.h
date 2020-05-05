@@ -1,7 +1,7 @@
 #pragma once
-#include "SynthClass.h"
+#include "Generator.h"
 
-class MoogFilter : public Synth
+class MoogFilter : public Generator
 {
 public:
 MoogFilter();
@@ -9,12 +9,14 @@ MoogFilter();
     
 void init();
 void calc();
-float process(float x);
+double getSample(float input) override;
 void setRes(float r);
-
+float res;
+    
+    
 private:
 float cutoff;
-float res;
+
 float fs;
 float y1,y2,y3,y4;
 float oldx;
