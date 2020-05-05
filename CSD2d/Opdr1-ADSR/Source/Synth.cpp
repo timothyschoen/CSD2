@@ -14,11 +14,13 @@ Synth::Synth() {
 
 }
 
-//Constructor
+//Destructor
 Synth::~Synth() {
+    running = false;
+    controlThread.join();
 }
 
-//Constructor
+
 void Synth::noteOn(int note) {
     bool done = false;
       // Two for loops to make sure that we first check if the note exist before we start looking for a free voice
@@ -114,7 +116,7 @@ void Synth::updateControls()
 
 void Synth::controlFunc()
 {
-    while(true) {
+    while(running) {
     updateControls();
     // Tick the envelopes and lfos once every millisecond (our control rate, audio rate is not necessary)
     for(int i = 0; i < voices; i++){

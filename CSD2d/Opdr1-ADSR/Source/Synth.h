@@ -23,7 +23,7 @@ class Synth
     // Moog ladder filter
     MoogFilter filt1;
     
-
+    bool running = true;
     
     int voices = 4;
     int note = 60;
