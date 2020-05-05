@@ -10,4 +10,7 @@
 Het is een 4-voice, 2-oscillator MIDI synth, waarbij ik gelet heb op OOP en het ontwerpen van een user interface. Ik ben wat vertraging opgelopen doordat ik voor dit project bekend moest raken met JUCE en werken in Xcode.\
 Observer patterns komen voor in de manier waarop JUCE alle control components organiseert, maar zijn helaas niet ge\'efmplementeerd voor clock. Er zijn op het moment 2 clock sources, een van JUCE die samples opvraagt, en een control rate clock in een extra thread die dient voor LFO\'92s en envelopes.\
 \
-De user interface en functionaliteit is wel vrij ver uitgewerkt, met 4 shapes per oscillator, een extra ADSR voor het filter, een LFO (erft van oscillator met sample rate 1000, de control rate) en pitch shifting voor elke oscillator.}
+De user interface en functionaliteit is wel vrij ver uitgewerkt, met 4 shapes per oscillator, een extra ADSR voor het filter, een LFO (erft van oscillator met sample rate 1000, de control rate) en pitch shifting voor elke oscillator.\
+Ik heb een gecompileerde app voor macOS (Catalina!) bijgevoegd. Mocht dit niet werken op jouw Mac, open het Xcode project en compileer het opnieuw.\
+\
+Als je dit wil compileren voor Windows of Linux zal je Projucer moeten downloaden, het .jucer project openen en dan exporteren voor jouw IDE, of als Makefile project voor Linux. Doe dit alleen als je erg benieuwd bent wat het is nogal wat gedoe.}
