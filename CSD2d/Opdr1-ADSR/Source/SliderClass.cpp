@@ -1,19 +1,19 @@
 #include "SliderClass.h"
 
-SliderClass::SliderClass () : keyboardComponent (keyboardState, MidiKeyboardComponent::horizontalKeyboard)
+SliderClass::SliderClass ()
  {};
 SliderClass::~SliderClass() {};
 
 void SliderClass::updateToggleState (NewProjectAudioProcessor &processor, Button* button, int idx)
 {
     if (idx <= 4) {
-        processor.setSlider(17, idx-1);
+        sliderValues[17] = idx-1;
     }
     else if (idx >= 5 && idx < 9) {
-        processor.setSlider(18, idx-5);
+        sliderValues[18] = idx-5;
     }
     else {
-        processor.setSlider(19, idx-9); 
+        sliderValues[19] = idx-9;
     }
 
 }
@@ -21,13 +21,11 @@ void SliderClass::updateToggleState (NewProjectAudioProcessor &processor, Button
 void SliderClass::makeSliders(AudioProcessorEditor &process, NewProjectAudioProcessor &processor)
 {
 
-        // TODO maak shape selector class
     for(int i = 0; i < 12; i++) {
         toggle[i].setClickingTogglesState (true);
         process.addAndMakeVisible (toggle[i]);
     }
-    
-    process.addAndMakeVisible (keyboardComponent);
+
     
     toggle[0].setRadioGroupId(Shape1);
     toggle[1].setRadioGroupId(Shape1);
@@ -82,73 +80,71 @@ void SliderClass::makeSliders(AudioProcessorEditor &process, NewProjectAudioProc
     toggle[9].onClick = [this, &processor] { updateToggleState (processor, &toggle[9],   10);   };
     toggle[10].onClick = [this, &processor] { updateToggleState (processor, &toggle[10],  11);  };
     toggle[11].onClick = [this, &processor] { updateToggleState (processor, &toggle[11],  12);  };
-
     
     sliders[0].setRange(0., 127., 0.1);
-    sliders[0].setTextValueSuffix (" Cutoff");
+    sliders[0].setTextValueSuffix ("   Cutoff");
     sliders[0].setValue(84.);
     
     sliders[1].setRange(0., 1., 0.01);
-    sliders[1].setTextValueSuffix (" Resonance");
+    sliders[1].setTextValueSuffix ("   Resonance");
     sliders[1].setValue(0.3);
-
     
     sliders[2].setRange(0., 3000, 1);
-    sliders[2].setTextValueSuffix (" Attack");
+    sliders[2].setTextValueSuffix ("   Attack");
     sliders[2].setValue(50);
 
     sliders[3].setRange(0., 3000, 1);
-    sliders[3].setTextValueSuffix (" Decay");
+    sliders[3].setTextValueSuffix ("   Decay");
     sliders[3].setValue(1000);
 
     sliders[4].setRange(0., 1.1, 0.1);
-    sliders[4].setTextValueSuffix (" Sustain");
+    sliders[4].setTextValueSuffix ("   Sustain");
     sliders[4].setValue(0.2);
     
     sliders[5].setRange(0., 4000, 0.1);
-    sliders[5].setTextValueSuffix (" Release");
+    sliders[5].setTextValueSuffix ("   Release");
     sliders[5].setValue(1000);
 
     sliders[6].setRange(-30., 4., 0.1);
-    sliders[6].setTextValueSuffix (" LFO Rate");
+    sliders[6].setTextValueSuffix ("   LFO Rate");
     sliders[6].setValue(-20);
     
     sliders[7].setRange(0., 127., 0.1);
-    sliders[7].setTextValueSuffix (" LFO->FILTER");
+    sliders[7].setTextValueSuffix ("   LFO->FILTER");
     sliders[7].setValue(0.2);
 
     sliders[8].setRange(0., 5000., 0.1);
-    sliders[8].setTextValueSuffix (" Attack");
+    sliders[8].setTextValueSuffix ("   Attack");
     sliders[8].setValue(50);
 
     sliders[9].setRange(0., 3000., 0.1);
-    sliders[9].setTextValueSuffix (" Decay");
+    sliders[9].setTextValueSuffix ("   Decay");
     sliders[9].setValue(30);
     
     sliders[10].setRange(0., 1., 0.01);
-    sliders[10].setTextValueSuffix (" Sustain");
+    sliders[10].setTextValueSuffix ("   Sustain");
     sliders[10].setValue(0.2);
 
     sliders[11].setRange(0., 5000., 0.1);
-    sliders[11].setTextValueSuffix (" Release");
+    sliders[11].setTextValueSuffix ("   Release");
     sliders[11].setValue(100);
 
     sliders[12].setRange(-127., 127., 0.1);
-    sliders[12].setTextValueSuffix (" ENV->FILTER");
+    sliders[12].setTextValueSuffix ("   ENV->FILTER");
     sliders[12].setValue(5);
     
     sliders[13].setRange(-24., 24, 0.1);
-    sliders[13].setTextValueSuffix ("OSC1 Pitch");
+    sliders[13].setTextValueSuffix ("  OSC1 Pitch");
     sliders[13].setValue(0);
     
     sliders[14].setRange(-24., 24, 0.1);
-    sliders[14].setTextValueSuffix ("OSC2 Pitch");
+    sliders[14].setTextValueSuffix ("  OSC2 Pitch");
     sliders[14].setValue(0);
 
     
     for (int i = 0; i < 15; i++) {
         sliders[i].setSliderStyle (Slider::LinearHorizontal);
-        sliders[i].setPopupDisplayEnabled (false, false, &process);
+        sliders[i].setPopupDisplayEnabled (true, false, &process);
         sliders[i].setTextBoxStyle (Slider::NoTextBox, false, 90, 0);
         sliders[i].addListener (this);
         process.addAndMakeVisible(sliders[i]);
@@ -241,9 +237,9 @@ void SliderClass::draw(Graphics &g, AudioProcessorEditor &process)
     
 }
 
-double* SliderClass::getValuePointer ()
+void SliderClass::setValuePointer (double* vpointer)
 {
-    return sliderValues;
+    sliderValues = vpointer;
 }
 
 

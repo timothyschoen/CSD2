@@ -21,11 +21,12 @@
 class NewProjectAudioProcessor  : public AudioProcessor
 {
 public:
-      Synth synth;
-      int choice = 2;
-      int lfoshape = 1;
-      //Variable to store current sample
-      double oscSample;
+    Synth synth;
+    
+    double sliderValues[20];
+    
+    void noteOn(int midiNote);
+    void noteOff(int midiNote);
     
     //==============================================================================
     NewProjectAudioProcessor();
@@ -39,7 +40,7 @@ public:
     bool isBusesLayoutSupported (const BusesLayout& layouts) const override;
    #endif
     
-    void setValuePointer(double* sliderpointer);
+    double* getValuePointer();
 
     void processBlock (AudioBuffer<float>&, MidiBuffer&) override;
 
@@ -64,10 +65,6 @@ public:
     const String getProgramName (int index) override;
     void changeProgramName (int index, const String& newName) override;
     
-    //==============================================================================
-    
-    void setSlider (int index, double value);
-
     //==============================================================================
     void getStateInformation (MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;

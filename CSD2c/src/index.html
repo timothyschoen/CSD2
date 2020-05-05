@@ -4,14 +4,95 @@
 <h1 class="title">   </h1>
 </header>
 <head>
-  <title>OSC test server</title>
-  <script src="Library/p5.min.js"></script>
+  <title>Circuitry Simulator</title>
+  <script src="DragSelect.js"></script>
+
+  <script src="setup.js"></script>
+  <script src="Utility.js"></script>
   <script src="console-viewer.js"></script>
-  <script src="sketch.js"></script>
+  <script src="Inlet.js"></script>
+  <script src="Connection.js"></script>
+  <script src="Slider.js"></script>
   <script src="Component.js"></script>
   <script src="Sidebar.js"></script>
-  <script src="Inlet.js"></script>
+  <script src="main.js"></script>
+
+
+
+
   <style>
+  @font-face {
+  font-family: 'Entypo';
+  src: url('../assets/Entypo.otf') format('truetype');
+  }
+
+  /* Add a black background color to the top navigation */
+.nicebutton {
+  background-color: #333;
+  position: fixed;
+  left: 0px;
+  top: 0px;
+  overflow: hidden;
+}
+
+.nicebutton a:hover {
+  background-color: #424242;
+  color: white;
+}
+
+/* Add a color to the active/current link */
+.nicebutton a.active {
+  background-color: #4CAF50;
+  color: white;
+}
+
+
+.topnav {
+  background-color: #333;
+  position: fixed;
+  left: 0px;
+  top: 0px;
+  overflow: hidden;
+}
+/* Style the links inside the navigation bar */
+.topnav a {
+
+  /*background-image: url('../assets/open.png');  16px x 16px */
+
+  float: left;
+  webkitAppRegion: drag;
+  color: #f2f2f2;
+  text-align: center;
+  padding: 2px 18px;
+  text-decoration: none;
+  font-size: 32px;
+  font-family: 'Entypo';
+}
+
+/* Change the color of links on hover */
+.topnav a:hover {
+  background-color: #424242;
+  color: white;
+}
+
+/* Add a color to the active/current link */
+.topnav a.active {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.topnav a.pad {
+  background-color: #424242;
+  padding: 18px 40px;
+  color: white;
+}
+
+.topnav a.bar {
+  background-color: #424242;
+  padding: 0px 1000px;
+  color: white;
+}
+
   .drag-area {
   -webkit-app-region: drag;
 }
@@ -19,13 +100,44 @@
 .nodrag-area {
   -webkit-app-region: no-drag;
 }
+
   </style>
 
 </head>
 <body>
+
+  <div class="topnav">
+  <a href="#new" onclick="
+      localStorage.setItem('load', 'new');
+      window.onbeforeunload();
+      location.reload(true);
+  ">l</a>
+  <a href="#open" onclick="loadfile()">s</a>
+  <a href="#save" onclick="generatesave(1);">x</a>
+  <a href="#refresh" onclick="
+  generatesave(1, home + '/lastsession.ncl');
+  loadfile(undefined, home + '/lastsession.ncl');
+  ">d</a>
+  <a class="bar" href="#end"></a>
+</div>
+
   <style>
+  .button-icon {
+
+    }
+  .component {
+  }
+
+.ds-selected {
+  outline: 2px solid #229FD7;
+  outline-offset: 0px;
+}
+  body {
+  user-select: none;
+  }
   </style>
   <body>
+
 
 </body>
 </html>

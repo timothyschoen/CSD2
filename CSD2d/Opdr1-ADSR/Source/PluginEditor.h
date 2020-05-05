@@ -17,7 +17,7 @@
 //==============================================================================
 /**
  */
-class NewProjectAudioProcessorEditor : public AudioProcessorEditor
+class NewProjectAudioProcessorEditor : public AudioProcessorEditor, MidiKeyboardStateListener
 {
 public:
 NewProjectAudioProcessorEditor (NewProjectAudioProcessor&);
@@ -28,12 +28,20 @@ void paint (Graphics&) override;
 void resized() override;
 
 private:
+    
+MidiKeyboardState keyboardState;
+MidiKeyboardComponent keyboardComponent;
+
+    
 // This reference is provided as a quick way for your editor to
 // access the processor object that created it.
 NewProjectAudioProcessor& processor;
 
 SliderClass sliders;
 
+void handleNoteOn(MidiKeyboardState * keyState, int midiChannel, int midiNoteNumber,float velocity) override;
+
+void handleNoteOff(MidiKeyboardState * keyState, int midiChannel, int midiNoteNumber,float velocity) override;
 
 
 JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (NewProjectAudioProcessorEditor)

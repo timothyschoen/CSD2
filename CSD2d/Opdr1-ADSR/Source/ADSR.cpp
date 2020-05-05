@@ -19,33 +19,29 @@
   // Move the Envelopee to the next value
   void Envelope::tick() {
     //Never go above 1!
-    if (level > 1) {
-    level = 1;
+    if (output > 1) {
+    output = 1;
     }
     // Add the increment if we are playing (attack, decay and release parts)
     if (playing == true) {
-    level += increments[state];
+    output += increments[state];
     }
     // If we have arrived at our attack or release target, move to the next phase
-    if((level >= target[state] && state == 0) || (level <= target[state] && state == 2)) {
+    if((output >= target[state] && state == 0) || (output <= target[state] && state == 2)) {
     state++;
     }
     // If we reach our sustain phase, stop moving and hold until note-off
-    else if (state == 1 && level <= target[state]) {
+    else if (state == 1 && output <= target[state]) {
     playing = false;
     state++;
     }
     // When release is done, stop playing and send a release signal to voice manager
     if (state > 2) {
-    level = 0;
+    output = 0;
     playing = false;
     released = true;
     }
 
-  // Return current value
-  }
-  double Envelope::getValue() {
-  return level;
   }
   // Move to release phase immediately
   void Envelope::noteOff() {

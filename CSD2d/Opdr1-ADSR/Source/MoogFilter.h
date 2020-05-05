@@ -8,15 +8,13 @@ MoogFilter();
 ~MoogFilter();
     
 void init();
-void calc();
+void calc() override;
 double getSample(float input) override;
 void setRes(float r);
 float res;
     
     
 private:
-float cutoff;
-
 float fs;
 float y1,y2,y3,y4;
 float oldx;

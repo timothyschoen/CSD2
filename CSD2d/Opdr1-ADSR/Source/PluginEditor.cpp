@@ -14,13 +14,17 @@
 
 //==============================================================================
 NewProjectAudioProcessorEditor::NewProjectAudioProcessorEditor (NewProjectAudioProcessor& p)
-        : AudioProcessorEditor (&p), processor (p)
+        : AudioProcessorEditor (&p), keyboardComponent (keyboardState, MidiKeyboardComponent::horizontalKeyboard), processor (p)
 {
         // Make sure that before the constructor has finished, you've set the
         // editor's size to whatever you need it to be.
         setSize (980, 450);
         sliders.makeSliders(*this, processor);
-        processor.setValuePointer(sliders.getValuePointer());
+        sliders.setValuePointer(processor.getValuePointer());
+        keyboardState.addListener (this);
+        addAndMakeVisible (keyboardComponent);
+    
+        
 }
 
 NewProjectAudioProcessorEditor::~NewProjectAudioProcessorEditor()
@@ -42,5 +46,17 @@ void NewProjectAudioProcessorEditor::paint (Graphics& g)
 void NewProjectAudioProcessorEditor::resized()
 {
         sliders.resized(*this);
+        keyboardComponent.setBounds (5, getHeight()-100, getWidth()-10, 100);
+
+
+}
+
+void NewProjectAudioProcessorEditor::handleNoteOn (MidiKeyboardState * keyState, int midiChannel, int midiNoteNumber,float velocity) {
+    processor.noteOn(midiNoteNumber);
+
+}
+
+void NewProjectAudioProcessorEditor::handleNoteOff (MidiKeyboardState * keyState, int midiChannel, int midiNoteNumber,float velocity) {
+    processor.noteOff(midiNoteNumber);
 
 }

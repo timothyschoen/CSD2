@@ -9,7 +9,6 @@
 */
 #include <thread>
 #include <unistd.h>
-
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
@@ -28,6 +27,8 @@ NewProjectAudioProcessor::NewProjectAudioProcessor()
                        )
 #endif
 {
+    
+    synth.setValuePointer(sliderValues);
 }
 
 NewProjectAudioProcessor::~NewProjectAudioProcessor()
@@ -98,25 +99,17 @@ void NewProjectAudioProcessor::changeProgramName (int index, const String& newNa
 
 //==============================================================================
 
-void NewProjectAudioProcessor::setSlider (int index, double value)
-{
-    //this->sliderValues[index] = value;
-}
 
 
 
 //==============================================================================
 void NewProjectAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-
-    // Use this method as the place to do any pre-playback
-    // initialisation that you need..
 }
 
-void NewProjectAudioProcessor::setValuePointer (double* sliderpointer)
+double* NewProjectAudioProcessor::getValuePointer ()
 {
-
-    synth.setValuePointer(sliderpointer);
+    return sliderValues;
 
 }
 
@@ -199,6 +192,16 @@ void NewProjectAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuf
         outBufferR[i] = sample;
 
     }
+}
+
+void NewProjectAudioProcessor::noteOn (int midiNote)
+{
+    synth.noteOn(midiNote);
+}
+
+void NewProjectAudioProcessor::noteOff (int midiNote)
+{
+    synth.noteOff(midiNote);
 }
 
 //==============================================================================

@@ -20,37 +20,37 @@ class SliderClass : private Slider::Listener
 public:
 
 
+SliderClass ();
+~SliderClass();
+
+
+void makeSliders (AudioProcessorEditor &process, NewProjectAudioProcessor &processor);
+
+void resized(AudioProcessorEditor &process);
+
+void draw(Graphics &g, AudioProcessorEditor &process);
+    
+void setValuePointer(double* vpointer);
+
+
+private:
+    
 Slider sliders[15];
     
 TextButton toggle[12];
-
-SliderClass ();
-~SliderClass();
     
-MidiKeyboardState keyboardState;
-MidiKeyboardComponent keyboardComponent;
-
 NewProjectAudioProcessor* p;
 
-void updateToggleState(NewProjectAudioProcessor &process, Button* button, int idx);
+double* sliderValues;
     
+void updateToggleState(NewProjectAudioProcessor &process, Button* button, int idx);
+
 enum RadioButtonIds
 {
     Shape1 = 1001,
     Shape2 = 1234,
     ShapeLFO = 5678
 };
-    
-void makeSliders (AudioProcessorEditor &process, NewProjectAudioProcessor &processor);
-void resized(AudioProcessorEditor &process);
-
-void draw(Graphics &g, AudioProcessorEditor &process);
-    
-double* getValuePointer();
-    
-double sliderValues[20];
-
-private:
 
 void sliderValueChanged (Slider* slider) override;
 

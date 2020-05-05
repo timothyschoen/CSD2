@@ -7,7 +7,6 @@
 
 class Envelope : public Generator {
   int state = 0;
-  double level = 0.01;
   bool playing = false;
   float target[3] = {1, 0.3, 0};
   float increments[3] = {0.01, -0.2, -0.01};
@@ -19,8 +18,6 @@ public:
   ~Envelope();
 
   void tick();
-
-  double getValue();
 
   void noteOff();
 
